@@ -76,6 +76,7 @@ public:
     * operator[]
     * Acceso o definición de pares clave/valor
     **/
+    //
     T &operator[](const string &key);
 
 private:
@@ -84,6 +85,7 @@ private:
         T* definicion;
         string clave;
         Nodo* copiarNodo();
+        void eliminarTodosParaAbajo();
         bool esNodoValido(string claveABuscar, int indice);
     };
 

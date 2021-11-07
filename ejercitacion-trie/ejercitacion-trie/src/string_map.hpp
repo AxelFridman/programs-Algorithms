@@ -125,11 +125,6 @@ string_map<T>& string_map<T>::operator=(const string_map<T>& copiado) {
 }
 
 template <typename T>
-string_map<T>::~string_map(){
-    // COMPLETAR
-}
-
-template <typename T>
 T& string_map<T>::operator[](const string& clave){
     // COMPLETAR
 }
@@ -196,6 +191,7 @@ bool string_map<T>::Nodo::esNodoValido(string claveABuscar, int i) {
     return (res);
 }
 
+
 template<typename T>
 void string_map<T>::buscarYasignarComoNull(string clave) {
     Nodo* base = raiz;
@@ -240,11 +236,31 @@ void string_map<T>::erase(const string& clave) {
     }
 
 }
-
+//
 template <typename T>
 int string_map<T>::size() const{
     // COMPLETAR
     return _size;
+}
+
+template<typename T>
+void string_map<T>::Nodo::eliminarTodosParaAbajo() {
+    for(int i=0; i<siguientes.size(); i++){
+        if(siguientes[i]!= nullptr){
+            siguientes[i]->eliminarTodosParaAbajo();
+        }
+    }
+    if(definicion!= nullptr){
+        delete definicion;
+    }
+    //delete siguientes;
+    delete this;
+}
+
+template <typename T>
+string_map<T>::~string_map(){
+    // COMPLETAR
+    raiz->eliminarTodosParaAbajo();
 }
 
 template <typename T>
