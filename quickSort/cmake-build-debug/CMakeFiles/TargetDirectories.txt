@@ -1,0 +1,3 @@
+/Users/imac/Documents/GitHub2/programas-algoritmos/quickSort/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/imac/Documents/GitHub2/programas-algoritmos/quickSort/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/imac/Documents/GitHub2/programas-algoritmos/quickSort/cmake-build-debug/CMakeFiles/quickSort.dir
