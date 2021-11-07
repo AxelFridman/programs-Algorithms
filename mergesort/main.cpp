@@ -86,7 +86,7 @@ int main() {
     vector<float> v2 = {-2.1, 2.1 ,4.1,13.1, 16.1, 90, 150};
     vector<float> v4 = {52.1, 2.1 ,14.1,13.1, 16.1, 90, 1};
 
-    int largo = 10000000;
+    int largo = 10000;
     vector<float> v={};
     for(int j=0; j<largo; j++){
         float q = j;
