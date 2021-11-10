@@ -17,10 +17,6 @@ Coordenada Mapa::receptaculo(Color c) {
 const map<Color, Coordenada> &Mapa::receptaculos() const {
     return _receptaculos;
 }
-Mapa Mapa::mapa() const {
-    //vector<vector<tipoCasillero>> _mapa;
-    //return Mapa;
-}
 
 Mapa::Mapa(Nat ancho, Nat alto, set<Coordenada> elevaciones, map<Color, Coordenada> receptaculos) {
     _ancho = ancho;
@@ -62,6 +58,44 @@ TipoCasillero Mapa::tipoCasillero(Coordenada c) const {
         casillero = ELEVACION;
     }
     return casillero;
+}
+
+bool Mapa::esElevacion(Coordenada c) const {
+    return tipoCasillero(c)==ELEVACION;
+}
+
+bool Mapa::esRampa(Coordenada c) const {
+    return tipoCasillero(c)==RAMPA;
+}
+
+bool Mapa::esPiso(Coordenada c) const {
+    return tipoCasillero(c)==PISO;
+}
+
+bool Mapa::enRango(Coordenada c) {
+    bool res = 0 <= c.first;
+    res = res and 0 <= c.second;
+    res = res and ancho() >= c.first;
+    res = res and alto() <= c.second;
+    return res;
+}
+
+Nat Mapa::dist(Coordenada c1, Coordenada c2) {
+    Nat a;
+    Nat b;
+    if(c1.first> c2.first){
+        a = (c1.first - c2.first);
+    }
+    else{
+        a = (c2.first - c1.first);
+    }
+    if(c1.second> c2.second){
+        b = (c1.second - c2.second);
+    }
+    else{
+        b = (c2.second - c1.second);
+    }
+    return (a+b);
 }
 
 

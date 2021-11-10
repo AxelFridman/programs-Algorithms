@@ -16,11 +16,21 @@ public:
 
     void agregarRampa(Coordenada c);
 
+    bool enRango(Coordenada c);
+
+    Nat dist(Coordenada c1, Coordenada c2);
+
     Nat ancho() const;
 
     Nat alto() const;
 
     TipoCasillero tipoCasillero(Coordenada c) const;
+
+    bool esElevacion(Coordenada c) const;
+
+    bool esRampa(Coordenada c) const;
+
+    bool esPiso(Coordenada c) const;
 
     const map<Color, Coordenada>& receptaculos() const;
 
