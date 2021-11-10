@@ -9,10 +9,6 @@ Mapa::Mapa() {
 
 }
 
-Mapa Mapa::mapa() const {
-    //vector<vector<tipoCasillero>> _mapa;
-    //return Mapa;
-}
 
 Coordenada Mapa::receptaculo(Color c) {
     return _receptaculos[c];
@@ -21,16 +17,20 @@ Coordenada Mapa::receptaculo(Color c) {
 const map<Color, Coordenada> &Mapa::receptaculos() const {
     return _receptaculos;
 }
+Mapa Mapa::mapa() const {
+    //vector<vector<tipoCasillero>> _mapa;
+    //return Mapa;
+}
 
 Mapa::Mapa(Nat ancho, Nat alto, set<Coordenada> elevaciones, map<Color, Coordenada> receptaculos) {
     _ancho = ancho;
     _alto = alto;
     _receptaculos = receptaculos;
-    vector<int> filas(ancho);
+    vector<TipoCasillero> filas(ancho);
     for(int i = 0; i < alto; i++){
         filas[i]= PISO;
     }
-    vector<vector<int>> columnas;
+    vector<vector<TipoCasillero>> columnas;
     for(int i = 0; i < alto; i++){
         columnas.push_back(filas);
     }
