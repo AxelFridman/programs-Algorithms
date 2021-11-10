@@ -53,10 +53,10 @@ RM = /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/imac/Downloads/tp3_2021_c2
+CMAKE_SOURCE_DIR = /Users/imac/Documents/GitHub2/programas-algoritmos/tp3_2021_c2
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/imac/Downloads/tp3_2021_c2/cmake-build-debug
+CMAKE_BINARY_DIR = /Users/imac/Documents/GitHub2/programas-algoritmos/tp3_2021_c2/cmake-build-debug
 
 # Utility rule file for correrValgrind.
 
@@ -82,6 +82,6 @@ CMakeFiles/correrValgrind.dir/clean:
 .PHONY : CMakeFiles/correrValgrind.dir/clean
 
 CMakeFiles/correrValgrind.dir/depend:
-	cd /Users/imac/Downloads/tp3_2021_c2/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/imac/Downloads/tp3_2021_c2 /Users/imac/Downloads/tp3_2021_c2 /Users/imac/Downloads/tp3_2021_c2/cmake-build-debug /Users/imac/Downloads/tp3_2021_c2/cmake-build-debug /Users/imac/Downloads/tp3_2021_c2/cmake-build-debug/CMakeFiles/correrValgrind.dir/DependInfo.cmake --color=$(COLOR)
+	cd /Users/imac/Documents/GitHub2/programas-algoritmos/tp3_2021_c2/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/imac/Documents/GitHub2/programas-algoritmos/tp3_2021_c2 /Users/imac/Documents/GitHub2/programas-algoritmos/tp3_2021_c2 /Users/imac/Documents/GitHub2/programas-algoritmos/tp3_2021_c2/cmake-build-debug /Users/imac/Documents/GitHub2/programas-algoritmos/tp3_2021_c2/cmake-build-debug /Users/imac/Documents/GitHub2/programas-algoritmos/tp3_2021_c2/cmake-build-debug/CMakeFiles/correrValgrind.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/correrValgrind.dir/depend
 
