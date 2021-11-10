@@ -1,18 +1,6 @@
 
 #include "string_map.h"
 
-bool esSubsecuencia(string a, string b){
-    // devuelve verdadero si b es una subsecuencia de a
-    if (b.size()>a.size()){
-        return false;
-    }
-    bool res = true;
-    for(int i = 0; i<b.size(); i++){
-        res = res and b[i] == a[i];
-    }
-    return res;
-}
-
 template <typename T>
 bool string_map<T>::empty() const{
     // COMPLETAR
@@ -60,6 +48,10 @@ void string_map<T>::insert(const pair<string, T> & claveValor) {
     }
     T* def = new T;
     *def = claveValor.second;
+    if(base->definicion!= nullptr){
+        delete base->definicion;
+        base->definicion = nullptr;
+    }
     base->definicion = def;
 
     base->clave = claveValor.first;
@@ -111,6 +103,7 @@ typename string_map<T>::Nodo* string_map<T>::Nodo::copiarNodo() {
 template <typename T>
 string_map<T>& string_map<T>::operator=(const string_map<T>& copiado) {
 
+    raiz->eliminarTodosParaAbajo();
     this->_size = copiado._size;
 
 
@@ -219,7 +212,7 @@ void string_map<T>::erase(const string& clave) {
         base = base->siguientes[clave[i]];
     }
 
-    // delete base->definicion;
+    delete base->definicion;
     base->definicion = nullptr;
     _size--;
 
