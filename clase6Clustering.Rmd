@@ -1,0 +1,6 @@
+---
+title: "Clase 6 clustering"
+output: html_notebook
+---
+
+#Clustering

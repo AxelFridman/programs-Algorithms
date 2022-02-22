@@ -56,11 +56,11 @@ df$mesIng = factor(months(df$start_date), levels= c("January", "February", "Marc
 with(df,{
 par(mfrow=c(1,2))
 
-dias = table(diaIng) #Poner diaIng o diaEsp segun corresponda
-prop.table(table(dia))
+dias = table(diaEsp) #Poner diaIng o diaEsp segun corresponda
+prop.table(table(dias))
 barplot(dias, las=2, cex.names=0.65)
-meses = table(mesIng) #Poner mesIng o mesEsp segun corresponda
-prop.table(table(mes))
+meses = table(mesEsp) #Poner mesIng o mesEsp segun corresponda
+prop.table(table(meses))
 barplot(meses, las=2, cex.names=0.65, )
 })
 ```
@@ -159,7 +159,7 @@ Tal como esperabamos, el promedio del modulo los residuos es mas chico en superi
 
 ```{r}
 modeloPrecioTiempo = lm(price~start_date, data = df)
-plot(df$price~df$start_date)
+plot(df$price~df$start_date, xlab="Fecha", ylab="Precio")
 abline(coef(modeloPrecioTiempo), col='red')
 ```
 No se aprecia la inflacion, es practicamente una constante.
@@ -176,6 +176,6 @@ Mientras que ser un departamento te penaliza por -5852 menos el precio relativo 
 El modelo que hice solamente conecta precio de Casa vs Departamento
 
 ```{r}
-
+lm(price~fondo+property_type+lat+lon+start_date+rooms, data = df)
 ```
 
