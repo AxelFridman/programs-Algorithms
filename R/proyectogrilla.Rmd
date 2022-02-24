@@ -1,0 +1,131 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(ggplot2)
+library(plotly)
+```
+
+
+```{r}
+par(mfrow=c(2,3))
+plot(x,y, pch=20)
+plot(x,y, pch=20)
+abline(h=0.5, col='red')
+plot(x,y, pch=20)
+abline(v=0.5, col='red')
+abline(h=0.5, col='red')
+plot(x,y, pch=20)
+abline(v=0.33, col='red')
+abline(h=0.33, col='red')
+abline(v=0.66, col='red')
+abline(h=0.66, col='red')
+plot(x,y, pch=20)
+abline(v=0.25, col='red')
+abline(h=0.25, col='red')
+abline(v=0.50, col='red')
+abline(h=0.50, col='red')
+abline(v=0.75, col='red')
+abline(h=0.75, col='red')
+plot(x,y, pch=20)
+abline(v=0.2, col='red')
+abline(h=0.2, col='red')
+abline(v=0.40, col='red')
+abline(h=0.40, col='red')
+abline(v=0.6, col='red')
+abline(h=0.6, col='red')
+abline(v=0.8, col='red')
+abline(h=0.8, col='red')
+```
+```{r}
+rotate <- function(x) t(apply(x, 2, rev))
+```
+
+```{r}
+matrizAsociadaProbabilidad=function(x,y, xmin, xmax, ymin, ymax, tamanio){
+  m = matrix(0, ncol=tamanio, nrow=tamanio)
+  for(punInd in c(1:length(x))){ #Por cada punto
+    for(c in c(1:ncol(m))){
+      stepX = (xmax-xmin)/tamanio
+      if(x[punInd]<stepX*c+xmin & x[punInd]>stepX*(c-1)+xmin ){
+        #Pertenece a columna c-esima
+        for(f in c(1:nrow(m))){
+          stepY = (ymax-ymin)/tamanio
+          if(y[punInd]<stepY*f+xmin & y[punInd]>stepY*(f-1)+xmin ){
+            m[c,f] = m[c,f]+1
+            f = nrow(m)
+            c = ncol(m)
+          }
+        }
+      }
+      #segui buscando tu columna
+    }
+  }
+  return((rotate(rotate(rotate(m/length(x))))))
+}
+```
+```{r}
+x= runif(200, 0, 1)
+y = runif(200, 0, 1)
+```
+```{r}
+m = matrizAsociadaProbabilidad(x,y, 0,1,0,1, 10)
+m
+plot(x,y, xlim=c(0,1), ylim=c(0,1))
+```
+```{r}
+evaluarEnMatriz=function(m,x,y, xmin, xmax, ymin, ymax, tamanio){
+    for(c in c(1:ncol(m))){
+      stepX = (xmax-xmin)/tamanio
+      if(x<stepX*c+xmin & x>stepX*(c-1)+xmin ){
+        #Pertenece a columna c-esima
+        for(f in c(1:nrow(m))){
+          stepY = (ymax-ymin)/tamanio
+          if(y<stepY*f+xmin & y>stepY*(f-1)+xmin ){
+            return(m[c,f])
+          }
+        }
+      }
+  }
+}
+```
+
+```{r}
+evaluarEnMatriz(m, 0.72,0.51,0,1,0,1,10)
+```
+```{r}
+df = data.frame()
+for(i in c(1:length(x))){
+  for(j in c(1:length(y))){
+    al = data.frame(x[i],y[j], evaluarEnMatriz(m, x[i],y[j],0,1,0,1,10))
+    df = rbind(df, al)
+  }
+}
+#df = cbind(df, y)
+#df$z = 0
+#for(i in c(1:length(df[,1]))){
+#  df$z[i] = evaluarEnMatriz(m, df$x[i],df$y[i],0,1,0,1,10)
+#}
+
+```
+```{r}
+colnames(df) = c('x','y','z')
+df
+```
+
+
+
+```{r}
+fig <- plot_ly(x=~df$x, y=~df$y, z=~df$z, type="scatter3d", mode="markers",  size = 1)
+fig <- fig %>% layout(title = '3 zonas distribuicion',
+         xaxis = list(title = 'Superficie cubierta',
+                      zeroline = TRUE,
+                      range = c(0, 250)),
+         yaxis = list(title = 'Habitaciones',
+                      range = c(0,1400)))
+
+fig
+```
+
+
