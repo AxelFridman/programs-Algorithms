@@ -1,0 +1,206 @@
+---
+title: "Clase 6 clustering"
+output: html_notebook
+---
+
+#Clustering
+
+```{r}
+d2 = function(x1,x2){
+  return(sqrt(sum((x1-x2)**2)))
+}
+```
+
+```{r}
+clasifyPointToCluster = function(data, clusters, distance){
+  clus = c()
+  for(i in c(1:length(data[,1]))){
+    min = Inf
+    clusParticular = c()
+    indMin = 1
+    for(j in c(1:length(clusters[,1]))){
+      dis = distance(data[i,], clusters[j,])
+      if(dis<=min){
+        clusParticular = as.numeric(as.vector(clusters[j,]))
+        min = dis
+        indMin = j
+      }
+    }
+
+    clus[i] = indMin
+  }
+  return(clus)
+}
+```
+```{r}
+changeCentroids= function(data){
+  
+}
+```
+
+```{r}
+kMeans2 = function(data, kClusters, distance, maxIter){
+  clusters = data[sample(nrow(data), kClusters), ]
+  data$cluster = ((clasifyPointToCluster(data, clusters, distance)))
+  i = 0
+  while(i<maxIter){
+    
+    i = i+1
+  }
+  return(data)
+}
+```
+```{r}
+df = data.frame(x=c(1,1.1,1.2,4,4.1,4.2),y= c(3,3.1,3.2, 0,0.1,0.2))
+data2 = kMeans2(df, 2, d2,10)
+data2
+```
+```{r}
+d = read.csv("datos_clase_clustering.csv", stringsAsFactors = F)
+View(d)
+```
+```{r}
+d$ppm = d$price / d$surface_covered
+```
+```{r}
+install.packages("ggplot")
+library("ggplot2")
+```
+
+```{r}
+
+plot(d$lat, d$lon, col=d$ppm)
+ggplot(d, aes(lat, lon)) + geom_point(aes(colour = ppm))
+```
+
+```{r}
+k <- 3
+km <- kmeans(d$ppm, k, iter.max = 50)
+colores = c('red', 'green', 'blue')
+#plot(d$ppm, d$price, col=colores[km$cluster+1], pch=16, xlab = "x",ylab = "y")
+#points(km$centers[,"ppm"],km$centers[,"price"], pch=23, cex=2, bg=colores[2:(k+2)])
+#title(paste("Kmeans del paquete stats para k=",k))
+ggplot(d, aes(lat, lon)) + geom_point(aes(colour = colores[km$cluster]))
+
+```
+```{r}
+darVecinosEnRadio= function(x, data, radio){
+  vecinos = c()
+  j = 1
+  for(i in c(1:length(data[,1]))){
+    if(d2(x, data[i,])<radio){
+      vecinos[j] = i
+      j = j+1
+    }
+  }
+  return(vecinos)
+}
+```
+```{r}
+data = cbind(d$lat, d$lon)
+#View(data)
+```
+```{r}
+data2 = dbscan2(data, 0.005, 2)
+
+```
+
+```{r}
+vecinosDe1 = darVecinosEnRadio(data[1,], data, 0.0005)
+vecinosDe1
+```
+
+```{r}
+dbscan = function(data, radioMin, vecinosRequeridos){
+  dataClasificados = data.frame()
+  grupo = 1
+  while(nrow(data)>0){
+    puntoCentral = data[1, ]
+    data <- data[-c(1), ]
+    vecinos = darVecinosEnRadio(puntoCentral, data, 0.0005)
+    if(length(vecinos)>=vecinosRequeridos){
+      puntoCentral$grupo = grupo
+      dataClasificados = rbind(dataClasificados, puntoCentral)
+      
+      for(i in c(1:length(vecinos))){
+        vec = data[vecinos[i],]
+        vec$grupo = grupo
+        rbind(dataClasificados, vec)
+      }
+      data <- data[-vecinos, ]
+      grupo = grupo + 1
+    }
+    else{
+      puntoCentral$grupo = 0
+      dataClasificados = rbind(dataClasificados, puntoCentral)
+    }
+  }
+  return(dataClasificados)
+}
+```
+```{r}
+dbscan(data, 0.0005, 3)
+```
+```{r}
+dbscanRecursive = function(data, dataClasificada, pendientes, grupo, radio, minimosVecinos){
+  if(is.null(nrow(data)) | nrow(data)<=2){ # & is.null(nrow(pendientes)
+    return(dataClasificada)
+  }
+  if(nrow(pendientes)==0){
+    puntoCentral = data[1, ]
+    data <- data[-c(1), ]
+    pendientes = rbind(pendientes, puntoCentral)
+    colnames(pendientes) <- c("x","y")
+    grupo = grupo + 1
+    return(dbscanRecursive(data, dataClasificada, pendientes, grupo, radio, minimosVecinos))
+  }
+  else{
+    puntoCentral = pendientes[1, ]
+    colnames(pendientes) <- c("x","y")
+    vecinos = darVecinosEnRadio(puntoCentral, data, radio)
+    if(length(vecinos)>0){
+      for(i in c(1:length(vecinos))){
+        vecinito = data[vecinos[i], ]
+        pendientes = rbind(pendientes, vecinito)
+      }
+      data <- data[-vecinos, ]
+    }
+    if(length(vecinos)>=minimosVecinos){
+      pendientes = pendientes[-c(1), ]
+      puntoCentral$grupo = grupo
+      
+      #length(puntoCentral[,1])
+      if(nrow(dataClasificada)>0){
+        colnames(puntoCentral) <- c("x","y","grupo")
+        colnames(dataClasificada)  <- c("x","y","grupo")
+      }
+      
+      dataClasificada = rbind(dataClasificada, puntoCentral)
+    }
+    else{
+      pendientes = pendientes[-c(1), ]
+      puntoCentral$grupo = 0
+      dataClasificada = rbind(dataClasificada, puntoCentral)
+    }
+    return(dbscanRecursive(data, dataClasificada, pendientes, grupo, radio, minimosVecinos))
+  }
+}
+```
+```{r}
+dbscan2= function(data, radioMin, vecinosRequeridos){
+  dataClas = data.frame()
+  pendientes = data.frame()
+  grupo = 0
+  return(dbscanRecursive(data, dataClas, pendientes, grupo, radioMin, vecinosRequeridos))
+}
+```
+```{r}
+data2 = dbscan2(data, 0.005, 2)
+```
+
+```{r}
+unique(data2$grupo)
+plot(data2$x,data2$y,col=data2$grupo)
+```
+
+
