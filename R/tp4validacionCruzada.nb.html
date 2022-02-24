@@ -218,9 +218,117 @@ pre code {
 <div id="axel-fridman" class="section level1">
 <h1>Axel Fridman</h1>
 <!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYgPSByZWFkLmNzdihcImRhdG9zX2FscXVpbGVyX2Nyb3NzdmFsaWRhdGlvbi5jc3ZcIiwgc3RyaW5nc0FzRmFjdG9ycyA9IEYpXG5gYGAifQ== -->
+<pre class="r"><code>df = read.csv(&quot;datos_alquiler_crossvalidation.csv&quot;, stringsAsFactors = F)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<ol style="list-style-type: decimal">
+<li>Implemente una función que compute MAE:</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuTUFFPWZ1bmN0aW9uKHgseSl7XG4gIHJldHVybihzdW0oYWJzKHgteSkpL2xlbmd0aCh4KSlcbn1cbmBgYCJ9 -->
+<pre class="r"><code>MAE=function(x,y){
+  return(sum(abs(x-y))/length(x))
+}</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<ol start="2" style="list-style-type: decimal">
+<li>Implemente una función que compute PMAE:</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuUE1BRT1mdW5jdGlvbih4LHkpe1xuICByZXR1cm4oc3VtKGFicyh4LXkpKS9zdW0oYWJzKHgpKSlcbn1cbmBgYCJ9 -->
+<pre class="r"><code>PMAE=function(x,y){
+  return(sum(abs(x-y))/sum(abs(x)))
+}</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<ol start="3" style="list-style-type: decimal">
+<li>Considere el modelo que ajusta el precio en función de la superficie cubierta. Calcule el MAE y PMAE. Agregue la variable fondo y compare.</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubW9kbGVsb1ByZWNpb1N1cEN1YiA9IGxtKGRmJHByaWNlfmRmJHN1cmZhY2VfY292ZXJlZClcbm1vZGxlbG9QcmVjaW9TdXBDdWJ5Rm9uZG89IGxtKGRmJHByaWNlfmRmJHN1cmZhY2VfY292ZXJlZCtkZiRmb25kbylcblxuYGBgIn0= -->
+<pre class="r"><code>modleloPrecioSupCub = lm(df$price~df$surface_covered)
+modleloPrecioSupCubyFondo= lm(df$price~df$surface_covered+df$fondo)
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubWFlMSA9IE1BRShkZiRwcmljZSwgcHJlZGljdChtb2RsZWxvUHJlY2lvU3VwQ3ViKSlcbnBtYWUxPVBNQUUoZGYkcHJpY2UsIHByZWRpY3QobW9kbGVsb1ByZWNpb1N1cEN1YikpXG5tYWUyPSBNQUUoZGYkcHJpY2UsIHByZWRpY3QobW9kbGVsb1ByZWNpb1N1cEN1YnlGb25kbykpXG5wbWFlMj1QTUFFKGRmJHByaWNlLCBwcmVkaWN0KG1vZGxlbG9QcmVjaW9TdXBDdWJ5Rm9uZG8pKVxuYGBgIn0= -->
+<pre class="r"><code>mae1 = MAE(df$price, predict(modleloPrecioSupCub))
+pmae1=PMAE(df$price, predict(modleloPrecioSupCub))
+mae2= MAE(df$price, predict(modleloPrecioSupCubyFondo))
+pmae2=PMAE(df$price, predict(modleloPrecioSupCubyFondo))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>El MAE del primer modelo es 3373.8504007 mientras que el MAE del segundo es ligeramente menor siendo 3318.7106127.</p>
+<p>Por otro lado, los PMAE siendo una medida relativa a la escala tampoco varian mucho siendo respectivamente 0.1950315 y 0.1918441</p>
+<ol start="4" style="list-style-type: decimal">
+<li>Construya una función crossval(datos, modelo, n_obs, fun_error, n_muestras=10) para calcular el error promedio de predicción haciendo validación cruzada.</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY3Jvc3N2YWwgPSBmdW5jdGlvbihkYXRvcywgbW9kZWxvLCBuX29icywgZnVuX2Vycm9yLCBuX211ZXN0cmFzPTEwKXtcbiAgI8KoZGZbc2FtcGxlKG5yb3coZGYpLCAzKSwgXVxuICBlcnJvcmVzID0gYygpXG4gIGZvcihpIGluICgxOm5fbXVlc3RyYXMpKXtcbiAgICBpbmQgPSBzYW1wbGUobnJvdyhkZiksbl9vYnMpXG4gICAgXG4gICAgZGF0b3NFdmFsID0gZGZbaW5kLF1cbiAgICBkYXRvc1RyYWluID0gZGZbLWluZCwgXVxuICAgIG1vZGVsb0FjdHVhbCA9IGxtKG1vZGVsbywgZGF0YSA9IGRhdG9zVHJhaW4pXG4gICAgXG4gICAgI2xvUHJlZGVjaWJsZSA9IGFzLmNoYXJhY3Rlcihtb2RlbG9bWzJdXSlcbiAgICAjcHJpbnQoZGF0b3NFdmFsJGxvUHJlZGVjaWJsZSlcbiAgICBlcnJvcmVzW2ldID0gZnVuX2Vycm9yKGRhdG9zRXZhbCRwcmljZSwgcHJlZGljdChtb2RlbG9BY3R1YWwsIGRhdG9zRXZhbCkpXG4gIH1cbiAgI2xvcyBlcnJvcmVzIG9idGVuaWRvcywgZWwgZXJyb3IgcHJvbWVkaW8sIHN1IHZhcmlhbnphLCBsYSBmb3JtdWxhXG4gICNkZWwgbW9kZWxvIGVtcGxlYWRvIHkgZWwgbW9kZWxvIGFqdXN0YWRvIHVzYW5kbyB0b2RvcyBsb3MgZGF0b3MuXG4gIHJlc3B1ZXN0YSA9IGxpc3QoZXJyb3JlcywgbWVhbihlcnJvcmVzKSwgdmFyKGVycm9yZXMpLCBtb2RlbG8sIGxtKG1vZGVsbywgZGF0YSA9IGRhdG9zKSlcbiAgcmV0dXJuKHJlc3B1ZXN0YSlcbn1cbmBgYCJ9 -->
+<pre class="r"><code>crossval = function(datos, modelo, n_obs, fun_error, n_muestras=10){
+  #¨df[sample(nrow(df), 3), ]
+  errores = c()
+  for(i in (1:n_muestras)){
+    ind = sample(nrow(df),n_obs)
+    
+    datosEval = df[ind,]
+    datosTrain = df[-ind, ]
+    modeloActual = lm(modelo, data = datosTrain)
+    
+    #loPredecible = as.character(modelo[[2]])
+    #print(datosEval$loPredecible)
+    errores[i] = fun_error(datosEval$price, predict(modeloActual, datosEval))
+  }
+  #los errores obtenidos, el error promedio, su varianza, la formula
+  #del modelo empleado y el modelo ajustado usando todos los datos.
+  respuesta = list(errores, mean(errores), var(errores), modelo, lm(modelo, data = datos))
+  return(respuesta)
+}</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY3Jvc3N2YWwoZGYsZm9ybXVsYSgncHJpY2V+c3VyZmFjZV9jb3ZlcmVkJyksIDEwLCBNQUUsIDEwKVxuYGBgIn0= -->
+<pre class="r"><code>crossval(df,formula(&#39;price~surface_covered&#39;), 10, MAE, 10)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiW1sxXV1cbiBbMV0gMjkwMC40NjIgMzY3OC42NTEgMjUzOS40MzcgNDk3Ny42MDkgMzE1NS44MDUgNDIwOC4zNDEgMjQ5MS41NTEgMjgwMC4xNjEgNDU4OS44MjMgNTE1Ni42MTdcblxuW1syXV1cblsxXSAzNjQ5Ljg0NlxuXG5bWzNdXVxuWzFdIDEwMzY4NzdcblxuW1s0XV1cbnByaWNlIH4gc3VyZmFjZV9jb3ZlcmVkXG5cbltbNV1dXG5cbkNhbGw6XG5sbShmb3JtdWxhID0gbW9kZWxvLCBkYXRhID0gZGF0b3MpXG5cbkNvZWZmaWNpZW50czpcbiAgICAoSW50ZXJjZXB0KSAgc3VyZmFjZV9jb3ZlcmVkICBcbiAgICAgICAgIDI4NzEuNyAgICAgICAgICAgIDI3Ny4yICBcbiJ9 -->
+<pre><code>[[1]]
+ [1] 2900.462 3678.651 2539.437 4977.609 3155.805 4208.341 2491.551 2800.161 4589.823 5156.617
+
+[[2]]
+[1] 3649.846
+
+[[3]]
+[1] 1036877
+
+[[4]]
+price ~ surface_covered
+
+[[5]]
+
+Call:
+lm(formula = modelo, data = datos)
+
+Coefficients:
+    (Intercept)  surface_covered  
+         2871.7            277.2  </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
 </div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiVFAgNCB2YWxpZGFjaW9uIGNydXphZGEiCm91dHB1dDogaHRtbF9ub3RlYm9vawotLS0KCiMgQXhlbCBGcmlkbWFuCg==</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiVFAgNCB2YWxpZGFjaW9uIGNydXphZGEiCm91dHB1dDogaHRtbF9ub3RlYm9vawotLS0KCiMgQXhlbCBGcmlkbWFuCmBgYHtyfQpkZiA9IHJlYWQuY3N2KCJkYXRvc19hbHF1aWxlcl9jcm9zc3ZhbGlkYXRpb24uY3N2Iiwgc3RyaW5nc0FzRmFjdG9ycyA9IEYpCmBgYAoxLiBJbXBsZW1lbnRlIHVuYSBmdW5jacOzbiBxdWUgY29tcHV0ZSBNQUU6CmBgYHtyfQpNQUU9ZnVuY3Rpb24oeCx5KXsKICByZXR1cm4oc3VtKGFicyh4LXkpKS9sZW5ndGgoeCkpCn0KYGBgCjIuIEltcGxlbWVudGUgdW5hIGZ1bmNpw7NuIHF1ZSBjb21wdXRlIFBNQUU6CmBgYHtyfQpQTUFFPWZ1bmN0aW9uKHgseSl7CiAgcmV0dXJuKHN1bShhYnMoeC15KSkvc3VtKGFicyh4KSkpCn0KYGBgCjMuIENvbnNpZGVyZSBlbCBtb2RlbG8gcXVlIGFqdXN0YSBlbCBwcmVjaW8gZW4gZnVuY2nDs24gZGUgbGEgc3VwZXJmaWNpZSBjdWJpZXJ0YS4gQ2FsY3VsZSBlbCBNQUUgeQpQTUFFLiBBZ3JlZ3VlIGxhIHZhcmlhYmxlIGZvbmRvIHkgY29tcGFyZS4KYGBge3J9Cm1vZGxlbG9QcmVjaW9TdXBDdWIgPSBsbShkZiRwcmljZX5kZiRzdXJmYWNlX2NvdmVyZWQpCm1vZGxlbG9QcmVjaW9TdXBDdWJ5Rm9uZG89IGxtKGRmJHByaWNlfmRmJHN1cmZhY2VfY292ZXJlZCtkZiRmb25kbykKCmBgYApgYGB7cn0KbWFlMSA9IE1BRShkZiRwcmljZSwgcHJlZGljdChtb2RsZWxvUHJlY2lvU3VwQ3ViKSkKcG1hZTE9UE1BRShkZiRwcmljZSwgcHJlZGljdChtb2RsZWxvUHJlY2lvU3VwQ3ViKSkKbWFlMj0gTUFFKGRmJHByaWNlLCBwcmVkaWN0KG1vZGxlbG9QcmVjaW9TdXBDdWJ5Rm9uZG8pKQpwbWFlMj1QTUFFKGRmJHByaWNlLCBwcmVkaWN0KG1vZGxlbG9QcmVjaW9TdXBDdWJ5Rm9uZG8pKQpgYGAKRWwgTUFFIGRlbCBwcmltZXIgbW9kZWxvIGVzIGByIG1hZTFgIG1pZW50cmFzIHF1ZSBlbCBNQUUgZGVsIHNlZ3VuZG8gZXMgbGlnZXJhbWVudGUgbWVub3Igc2llbmRvIGByIG1hZTJgLgoKClBvciBvdHJvIGxhZG8sIGxvcyBQTUFFIHNpZW5kbyB1bmEgbWVkaWRhIHJlbGF0aXZhIGEgbGEgZXNjYWxhIHRhbXBvY28gdmFyaWFuIG11Y2hvIHNpZW5kbyByZXNwZWN0aXZhbWVudGUgYHIgcG1hZTFgIHkgYHIgcG1hZTJgCgo0LiBDb25zdHJ1eWEgdW5hIGZ1bmNpw7NuIGNyb3NzdmFsKGRhdG9zLCBtb2RlbG8sIG5fb2JzLCBmdW5fZXJyb3IsIG5fbXVlc3RyYXM9MTApIHBhcmEgY2FsY3VsYXIKZWwgZXJyb3IgcHJvbWVkaW8gZGUgcHJlZGljY2nDs24gaGFjaWVuZG8gdmFsaWRhY2nDs24gY3J1emFkYS4KYGBge3J9CmNyb3NzdmFsID0gZnVuY3Rpb24oZGF0b3MsIG1vZGVsbywgbl9vYnMsIGZ1bl9lcnJvciwgbl9tdWVzdHJhcz0xMCl7CiAgI8KoZGZbc2FtcGxlKG5yb3coZGYpLCAzKSwgXQogIGVycm9yZXMgPSBjKCkKICBmb3IoaSBpbiAoMTpuX211ZXN0cmFzKSl7CiAgICBpbmQgPSBzYW1wbGUobnJvdyhkZiksbl9vYnMpCiAgICAKICAgIGRhdG9zRXZhbCA9IGRmW2luZCxdCiAgICBkYXRvc1RyYWluID0gZGZbLWluZCwgXQogICAgbW9kZWxvQWN0dWFsID0gbG0obW9kZWxvLCBkYXRhID0gZGF0b3NUcmFpbikKICAgIAogICAgI2xvUHJlZGVjaWJsZSA9IGFzLmNoYXJhY3Rlcihtb2RlbG9bWzJdXSkKICAgICNwcmludChkYXRvc0V2YWwkbG9QcmVkZWNpYmxlKQogICAgZXJyb3Jlc1tpXSA9IGZ1bl9lcnJvcihkYXRvc0V2YWwkcHJpY2UsIHByZWRpY3QobW9kZWxvQWN0dWFsLCBkYXRvc0V2YWwpKQogIH0KICAjbG9zIGVycm9yZXMgb2J0ZW5pZG9zLCBlbCBlcnJvciBwcm9tZWRpbywgc3UgdmFyaWFuemEsIGxhIGZvcm11bGEKICAjZGVsIG1vZGVsbyBlbXBsZWFkbyB5IGVsIG1vZGVsbyBhanVzdGFkbyB1c2FuZG8gdG9kb3MgbG9zIGRhdG9zLgogIHJlc3B1ZXN0YSA9IGxpc3QoZXJyb3JlcywgbWVhbihlcnJvcmVzKSwgdmFyKGVycm9yZXMpLCBtb2RlbG8sIGxtKG1vZGVsbywgZGF0YSA9IGRhdG9zKSkKICByZXR1cm4ocmVzcHVlc3RhKQp9CmBgYApgYGB7cn0KY3Jvc3N2YWwoZGYsZm9ybXVsYSgncHJpY2V+c3VyZmFjZV9jb3ZlcmVkJyksIDEwLCBNQUUsIDEwKQpgYGAKCg==</div>
 
 
 

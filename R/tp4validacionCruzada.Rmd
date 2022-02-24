@@ -4,3 +4,63 @@ output: html_notebook
 ---
 
 # Axel Fridman
+```{r}
+df = read.csv("datos_alquiler_crossvalidation.csv", stringsAsFactors = F)
+```
+1. Implemente una función que compute MAE:
+```{r}
+MAE=function(x,y){
+  return(sum(abs(x-y))/length(x))
+}
+```
+2. Implemente una función que compute PMAE:
+```{r}
+PMAE=function(x,y){
+  return(sum(abs(x-y))/sum(abs(x)))
+}
+```
+3. Considere el modelo que ajusta el precio en función de la superficie cubierta. Calcule el MAE y
+PMAE. Agregue la variable fondo y compare.
+```{r}
+modleloPrecioSupCub = lm(df$price~df$surface_covered)
+modleloPrecioSupCubyFondo= lm(df$price~df$surface_covered+df$fondo)
+
+```
+```{r}
+mae1 = MAE(df$price, predict(modleloPrecioSupCub))
+pmae1=PMAE(df$price, predict(modleloPrecioSupCub))
+mae2= MAE(df$price, predict(modleloPrecioSupCubyFondo))
+pmae2=PMAE(df$price, predict(modleloPrecioSupCubyFondo))
+```
+El MAE del primer modelo es `r mae1` mientras que el MAE del segundo es ligeramente menor siendo `r mae2`.
+
+
+Por otro lado, los PMAE siendo una medida relativa a la escala tampoco varian mucho siendo respectivamente `r pmae1` y `r pmae2`
+
+4. Construya una función crossval(datos, modelo, n_obs, fun_error, n_muestras=10) para calcular
+el error promedio de predicción haciendo validación cruzada.
+```{r}
+crossval = function(datos, modelo, n_obs, fun_error, n_muestras=10){
+  #¨df[sample(nrow(df), 3), ]
+  errores = c()
+  for(i in (1:n_muestras)){
+    ind = sample(nrow(df),n_obs)
+    
+    datosEval = df[ind,]
+    datosTrain = df[-ind, ]
+    modeloActual = lm(modelo, data = datosTrain)
+    
+    #loPredecible = as.character(modelo[[2]])
+    #print(datosEval$loPredecible)
+    errores[i] = fun_error(datosEval$price, predict(modeloActual, datosEval))
+  }
+  #los errores obtenidos, el error promedio, su varianza, la formula
+  #del modelo empleado y el modelo ajustado usando todos los datos.
+  respuesta = list(errores, mean(errores), var(errores), modelo, lm(modelo, data = datos))
+  return(respuesta)
+}
+```
+```{r}
+crossval(df,formula('price~surface_covered'), 10, MAE, 10)
+```
+
