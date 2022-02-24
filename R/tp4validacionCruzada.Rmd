@@ -1,0 +1,6 @@
+---
+title: "TP 4 validacion cruzada"
+output: html_notebook
+---
+
+# Axel Fridman
