@@ -6,7 +6,10 @@ output: html_notebook
 # Axel Fridman
 ```{r}
 df = read.csv("datos_alquiler_crossvalidation.csv", stringsAsFactors = F)
+df2 = read.csv("ar_properties.csv", stringsAsFactors = F)
+
 ```
+
 1. Implemente una función que compute MAE:
 ```{r}
 MAE=function(x,y){
@@ -85,7 +88,7 @@ Como norma general, en el grafico se ve que aumenta exponencialmente el error pr
 Pero como tiene una parte de azar interesante por cada grafico ya que no controlamos el sample y hay saltitos cuando algun modelo justo se dio que era malo mas alla de la tendencia general, voy a "suavizarlo".
 Como? Haciendo muchos modelos por cada porcentaje y tomando el promedio.
 ```{r}
-porcentaje = seq(1,99,2)
+porcentaje = seq(1,100,5)
 promedioErrorPorModelo = c()
 for(i in 1:length(porcentaje)){
   errorDeEstePorcentajeParticular = c()
@@ -114,6 +117,114 @@ for(i in 1:8){
   }
   errorModelos[i] = mean(errorDeEsteModeloParticular)
 }
-plot(1:8, errorModelos, log = 'y', xlab = 'Grado del modelo', ylab = 'Error promedio suavizado (escala log)')
+plot(1:8, errorModelos, log = 'y', xlab = 'Grado del modelo polinomial', ylab = 'Error promedio suavizado (escala log)')
 ```
+El modelo con menor error de ajuste es el 1. Dicho esto, el crecimiento es incluso mas grande que exponencial simple, porque aun linealizando. El peor error lo tiene el de mayor grado, ya que el polinomio que me genera se memoriza los puntos donde entrena y es brutal la diferencia (debido a su alto crecimiento) con los puntos de evaluacion.
+
+8. Compare la calidad de predicción de 3 modelos: precio en función de superficie cubierta, precio en
+función de fondo y precio en función de ambas variables. Emplee en su comparación el error de ajuste
+y el error de predicción.
+```{r}
+modPrecioSupCub = c()
+modPrecioFon = c()
+modPrecioSupyFondo = c()
+gradoMax = 6
+for (i in 1:gradoMax) {
+  fon = paste('price~poly(fondo,', i, ')', sep="")
+  sup = paste('price~poly(surface_covered,', i, ')', sep="")
+  fonSup = paste('price~poly(fondo,', i, ') + ', paste('poly(surface_covered,', i, ')', sep=""), sep="")
+  modPrecioFon[i] = fon
+  modPrecioSupCub[i] = sup
+  modPrecioSupyFondo[i] = fonSup
+}
+
+errorModeloSup = c()
+errorModeloFon = c()
+errorModeloSupFon = c()
+
+for(i in 1:gradoMax){
+  errorDeEsteModeloParticularSup = c() #Suavizados los modelos
+  errorDeEsteModeloParticularFon = c()
+  errorDeEsteModeloParticularSupFon = c()
+  for(j in 1:10){
+    errorDeEsteModeloParticularSup[j] = crossval(df,modPrecioSupCub[i], 1, PMAE, 20)[[2]]
+    errorDeEsteModeloParticularFon[j] = crossval(df,modPrecioFon[i], 1, PMAE, 20)[[2]]
+    errorDeEsteModeloParticularSupFon[j] = crossval(df,modPrecioSupyFondo[i], 1, PMAE, 20)[[2]]
+  }
+  errorModeloSup[i] = mean(errorDeEsteModeloParticularSup)
+  errorModeloFon[i] = mean(errorDeEsteModeloParticularFon)
+  errorModeloSupFon[i] = mean(errorDeEsteModeloParticularSupFon)
+}
+
+plot(1:gradoMax, errorModeloSup, col="magenta", ylim=range(errorModeloSup, errorModeloFon, errorModeloSupFon), pch=19, xlab = "Grado del modelo", ylab = "Error (PMAE) de cada modelo")
+points(1:gradoMax, errorModeloFon, col="red",pch=19)
+points(1:gradoMax, errorModeloSupFon, col="blue",pch=19)
+lines(1:gradoMax, errorModeloSup, col="magenta", lty="dotted")
+lines(1:gradoMax, errorModeloFon, col="red", lty="dotted")
+lines(1:gradoMax, errorModeloSupFon, col="blue", lty="dotted")
+legend(x="right", legend = c("Sup","Fon", "Sup+Fon"), pch = c(19,19,19), lty = "dotted", col = c("magenta", "red", "blue"))
+```
+Me parece muy interesante ver como el PMAE del modelo que toma la Superficie y el fondo casi sie,pre es peor en valores altos que el de solo superficie. Y el modelo del fondo esta alla arriba, volando en la estratosfera, que mal modelo.
+
+9. Construya un programa que calcule el error de los 16 modelos posibles que incluyen las variables
+superficie cubierta, fondo, tipo de propiedad y ubicación (considere las variables latitud y longitud
+conjuntamente). Compare los modelos en términos de su error de ajuste y su error en validación
+cruzada, usando un 20 % de los datos para validar el modelo. Cuál es el ranking entre los modelos?
+Considerar más variables siempre mejora la predicción?
+
+```{r}
+modelosPosibles = c(formula('price~surface_covered'), 
+                    formula('price~fondo'),
+                    formula('price~property_type'),
+                    formula('price~lat+lon'), 
+                    formula('price~surface_covered+fondo'), 
+                    formula('price~surface_covered+property_type'), 
+                    formula('price~surface_covered+lat+lon'), 
+                    formula('price~fondo+property_type'), 
+                    formula('price~fondo+lat+lon'), 
+                    formula('price~property_type+lat+lon'), 
+                    formula('price~fondo+property_type+lat+lon'), 
+                    formula('price~surface_covered+property_type+lat+lon'), 
+                    formula('price~surface_covered+fondo+property_type'), 
+                    formula('price~surface_covered+fondo+property_type+lat+lon')
+                    )
+```
+```{r}
+indices = (df2$l1 == "Argentina" & 
+  df2$l2 == "Capital Federal" &
+    df2$price != 0 &
+  df2$operation_type == "Alquiler" &
+  ! is.na(df2$l3) &
+  ! is.na(df2$lat) &
+  ! is.na(df2$lon) &
+  ! is.na(df2$property_type) &
+  ! is.na(df2$surface_covered) &
+  ! is.na(df2$price) &
+  ! is.na(df2$surface_total)
+    )
+dfCasas = df2[df2$property_type=="Casa" & indices,]
+dfCasas$fondo = dfCasas$surface_total - dfCasas$surface_covered
+dfPH = df2[df2$property_type=="PH" & indices,]
+dfPH$fondo = dfPH$surface_total - dfPH$surface_covered
+
+df = df[ , -which(names(df) %in% c("X"))]
+dfPH = dfPH[,colnames(df)]
+dfCasas = dfCasas[,colnames(df)]
+df = rbind(df, dfPH[sample(nrow(dfPH), 97), ])
+df = rbind(df, dfCasas[sample(nrow(dfCasas), 97), ])
+```
+
+```{r}
+errorModelos = c()
+for(i in 1:length(modelosPosibles)){
+  errorDeEsteModeloParticular = c() #Suavizados los modelos
+  for(j in 1:10){
+    errorDeEsteModeloParticular[j] = crossval(df,modelosPosibles[[i]], 10, PMAE, 20)[[2]]
+  }
+  errorModelos[i] = mean(errorDeEsteModeloParticular)
+}
+names(errorModelos) = gsub("price", "", as.character(modelosPosibles))
+barplot(sort(errorModelos, decreasing = T), las =2, cex.names=0.5)
+```
+
 
