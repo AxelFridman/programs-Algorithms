@@ -1,0 +1,267 @@
+---
+title: "Trabajo práctico 2: Estadística Descriptiva"
+output: html_notebook
+---
+
+## Axel Fridman
+## L.U : 527/20
+
+Buscamos primero cargar todos los datos.
+
+
+```{r}
+df = read.csv("ar_properties.csv", stringsAsFactors = F)
+
+```
+
+Vemos todos los atributos de cada propiedad
+
+```{r}
+colnames(df)
+```
+
+Ahora recortamos el dataset solo a las zonas que nos interesan
+
+```{r}
+indices = (df$l1 == "Argentina" & (
+  df$l3 == "Boedo" | 
+  df$l3 == "Colegiales" |
+  df$l3 == "Centro / Microcentro" |
+  df$l3 == "Mataderos" |
+  df$l3 == "Puerto Madero") &
+  ! is.na(df$l3) &
+  ! is.na(df$l1)
+    )
+
+datosCABA = df[indices,]
+```
+Testeamos que solo queden las zonas queridas
+
+```{r}
+unique(datosCABA$l3)
+unique(datosCABA$l1)
+
+```
+```{r}
+
+table(datosCABA$l3)
+```
+A tener en cuenta como en Puerto madero hay mas propiedades que en Boedo y Mataderos combinados. Mucha disparidad de muestreo por zona.
+
+## Primera parte
+
+Simplmente viendo el dataset que nos queda, visualizandolo, veo que en varias filas faltan los datos de superficie. Asi que eliminemos aquellas filas que nos aportan.
+
+
+Voy a sacar las cocheras porque tengo `r dim(datosFiltrados[datosFiltrados$property_type=="Cochera",])[1]`
+
+Ademas de sacar al deposito por ser solo 1. 
+
+Vamos entonces a analizar la venta en dolares de departamentos en las zonas queridas, sin cocheras ni depositos, y que tengan superficie... obviamente.
+
+```{r}
+indices2 = (! is.na(datosCABA$surface_total) &
+  ! is.na(datosCABA$surface_covered) &
+  ! is.na(datosCABA$rooms) &
+  ! is.na(datosCABA$price) &
+  ! is.na(datosCABA$property_type) &
+  (datosCABA$surface_total > 0) &
+  (datosCABA$currency == "USD") &
+  (datosCABA$operation_type == "Venta") &
+  (datosCABA$surface_covered > 0) &
+  (datosCABA$price > 0) &
+  (datosCABA$property_type != "Cochera") &
+  (datosCABA$property_type != "Depósito")
+    )
+datosFiltrados = datosCABA[which(indices2),]
+```
+
+```{r}
+
+boedo = datosFiltrados[datosFiltrados$l3=="Boedo",]
+Colegiales = datosFiltrados[datosFiltrados$l3=="Colegiales",]
+Centro = datosFiltrados[datosFiltrados$l3=="Centro / Microcentro",]
+Mataderos = datosFiltrados[datosFiltrados$l3=="Mataderos",]
+Puerto = datosFiltrados[datosFiltrados$l3=="Puerto Madero",]
+barrios = list(boedo, Colegiales, Centro, Mataderos, Puerto)
+```
+
+# Superficie total por propiedad en distintos barrios 
+Podemos ver el histograma de Superficie en cada barrio, teniendo en cuenta solo el 99% de menor superficie.
+```{r}
+par(mfrow=c(1,5))
+breaksVector = c(100,20,100,15,20)
+con =1
+for (i in barrios) {
+  mayor = quantile(i$surface_total, 0.99)
+  label = paste("Superficie en " ,i$l3[1], sep = "")
+  print(label)
+  hist(i$surface_total, breaks = breaksVector[con],  freq = F, xlab = label, xlim = c(0,mayor), main ="")
+  con = con + 1
+}
+
+```
+Se puede observar como en Puerto Madero hay pocas propiedades una superficie chica. Como en Mataderos hay, por mas de que la mayoria ronde los 100m2, algunas cuantas propiedades de 400m2.
+En el Centro son muchos los monoambientes y cuanto mas grande el depto que buscamos en esa zona menos hay. En Mataderos esta mas equilibrado y hay un poco mas de variedad que en otras zonas.
+# Cantidad de habitaciones por propiedad en distintos barrios 
+
+```{r}
+par(mfrow=c(1,5))
+
+for (i in barrios) {
+  habitacionesTotales = table(i$rooms)
+  prop.table(table(habitacionesTotales))
+  label = paste("Hab. en " ,i$l3[1], sep = "")
+  barplot(habitacionesTotales, xlab = label, ylab = "Cantidad de propiedades", )
+}
+
+```
+Es evidente como en todas las zonas, la mayoria de las casas tienen entre 2 y 4 habitaciones. Sin demasiada diferencia en cuanto a la zona. 
+```{r}
+summary(datosFiltrados$surface_total)
+```
+Podemos observar como la media es considerablemente mayor que la mediana. Esto se debe que las propiedades con mas superficie que la mediana (el 50% con mas sup) es mucho mas grande que lo que es chico el otro 50%.
+Llegando el maximo a valer 7971m2.
+
+Varian entre 10 y 7971, un total de rango de 7961.
+
+La propiedad con mas superficie esta en Boedo
+```{r}
+datosFiltrados[datosFiltrados$surface_total==4421,]$l3
+```
+El lugar donde varia mas el precio es en el Centro / Microcentro
+```{r}
+max(var(boedo$surface_total),
+var(Colegiales$surface_total),
+var(Centro$surface_total),
+var(Mataderos$surface_total),
+var(Puerto$surface_total))
+
+```
+
+
+```{r}
+with(datosFiltrados,{
+  boxplot(surface_total~l3, data=datosFiltrados, outline=F,
+        las=2,cex.axis=0.65,ylab='Superficie en m2', xlab = "zona")
+})
+
+```
+De esto sacamos que en mataderos es una zona con una gran variabilida de superficie, lo mismo puerto madero. Mientras que en el centro y colegiales son propiedades mas pequeñas y mas parecidas entre si en este sentido.
+```{r}
+with(datosFiltrados,{
+  boxplot(rooms~l3, data=datosFiltrados, outline=F,
+        las=2,cex.axis=0.65,ylab='Habitaciones', xlab = "zona")
+})
+
+```
+Se observa como, a pesar de haber zonas con mas superficie que otras, la cantidad de habitaciones se mantiene bastante constante.
+
+Bueno voy a primero crear la columan que nos da la proporcion entre superficie cubierta y habitaciones
+```{r}
+datosFiltrados$"surrooms" = datosFiltrados$surface_covered / datosFiltrados$rooms
+```
+
+Ahora para sacar cual es el barrio que tiene mayor de esta proporcion en promedio, la calculo con aggregate. 
+```{r}
+mayorProp = aggregate(surrooms~l3, datosFiltrados, FUN=mean)
+mayorProp
+```
+```{r}
+with(datosFiltrados,{
+  boxplot(surrooms~l3, data=datosFiltrados, outline=F,
+        las=2,cex.axis=0.65,ylab='Tamaño de Hab', xlab = "zona")
+})
+
+```
+En el cual observamos que claramente es Puerto Madero la zona con cuartos mas espaciosos.
+
+## Segunda parte
+Construimos la variable
+```{r}
+datosFiltrados$"fondo" = datosFiltrados$surface_total - datosFiltrados$surface_covered
+```
+```{r}
+with(datosFiltrados,{
+  plot(price~surface_total, data=datosFiltrados, ylab='Precio', xlab = "Superficie total",
+       log = 'xy')
+})
+```
+Si bien esta logaritmizado, hay una fuerte relacion entre precio y la superficie de la propiedad. Mas aun pareceria ver 2 lineas una por encima de la otra. Pudiendo significar alguna diferencia segun zona.
+
+```{r}
+with(datosFiltrados,{
+
+  plot(price~surface_covered, data=datosFiltrados, ylab='Precio', xlab = "Superficie cubierta",
+       log = 'xy')
+  
+})
+```
+Mismo concepto que grafico anterior, es evidente la relacion, pero aunque haya una fuerte relacion polinomica, hay algunos outliners que tienen un precio bajisimo o alto en relacion a su superficie. 
+```{r}
+with(datosFiltrados,{
+
+  plot(price~fondo, data=datosFiltrados, ylab='Precio', xlab = "fondo",
+       log = 'xy')
+})
+```
+Tantas lineas verticales y esta distribuicon tan dispersa del precio en relacion al fondo de cada propiedad nos da a entender que no es un gran indicador o determinante del valor de un inmueble.
+```{r}
+with(datosFiltrados,{
+  may = quantile(surrooms, 0.99)
+  plot(price~surrooms, data=datosFiltrados, ylab='Precio', xlab = "Tamaño de habitacion", xlim=c(1,may))
+       
+})
+```
+Entre la superficie cubierta y la total hay una correlacion con el precio. Mientras que en el fondo se ve un manchon que no se ve una clara relacion.
+
+En cuanto al tamaño de habitacion y el precio podemos ver que a nivel general crece el precio a medida que crece el tamaño de las habitaciones pero solo hasta cierto punto. Como que llega a un 'pico' y luego ya no hay mas abundancia de datos y cae el precio.
+
+## Precios en funcion de tipo de propiedad
+```{r}
+with(datosFiltrados,{
+  boxplot(price~property_type, data=datosFiltrados, outline=F,
+        las=2,cex.axis=0.65,ylab='Precio', xlab = "zona")
+})
+
+```
+Los PH tienen todos el mismo precio aprox, mas economico, mientras que los lotes, locales comerciales y otros varian muy fuerte. 
+Por otro lado los departamentos y casas tienen una mediana mas pequeña que su media. 
+```{r}
+
+with(datosFiltrados,{
+  
+tiposProp = table(property_type)
+prop.table(table(tiposProp))
+barplot(tiposProp, las=2, cex.names=0.65)
+})
+
+```
+Es importante tener en cuanta por mas de que analizemos la distribuicon de precio de cada propiedad ver cuantos efectivamente hay de cada. Es completamente marginal la cantidad de propiedades que NO son departamento, casa o PH. 
+```{r}
+propiedades = unique(datosFiltrados$property_type)
+colores = rainbow(length(propiedades))
+names(colores) = propiedades
+plot(datosFiltrados$surface_total, datosFiltrados$price, log = 'xy', xlab =  'superficie', ylab = 'precio'
+     , col = colores[datosFiltrados$property_type])
+legend('right', legend=propiedades, col = colores, pch=1)
+
+
+```
+
+Es muy util este grafico. Ya que se ve como los departamentos, que ya vimos que eran mayoria, se posan por encima de los PH a misma cantidad de superficie. Mientras que las casas, son todas de superficie relativa grande pero mas baratas que un depto de misma superficie. 
+
+```{r}
+zona = unique(datosFiltrados$l3)
+colores = rainbow(length(zona))
+names(colores) = zona
+plot(datosFiltrados$surface_total, datosFiltrados$price, log = 'xy', xlab =  'superficie', ylab = 'precio'
+     , col = colores[datosFiltrados$l3])
+legend('right', legend=zona, col = colores, pch=1)
+```
+Considerar el tipo de propiedad te muestra 3 tendencias, muy marcadas, correspondiente no al tipo de propiedad sino a las distintas zonas. Por otro lado se ve que las casas suelen ser mas caras que la mayoria de departamentos, a excepcion de en puerto madero. La franja roja mas alta.
+
+Se entiende entonces a travez de este docuemento que hay zonas en donde el m2 es mas caro, y se corresponde con las zonas que tienen las habitaciones mas espaciosas. 
+Ademas se vio que el fondo de una propiedad no es un buen indicador de su valor.
+Se tuvo que excluir del analisis a las cocheras debido a falta de datos y que los datos existentes eran muy extremos. (outliners).
+Finalmente pude capturar el precio por superficie segun la zona gracias a los ultimos 2 coloridos graficos. 

@@ -60,7 +60,60 @@ crossval = function(datos, modelo, n_obs, fun_error, n_muestras=10){
   return(respuesta)
 }
 ```
+
+5. Utilizando las funciones anteriores evalue el comportamiento de un modelo que ajuste el precio en
+función de la superficie cubierta utilizando validación cruzada. Use como función de error al PMAE
 ```{r}
-crossval(df,formula('price~surface_covered'), 10, MAE, 10)
+crossval(df,formula('price~surface_covered'), 10, PMAE, 10)
+```
+Parece que es un buen ajuste, en una escala de menos del 30% del valor real.
+
+6. Considere el modelo que ajusta el precio en función de la superficie cubierta. 
+Explore como varía el error al usar valores de n_obs iguales a distintos porcentajes del tamaño del dataset, por ejemplo
+seq(1,100,5) y n_muestras=100. Grafique el error de validación cruzada en función de la cantidad de
+observaciones separadas. Qué le indica esto sobre la cantidad de observaciones que debe usar para
+validar el modelo?
+```{r}
+porcentaje = seq(1,100,5)
+promedioErrorPorModelo = c()
+for(i in 1:length(porcentaje)){
+  promedioErrorPorModelo[i] = crossval(df,formula('price~surface_covered'), porcentaje[i], PMAE, 100)[[2]]
+}
+plot(porcentaje, promedioErrorPorModelo)
+```
+Como norma general, en el grafico se ve que aumenta exponencialmente el error promedio a medida que nos acercamos con el numero de observaciones al total del dataset.
+Pero como tiene una parte de azar interesante por cada grafico ya que no controlamos el sample y hay saltitos cuando algun modelo justo se dio que era malo mas alla de la tendencia general, voy a "suavizarlo".
+Como? Haciendo muchos modelos por cada porcentaje y tomando el promedio.
+```{r}
+porcentaje = seq(1,99,2)
+promedioErrorPorModelo = c()
+for(i in 1:length(porcentaje)){
+  errorDeEstePorcentajeParticular = c()
+  for(j in 1:10){
+    errorDeEstePorcentajeParticular[j] = crossval(df,formula('price~surface_covered'), porcentaje[i], PMAE, 100)[[2]]
+  }
+  promedioErrorPorModelo[i] = mean(errorDeEstePorcentajeParticular)
+}
+plot(porcentaje, promedioErrorPorModelo)
+```
+
+7. Construya modelos usando las potencias de la variable fondo. Es decir, si p es el precio y f la el
+fondo, considere modelos:
+```{r}
+modelosPotencia = c()
+for (i in 1:8) {
+  esc = paste('price~poly(fondo,', i, ')', sep="")
+  modelosPotencia[i] = esc
+}
+
+errorModelos = c()
+for(i in 1:8){
+  errorDeEsteModeloParticular = c() #Suavizados los modelos
+  for(j in 1:10){
+    errorDeEsteModeloParticular[j] = crossval(df,modelosPotencia[i], round(length(df[,1])*0.2), PMAE, 20)[[2]]
+  }
+  errorModelos[i] = mean(errorDeEsteModeloParticular)
+}
+plot(1:8, errorModelos, log = 'y', xlab = 'Grado del modelo', ylab = 'Error promedio suavizado (escala log)')
 ```
 
