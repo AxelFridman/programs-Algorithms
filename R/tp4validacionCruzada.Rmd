@@ -186,6 +186,7 @@ modelosPosibles = c(formula('price~surface_covered'),
                     formula('price~fondo+property_type+lat+lon'), 
                     formula('price~surface_covered+property_type+lat+lon'), 
                     formula('price~surface_covered+fondo+property_type'), 
+                    formula('price~surface_covered+fondo+lat+lon'),
                     formula('price~surface_covered+fondo+property_type+lat+lon')
                     )
 ```
@@ -206,7 +207,8 @@ dfCasas = df2[df2$property_type=="Casa" & indices,]
 dfCasas$fondo = dfCasas$surface_total - dfCasas$surface_covered
 dfPH = df2[df2$property_type=="PH" & indices,]
 dfPH$fondo = dfPH$surface_total - dfPH$surface_covered
-
+```
+```{r}
 df = df[ , -which(names(df) %in% c("X"))]
 dfPH = dfPH[,colnames(df)]
 dfCasas = dfCasas[,colnames(df)]
@@ -216,15 +218,52 @@ df = rbind(df, dfCasas[sample(nrow(dfCasas), 97), ])
 
 ```{r}
 errorModelos = c()
+errorNaiveModelos = c()
 for(i in 1:length(modelosPosibles)){
   errorDeEsteModeloParticular = c() #Suavizados los modelos
-  for(j in 1:10){
-    errorDeEsteModeloParticular[j] = crossval(df,modelosPosibles[[i]], 10, PMAE, 20)[[2]]
+  for(j in 1:5){
+    errorDeEsteModeloParticular[j] = crossval(df,modelosPosibles[[i]], 10, PMAE, 58)[[2]]
   }
   errorModelos[i] = mean(errorDeEsteModeloParticular)
+  errorNaiveModelos[i] = PMAE(df$price,predict(lm(modelosPosibles[[i]], data=df), df))
 }
 names(errorModelos) = gsub("price", "", as.character(modelosPosibles))
-barplot(sort(errorModelos, decreasing = T), las =2, cex.names=0.5)
+par(mar=c(15, 3, 3, 1)) 
+barplot(sort(errorModelos, decreasing = T), main="Validacion Cruzada errores", las=2, cex.names = 0.7,
+        names.arg=names(sort(errorModelos, decreasing = T)))
+```
+
+
+Se puede ver como el error del modelo con mas variables explicativcas no siempre es el mejor, y a veces incluso resta. Por otro lado es muy facil apreciar dada una simplicidad del modelo, que variable explicativa es la mejor y cuan buena es. Surface covered es la mejor sola, pero el mejor modelo de todos en cuanto al error de validacion cruzada es el que lo tiene todo.
+```{r}
+errores = data.frame(1:15)
+errores$cruzada = errorModelos
+errores$naive = errorNaiveModelos
+errores$modelo = names(errorModelos)
+errores = errores[order(errores$cruzada),]
+
+par(mar=c(16, 3, 3, 1))
+dev.new(width=5, height=25, unit="cm")
+plot(c(1:length(errorModelos)), errores$cruzada, col="magenta", ylim=range(0,errorNaiveModelos, errorModelos,1),pch=19, xlab = "", ylab= "Errores")
+points(c(1:length(errorNaiveModelos)), errores$naive, col="green",pch=19)
+
+
+#lines(errorModelos[1], errorNaiveModelos[1], col="magenta", lty="dotted")
+segments(x0 = c(1:length(errorNaiveModelos)),                   
+         y0 = errores$cruzada,
+         x1 = c(1:length(errorNaiveModelos)),
+         y1 = errores$naive)
+
+axis(1, at=1:length(errorModelos), labels=errores$modelo, las=2)
+legend(x="top" ,legend = c("Error cruzado","Error naive"), pch = c(19,19), col = c("magenta", "green"))
+```
+
+```{r}
+errores = data.frame(1:15)
+errores$cruzada = errorModelos
+errores$naive = errorNaiveModelos
+errores$modelo = names(errorModelos)
+errores = errores[order(errores$cruzada),]
 ```
 
 

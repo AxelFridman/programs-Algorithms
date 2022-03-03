@@ -69,10 +69,10 @@ matrizAsociadaProbabilidad=function(x,y, xmin, xmax, ymin, ymax, tamanio){
 rango = 0.015
 totx = c()
 toty = c()
-for (j in c(1:10000)) {
+for (j in c(1:20000)) {
   x= runif(2, 0.49, 0.51)
   y = runif(2, 0.49, 0.51)
-  for (i in c(2:500)) {
+  for (i in c(2:250)) {
     x[i] = x[i-1]+runif(1,-rango,rango) 
     y[i] = y[i-1]+runif(1,-rango,rango) 
   }
@@ -83,10 +83,11 @@ x = totx
 y = toty
 ```
 ```{r}
-m = matrizAsociadaProbabilidad(x,y, 0,1,0,1, 10)
+m = matrizAsociadaProbabilidad(x,y, 0,1,0,1, 90)
 m
 plot(x,y, xlim=c(0,1), ylim=c(0,1))
 ```
+
 ```{r}
 evaluarEnMatriz=function(m,x,y, xmin, xmax, ymin, ymax, tamanio){
     for(c in c(1:ncol(m))){
@@ -133,7 +134,7 @@ for (i in 1:length(x)) {
     y[i]=0.01
   }
   #print(i)
-  z[i]= evaluarEnMatriz(m, x[i],y[i],0,1,0,1,10)
+  z[i]= evaluarEnMatriz(m, x[i],y[i],0,1,0,1,90)
 }
 ```
 
