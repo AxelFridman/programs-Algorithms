@@ -215,7 +215,7 @@ dfCasas = dfCasas[,colnames(df)]
 df = rbind(df, dfPH[sample(nrow(dfPH), 97), ])
 df = rbind(df, dfCasas[sample(nrow(dfCasas), 97), ])
 ```
-
+Ahora, para poder analizar como influye en el modelo el property type, agregamos 97 PHs y 97 casas. Haciendo el dataset de tamaño 98*3 = 294. cuando antes era de tan solo 100 y la mayoria departamentos.
 ```{r}
 errorModelos = c()
 errorNaiveModelos = c()
@@ -230,7 +230,7 @@ for(i in 1:length(modelosPosibles)){
 names(errorModelos) = gsub("price", "", as.character(modelosPosibles))
 par(mar=c(15, 3, 3, 1)) 
 barplot(sort(errorModelos, decreasing = T), main="Validacion Cruzada errores", las=2, cex.names = 0.7,
-        names.arg=names(sort(errorModelos, decreasing = T)))
+        names.arg=names(sort(errorModelos, decreasing = T)), xlab = "", ylab = "Error PMAE")
 ```
 
 
@@ -240,30 +240,26 @@ errores = data.frame(1:15)
 errores$cruzada = errorModelos
 errores$naive = errorNaiveModelos
 errores$modelo = names(errorModelos)
-errores = errores[order(errores$cruzada),]
+errores = errores[order(errores$cruzada, decreasing = T),]
 
 par(mar=c(16, 3, 3, 1))
 dev.new(width=5, height=25, unit="cm")
-plot(c(1:length(errorModelos)), errores$cruzada, col="magenta", ylim=range(0,errorNaiveModelos, errorModelos,1),pch=19, xlab = "", ylab= "Errores")
+plot(c(1:length(errorModelos)), errores$cruzada, col="magenta", ylim=range(0,errorNaiveModelos, errorModelos,1),pch=19, xlab = "Modelo nro", ylab= "Errores" ,type="b")
+lines(c(1:length(errorNaiveModelos)), errores$naive, col="green",pch=19)
 points(c(1:length(errorNaiveModelos)), errores$naive, col="green",pch=19)
 
 
-#lines(errorModelos[1], errorNaiveModelos[1], col="magenta", lty="dotted")
+lines(errorModelos[1], errorNaiveModelos[1], col="magenta")
 segments(x0 = c(1:length(errorNaiveModelos)),                   
          y0 = errores$cruzada,
          x1 = c(1:length(errorNaiveModelos)),
          y1 = errores$naive)
 
-axis(1, at=1:length(errorModelos), labels=errores$modelo, las=2)
+axis(1, at=1:length(errorModelos), labels=1:15, las=1)
 legend(x="top" ,legend = c("Error cruzado","Error naive"), pch = c(19,19), col = c("magenta", "green"))
+print(errores$modelo)
 ```
+Es interesante notar que el error de validacion cruzada es siempre mayor que el error de ajuste. Pues claro, al ser entrenado con solo un subconjunto del dataset, es logico que tenga un peor ajuste cuando lo evaluo en los restantes, porque los desconoce. Mientras que el error de ajuste lo conoce todo.
 
-```{r}
-errores = data.frame(1:15)
-errores$cruzada = errorModelos
-errores$naive = errorNaiveModelos
-errores$modelo = names(errorModelos)
-errores = errores[order(errores$cruzada),]
-```
 
 
