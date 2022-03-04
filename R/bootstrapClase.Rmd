@@ -1,0 +1,73 @@
+---
+title: "Clase bootstrap"
+output: html_notebook
+---
+```{r}
+
+install.packages("plotly")
+install.packages("rgl")
+install.packages("plot3D")
+install.packages(tidyverse)
+install.packages(dplyr)
+install.packages(GGally)
+
+```
+```{r}
+
+library("plotly")
+library("plot3D")
+library(tidyverse) # entorno tidy
+library(dplyr) # manejo de datos
+library(GGally) # scatterplots multiples
+library(rgl) # para graficos 3D
+
+```
+
+
+```{r}
+df = read.csv("datos_alquiler_crossvalidation.csv", stringsAsFactors = F)
+```
+
+```{r}
+bootstrap=function(dataset, formula, sizeGroup, amountOfGroups){
+  coeficientes=list()
+  for (i in 1:amountOfGroups) {
+    grupo = dataset[sample(nrow(dataset), sizeGroup, replace = T), ]
+    modeloActual = lm(formula, data = grupo)
+    coeficiente = list(modeloActual$coefficients)
+    coeficientes[i] = coeficiente
+  }
+  return(coeficientes)
+}
+```
+
+```{r}
+formu = formula(price~surface_covered+fondo)
+l = bootstrap(df, formu, 10, 10000)
+mu = c()
+alpha = c()
+beta = c()
+for (i in 1:length(l)) {
+  mu[i] = l[[i]][1]
+  alpha[i] = l[[i]][2]
+  beta[i] = l[[i]][3]
+}
+fig <- plot_ly(x=~beta, y=~alpha, z=~mu, type="scatter3d", mode="markers",xlab = 'beta (fondo)', ylab= 'alpha (sur cov)', zlab = 'mu (intercept)', size = 1)
+fig <- fig %>% layout(title = 'Bootsrap',
+         xaxis = list(title = 'beta',
+                      zeroline = TRUE,
+                      range = c(0, 250)),
+         yaxis = list(title = 'Alpha',
+                      range = c(0,1400)))
+
+fig
+```
+```{r}
+mean(mu)
+mean(alpha)
+mean(beta)
+
+
+lm(formu, data = df)$coefficients
+```
+

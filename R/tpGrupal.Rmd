@@ -1,0 +1,35 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+df = read.csv("chicos.csv", stringsAsFactors = F)
+```
+```{r}
+indices = (
+  ! is.na(df$WEIGHT) &
+  ! is.na(df$STATURE) &
+  ! is.na(df$SEX) &
+  ! is.na(df$RACE) &
+  ! is.na(df$AGE.IN.YEARS) &
+  ! is.na(df$AGE.IN.MONTHS) &
+  df$WEIGHT>0 &
+  df$STATURE>0 &
+  df$RACE != 0 &
+  (df$SEX == 1 | df$SEX==2)
+    )
+dfFiltrados = df[indices,]
+```
+```{r}
+unique(df$SEX)
+```
+```{r}
+range(dfFiltrados$AGE.IN.YEARS)
+```
+
+
