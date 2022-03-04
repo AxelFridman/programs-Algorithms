@@ -65,9 +65,9 @@ fig <- fig %>% layout(title = 'Bootsrap',
 fig
 ```
 ```{r}
-mean(mu)
-mean(alpha)
-mean(beta)
+summary(mu)
+summary(alpha)
+summary(beta)
 
 
 lm(formu, data = df)$coefficients

@@ -52,6 +52,7 @@ crossval = function(datos, modelo, n_obs, fun_error, n_muestras=10){
     datosEval = df[ind,]
     datosTrain = df[-ind, ]
     modeloActual = lm(modelo, data = datosTrain)
+   
     
     #loPredecible = as.character(modelo[[2]])
     #print(datosEval$loPredecible)
@@ -128,7 +129,7 @@ y el error de predicción.
 modPrecioSupCub = c()
 modPrecioFon = c()
 modPrecioSupyFondo = c()
-gradoMax = 6
+gradoMax = 5
 for (i in 1:gradoMax) {
   fon = paste('price~poly(fondo,', i, ')', sep="")
   sup = paste('price~poly(surface_covered,', i, ')', sep="")
@@ -142,11 +143,15 @@ errorModeloSup = c()
 errorModeloFon = c()
 errorModeloSupFon = c()
 
+errorAjusteSup = c()
+errorAjusteFon = c()
+errorAjusteSupFon = c()
+
 for(i in 1:gradoMax){
   errorDeEsteModeloParticularSup = c() #Suavizados los modelos
   errorDeEsteModeloParticularFon = c()
   errorDeEsteModeloParticularSupFon = c()
-  for(j in 1:10){
+  for(j in 1:30){
     errorDeEsteModeloParticularSup[j] = crossval(df,modPrecioSupCub[i], 1, PMAE, 20)[[2]]
     errorDeEsteModeloParticularFon[j] = crossval(df,modPrecioFon[i], 1, PMAE, 20)[[2]]
     errorDeEsteModeloParticularSupFon[j] = crossval(df,modPrecioSupyFondo[i], 1, PMAE, 20)[[2]]
@@ -154,15 +159,31 @@ for(i in 1:gradoMax){
   errorModeloSup[i] = mean(errorDeEsteModeloParticularSup)
   errorModeloFon[i] = mean(errorDeEsteModeloParticularFon)
   errorModeloSupFon[i] = mean(errorDeEsteModeloParticularSupFon)
+
+  errorAjusteSup[i] =  PMAE(df$price,predict(lm(modPrecioSupCub[[i]], data=df), df))
+  errorAjusteFon[i] =  PMAE(df$price,predict(lm(modPrecioFon[[i]], data=df), df))  
+  errorAjusteSupFon[i] =  PMAE(df$price,predict(lm(modPrecioSupyFondo[[i]], data=df), df))  
 }
 
-plot(1:gradoMax, errorModeloSup, col="magenta", ylim=range(errorModeloSup, errorModeloFon, errorModeloSupFon), pch=19, xlab = "Grado del modelo", ylab = "Error (PMAE) de cada modelo")
+plot(1:gradoMax, errorModeloSup, col="magenta", ylim=range(errorModeloSup, errorModeloFon, errorModeloSupFon, 0.1), pch=19, xlab = "Grado del modelo", ylab = "Error (PMAE) de cada modelo", main= "Error crossval (1 observacion, 20 muestras)")
 points(1:gradoMax, errorModeloFon, col="red",pch=19)
 points(1:gradoMax, errorModeloSupFon, col="blue",pch=19)
+
+#segments(1:gradoMax,errorModeloSup,1:gradoMax, errorAjusteSup, col="magenta")
+#segments(1:gradoMax,errorModeloFon, 1:gradoMax,errorAjusteFon, col="red")
+#segments(1:gradoMax,errorModeloSupFon, 1:gradoMax,errorAjusteSupFon, col="blue")
+
+points(1:gradoMax, errorAjusteSup, col="magenta")
+points(1:gradoMax, errorAjusteFon, col="red")
+points(1:gradoMax, errorAjusteSupFon, col="blue")
+
 lines(1:gradoMax, errorModeloSup, col="magenta", lty="dotted")
 lines(1:gradoMax, errorModeloFon, col="red", lty="dotted")
 lines(1:gradoMax, errorModeloSupFon, col="blue", lty="dotted")
-legend(x="right", legend = c("Sup","Fon", "Sup+Fon"), pch = c(19,19,19), lty = "dotted", col = c("magenta", "red", "blue"))
+
+
+
+legend(x="top", legend = c("Sup","Fon", "Sup+Fon"), pch = c(19,19,19), lty = "dotted", col = c("magenta", "red", "blue"))
 ```
 Me parece muy interesante ver como el PMAE del modelo que toma la Superficie y el fondo casi sie,pre es peor en valores altos que el de solo superficie. Y el modelo del fondo esta alla arriba, volando en la estratosfera, que mal modelo.
 
