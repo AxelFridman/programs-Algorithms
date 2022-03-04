@@ -2,6 +2,8 @@
 title: "Clase bootstrap"
 output: html_notebook
 ---
+
+La idea de esat clase fue pensar el tradeoff entre descubrir las relaciones de las covariables y las variables explicativas, y por otro lado, la capacidad predictiva entre un modelo de ML por ejemplo. 
 ```{r}
 
 install.packages("plotly")
