@@ -2,10 +2,15 @@
 title: "R Notebook"
 output: html_notebook
 ---
+```{r}
+library("plotly")
+library("plot3D")
+library(tidyverse) # entorno tidy
+library(dplyr) # manejo de datos
+library(GGally) # scatterplots multiples
+library(rgl) # para graficos 3D
+```
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
 
 ```{r}
 df = read.csv("chicos.csv", stringsAsFactors = F)
@@ -32,4 +37,41 @@ unique(df$SEX)
 range(dfFiltrados$AGE.IN.YEARS)
 ```
 
+```{r}
+View(dfFiltrados)
+```
+
+```{r}
+plot(dfFiltrados$WEIGHT/10, dfFiltrados$STATURE/10, xlab = "Peso en KG", ylab = "Altura en CM", col=dfFiltrados$SEX)
+```
+```{r}
+plot(dfFiltrados$AGE.IN.MONTHS/12, dfFiltrados$STATURE/10, col=dfFiltrados$SEX, xlab = "Edad (anios)", ylab = "Altura en CM",)
+```
+```{r}
+peso = dfFiltrados$WEIGHT/10
+edad = dfFiltrados$AGE.IN.MONTHS/12
+altura = dfFiltrados$STATURE/10
+sexo = dfFiltrados$SEX
+colores = c('blue','red')
+
+fig <- plot_ly(x=~altura, y=~edad, z=~peso, marker = list(color = colores[dfFiltrados$SEX], showscale = F) , type="scatter3d", mode="markers", col=sexo, size = 1)
+fig <- fig %>% layout(title = 'Peso en funcion de altura y edad'
+         )
+
+fig
+```
+```{r}
+table(dfFiltrados$RACE)
+#Cinco niveles, WHITE = 1, BLACK = 2, ORIENTAL = 3, AMERICAN INDIAN = 4, MIXED = 5.
+#Absoluta disparidad de muestreo en cuanto a raza.
+
+table(dfFiltrados$SEX)
+#En cuanto a sexo no
+```
+
+Las personas mas pesadas, desarollan piernas mas anchas para soportar su peso que alguien de su misma altura menos pesada?
+
+Podemos identificar a las personas con enanismo? ademas de menor altura para su edad, que otras variables tienen fundamentalmente distintas?
+
+A que edad pegan "el estiron" los hombres y cuando las mujeres? existe un momento concreto? Ademas de altura, que otras medidas cambian considerablemente? (medida de cintura en mujeres por ej, ensanchamiento de espalda hombres?)
 
