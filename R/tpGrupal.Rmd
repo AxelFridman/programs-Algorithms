@@ -28,13 +28,19 @@ indices = (
   df$RACE != 0 &
   (df$SEX == 1 | df$SEX==2)
     )
+
 dfFiltrados = df[indices,]
+dfFiltrados$WEIGHT = dfFiltrados$WEIGHT/10
+dfFiltrados$STATURE = dfFiltrados$STATURE/10
+dfFiltrados$AGE.IN.MONTHS = dfFiltrados$AGE.IN.MONTHS / 12
+mujeres = dfFiltrados[dfFiltrados$SEX==2, ]
+hombres = dfFiltrados[dfFiltrados$SEX==1,]
+whites = dfFiltrados[dfFiltrados$RACE==1,]
+blacks = dfFiltrados[dfFiltrados$RACE==2,]
 ```
+
 ```{r}
 unique(df$SEX)
-```
-```{r}
-dfFiltrados$AGE.IN.YEARS
 ```
 
 ```{r}
@@ -48,15 +54,94 @@ View(dfFiltrados)
 ```
 
 ```{r}
-plot(dfFiltrados$WEIGHT/10, dfFiltrados$STATURE/10, xlab = "Peso en KG", ylab = "Altura en CM", col=dfFiltrados$SEX)
+plot(dfFiltrados$WEIGHT, dfFiltrados$STATURE, xlab = "Peso en KG", ylab = "Altura en CM", col=dfFiltrados$SEX)
+```
+
+
+```{r}
+plot(dfFiltrados$AGE.IN.MONTHS, dfFiltrados$STATURE, col=dfFiltrados$SEX, xlab = "Edad (anios)", ylab = "Altura en CM",)
 ```
 ```{r}
-plot(dfFiltrados$AGE.IN.MONTHS/12, dfFiltrados$STATURE/10, col=dfFiltrados$SEX, xlab = "Edad (anios)", ylab = "Altura en CM",)
+cPuntos = 1000
+modAlturaEnEdad = lm(STATURE~poly(AGE.IN.MONTHS,2), data=dfFiltrados)
+puntosIntervalo = seq(min(dfFiltrados$AGE.IN.MONTHS), max(dfFiltrados$AGE.IN.MONTHS), (range(dfFiltrados$AGE.IN.MONTHS)[2]- range(dfFiltrados$AGE.IN.MONTHS)[1])/cPuntos)
+
+dataFrameEvaluar = data_frame(1:(cPuntos+1))
+dataFrameEvaluar = cbind(dataFrameEvaluar,puntosIntervalo)
+colnames(dataFrameEvaluar) = c("ind", "AGE.IN.MONTHS")
+
+plot(dfFiltrados$AGE.IN.MONTHS,dfFiltrados$STATURE, xlab = "Edad en anios", ylab = "Altura en CM", main="Altura en funcion de edad de toda la poblacion")
+lines(puntosIntervalo, predict(modAlturaEnEdad, newdata = dataFrameEvaluar), col='red', lwd=3)
 ```
 ```{r}
-peso = dfFiltrados$WEIGHT/10
-edad = dfFiltrados$AGE.IN.MONTHS/12
-altura = dfFiltrados$STATURE/10
+modPesoEnEdad = lm(WEIGHT~poly(AGE.IN.MONTHS,2), data=dfFiltrados)
+
+plot(dfFiltrados$AGE.IN.MONTHS,dfFiltrados$WEIGHT,  xlab = "Edad en anios", ylab = "PESO en kg", main="Peso en funcion de edad de toda la poblacion")
+lines(puntosIntervalo, predict(modPesoEnEdad, newdata = dataFrameEvaluar), col='red', lwd=3)
+```
+```{r}
+
+modPesoEnEdadMuj = lm(WEIGHT~poly(AGE.IN.MONTHS,2), data=mujeres)
+
+plot(mujeres$AGE.IN.MONTHS,mujeres$WEIGHT,  xlab = "Edad en anios", ylab = "PESO en kg", main="Peso en funcion de edad de mujeres")
+lines(puntosIntervalo, predict(modPesoEnEdadMuj, newdata = dataFrameEvaluar), col='red', lwd=3)
+```
+```{r}
+
+modPesoEnEdadHom = lm(WEIGHT~poly(AGE.IN.MONTHS,2), data=hombres)
+
+plot(hombres$AGE.IN.MONTHS,hombres$WEIGHT,  xlab = "Edad en anios", ylab = "PESO en kg", main="Peso en funcion de edad de hombres y mujeres", col='blue')
+
+points(mujeres$AGE.IN.MONTHS,mujeres$WEIGHT,  xlab = "Edad en anios", ylab = "PESO en kg", main="Peso en funcion de edad de hombres", col='red')
+
+lines(puntosIntervalo, predict(modPesoEnEdadHom, newdata = dataFrameEvaluar), col='light blue', lwd=3)
+lines(puntosIntervalo, predict(modPesoEnEdadMuj, newdata = dataFrameEvaluar), col='pink', lwd=3)
+
+```
+
+```{r}
+
+modAlturaEnEdadHom = lm(STATURE~poly(AGE.IN.MONTHS,2), data=hombres)
+modAlturaEnEdadMuj = lm(STATURE~poly(AGE.IN.MONTHS,2), data=mujeres)
+
+plot(hombres$AGE.IN.MONTHS,hombres$STATURE,  xlab = "Edad en anios", ylab = "Altura en cm", main="Altura en funcion de edad de hombres y mujeres", col='blue')
+
+points(mujeres$AGE.IN.MONTHS,mujeres$STATURE, col='red')
+
+lines(puntosIntervalo, predict(modAlturaEnEdadHom, newdata = dataFrameEvaluar), col='light blue', lwd=3)
+lines(puntosIntervalo, predict(modAlturaEnEdadMuj, newdata = dataFrameEvaluar), col='pink', lwd=3)
+
+```
+```{r}
+
+modAlturaEnEdadBlan = lm(STATURE~poly(AGE.IN.MONTHS,2), data=whites)
+modAlturaEnEdadNeg = lm(STATURE~poly(AGE.IN.MONTHS,2), data=blacks)
+
+plot(whites$AGE.IN.MONTHS,whites$STATURE,  xlab = "Edad en anios", ylab = "Altura en cm", main="Altura en funcion de edad de blancos y de color")
+
+points(blacks$AGE.IN.MONTHS,blacks$STATURE, pch=19)
+
+lines(puntosIntervalo, predict(modAlturaEnEdadBlan, newdata = dataFrameEvaluar), col='light blue', lwd=3)
+lines(puntosIntervalo, predict(modAlturaEnEdadNeg, newdata = dataFrameEvaluar), col='pink', lwd=3)
+
+```
+```{r}
+
+modPesoEnEdadBlan = lm(WEIGHT~poly(AGE.IN.MONTHS,2), data=whites)
+modPesoEnEdadNeg = lm(WEIGHT~poly(AGE.IN.MONTHS,2), data=blacks)
+
+plot(whites$AGE.IN.MONTHS,whites$WEIGHT,  xlab = "Edad en anios", ylab = "Peso en KG", main="Peso en funcion de edad de blancos y de color")
+
+points(blacks$AGE.IN.MONTHS,blacks$WEIGHT, pch=19)
+
+lines(puntosIntervalo, predict(modPesoEnEdadBlan, newdata = dataFrameEvaluar), col='light blue', lwd=3)
+lines(puntosIntervalo, predict(modPesoEnEdadNeg, newdata = dataFrameEvaluar), col='pink', lwd=3)
+
+```
+```{r}
+peso = dfFiltrados$WEIGHT
+edad = dfFiltrados$AGE.IN.MONTHS
+altura = dfFiltrados$STATURE
 sexo = dfFiltrados$SEX
 colores = c('blue','red')
 

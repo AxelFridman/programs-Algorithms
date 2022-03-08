@@ -129,7 +129,7 @@ y el error de predicción.
 modPrecioSupCub = c()
 modPrecioFon = c()
 modPrecioSupyFondo = c()
-gradoMax = 9
+gradoMax = 6
 for (i in 1:gradoMax) {
   fon = paste('price~poly(fondo,', i, ')', sep="")
   sup = paste('price~poly(surface_covered,', i, ')', sep="")
@@ -186,6 +186,27 @@ legend(x="top", legend = c("Sup","Fon", "Sup+Fon"), pch = c(19,19,19), lty = "do
 ```
 Me parece muy interesante ver como el PMAE del modelo que toma la Superficie y el fondo casi sie,pre es peor en valores altos que el de solo superficie. Y el modelo del fondo esta alla arriba, volando en la estratosfera, que mal modelo.
 
+```{r}
+par(mfrow=c(2,4))
+plot(df$surface_covered, df$price, col='red')
+points(df$surface_covered, predict(lm(modPrecioSupCub[[1]], data=df)), col='blue')
+plot(df$surface_covered, df$price, col='red')
+points(df$surface_covered, predict(lm(modPrecioSupCub[[2]], data=df)), col='blue')
+plot(df$surface_covered, df$price, col='red')
+points(df$surface_covered, predict(lm(modPrecioSupCub[[3]], data=df)), col='blue')
+plot(df$surface_covered, df$price, col='red')
+points(df$surface_covered, predict(lm(modPrecioSupCub[[4]], data=df)), col='blue')
+
+plot(df$fondo, df$price, col='red')
+points(df$fondo, predict(lm(modPrecioFon[[1]], data=df)), col='blue')
+plot(df$fondo, df$price, col='red')
+points(df$fondo, predict(lm(modPrecioFon[[2]], data=df)), col='blue')
+plot(df$fondo, df$price, col='red')
+points(df$fondo, predict(lm(modPrecioFon[[3]], data=df)), col='blue')
+plot(df$fondo, df$price, col='red')
+points(df$fondo, predict(lm(modPrecioFon[[4]], data=df)), col='blue')
+
+```
 9. Construya un programa que calcule el error de los 16 modelos posibles que incluyen las variables
 superficie cubierta, fondo, tipo de propiedad y ubicación (considere las variables latitud y longitud
 conjuntamente). Compare los modelos en términos de su error de ajuste y su error en validación
