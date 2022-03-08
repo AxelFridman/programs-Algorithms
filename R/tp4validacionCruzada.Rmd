@@ -129,7 +129,7 @@ y el error de predicción.
 modPrecioSupCub = c()
 modPrecioFon = c()
 modPrecioSupyFondo = c()
-gradoMax = 5
+gradoMax = 9
 for (i in 1:gradoMax) {
   fon = paste('price~poly(fondo,', i, ')', sep="")
   sup = paste('price~poly(surface_covered,', i, ')', sep="")
@@ -152,9 +152,9 @@ for(i in 1:gradoMax){
   errorDeEsteModeloParticularFon = c()
   errorDeEsteModeloParticularSupFon = c()
   for(j in 1:30){
-    errorDeEsteModeloParticularSup[j] = crossval(df,modPrecioSupCub[i], 1, PMAE, 20)[[2]]
-    errorDeEsteModeloParticularFon[j] = crossval(df,modPrecioFon[i], 1, PMAE, 20)[[2]]
-    errorDeEsteModeloParticularSupFon[j] = crossval(df,modPrecioSupyFondo[i], 1, PMAE, 20)[[2]]
+    errorDeEsteModeloParticularSup[j] = crossval(df,modPrecioSupCub[i], 1, PMAE, 30)[[2]]
+    errorDeEsteModeloParticularFon[j] = crossval(df,modPrecioFon[i], 1, PMAE, 30)[[2]]
+    errorDeEsteModeloParticularSupFon[j] = crossval(df,modPrecioSupyFondo[i], 1, PMAE, 30)[[2]]
   }
   errorModeloSup[i] = mean(errorDeEsteModeloParticularSup)
   errorModeloFon[i] = mean(errorDeEsteModeloParticularFon)
@@ -165,7 +165,7 @@ for(i in 1:gradoMax){
   errorAjusteSupFon[i] =  PMAE(df$price,predict(lm(modPrecioSupyFondo[[i]], data=df), df))  
 }
 
-plot(1:gradoMax, errorModeloSup, col="magenta", ylim=range(errorModeloSup, errorModeloFon, errorModeloSupFon, 0.1), pch=19, xlab = "Grado del modelo", ylab = "Error (PMAE) de cada modelo", main= "Error crossval (1 observacion, 20 muestras)")
+plot(1:gradoMax, errorModeloSup, col="magenta", ylim=range(errorModeloSup, errorModeloFon, errorModeloSupFon, 0.17), pch=19, xlab = "Grado del modelo", ylab = "Error (PMAE) de cada modelo escala log", main= "Error crossval (1 observacion, 900 muestras)", log = 'y')
 points(1:gradoMax, errorModeloFon, col="red",pch=19)
 points(1:gradoMax, errorModeloSupFon, col="blue",pch=19)
 
@@ -180,7 +180,6 @@ points(1:gradoMax, errorAjusteSupFon, col="blue")
 lines(1:gradoMax, errorModeloSup, col="magenta", lty="dotted")
 lines(1:gradoMax, errorModeloFon, col="red", lty="dotted")
 lines(1:gradoMax, errorModeloSupFon, col="blue", lty="dotted")
-
 
 
 legend(x="top", legend = c("Sup","Fon", "Sup+Fon"), pch = c(19,19,19), lty = "dotted", col = c("magenta", "red", "blue"))
