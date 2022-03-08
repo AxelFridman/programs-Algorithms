@@ -29,7 +29,13 @@ dfFiltrados = df[indices,]
 unique(df$SEX)
 ```
 ```{r}
-range(dfFiltrados$AGE.IN.YEARS)
+dfFiltrados$AGE.IN.YEARS
+```
+
+```{r}
+range(dfFiltrados$AGE.IN.MONTHS)
+range(dfFiltrados$AGE.IN.YEARS)*12/1000
+
 ```
 
 
