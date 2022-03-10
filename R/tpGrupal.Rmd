@@ -26,6 +26,15 @@ indices = (
   df$WEIGHT>0 &
   df$STATURE>0 &
   df$RACE != 0 &
+    
+  df$WRIST.CIRCUMFERENCE>0 &
+  df$HEAD.CIRCUMFERENCE>0 &
+  df$SHOULDER.BREADTH>0 &
+  df$ELBOW.HAND.LENGTH>0 &
+  df$HAND.LENGTH>0 &
+  df$UPPER.ARM.CIRCUMFERENCE>0 &
+  df$FOOT.LENGTH>0 &
+    
   (df$SEX == 1 | df$SEX==2)
     )
 
@@ -37,6 +46,8 @@ mujeres = dfFiltrados[dfFiltrados$SEX==2, ]
 hombres = dfFiltrados[dfFiltrados$SEX==1,]
 whites = dfFiltrados[dfFiltrados$RACE==1,]
 blacks = dfFiltrados[dfFiltrados$RACE==2,]
+
+dfFiltrados = dfFiltrados[ , c("WEIGHT","STATURE", "SEX", "RACE","AGE.IN.YEARS","AGE.IN.MONTHS","WRIST.CIRCUMFERENCE","HEAD.CIRCUMFERENCE","SHOULDER.BREADTH","ELBOW.HAND.LENGTH","HAND.LENGTH","UPPER.ARM.CIRCUMFERENCE","FOOT.LENGTH")]
 ```
 
 ```{r}
@@ -51,11 +62,13 @@ range(dfFiltrados$AGE.IN.YEARS)*12/1000
 
 ```{r}
 View(dfFiltrados)
+correlaciones = (cor(dfFiltrados$AGE.IN.MONTHS, dfFiltrados[-c(1)]))
+```
+```{r}
+correlaciones
 ```
 
-```{r}
-plot(dfFiltrados$WEIGHT, dfFiltrados$STATURE, xlab = "Peso en KG", ylab = "Altura en CM", col=dfFiltrados$SEX)
-```
+
 
 
 ```{r}
@@ -125,6 +138,45 @@ lines(puntosIntervalo, predict(modAlturaEnEdadBlan, newdata = dataFrameEvaluar),
 lines(puntosIntervalo, predict(modAlturaEnEdadNeg, newdata = dataFrameEvaluar), col='pink', lwd=3)
 
 ```
+df$WRIST.CIRCUMFERENCE>0 &
+  df$HEAD.CIRCUMFERENCE>0 &
+  df$SHOULDER.BREADTH>0 &
+  df$ELBOW.HAND.LENGTH>0 &
+  df$HAND.LENGTH>0 &
+  df$UPPER.ARM.CIRCUMFERENCE>0 &
+  df$FOOT.LENGTH>0 &
+```{r}
+#par(mfrow=c(2,2))
+plot(dfFiltrados$AGE.IN.MONTHS,dfFiltrados$WRIST.CIRCUMFERENCE,  xlab = "Edad en anios", ylab = "Cintura  en cm", col= dfFiltrados$SEX, main="Circunferencia cintura en funcion de edad toda la poblacion")
+
+```
+```{r}
+plot(dfFiltrados$AGE.IN.MONTHS,dfFiltrados$SHOULDER.BREADTH,  xlab = "Edad en anios", ylab = "SHOULDER.BREADTH en cm", col= dfFiltrados$SEX, main="SHOULDER.BREADTH en funcion de edad toda la poblacion")
+
+```
+```{r}
+plot(dfFiltrados$AGE.IN.MONTHS,dfFiltrados$ELBOW.HAND.LENGTH,  xlab = "Edad en anios", ylab = "ELBOW.HAND.LENGTH  en cm", col= dfFiltrados$SEX, main="ELBOW.HAND.LENGTH en funcion de edad toda la poblacion")
+
+```
+
+```{r}
+plot(dfFiltrados$AGE.IN.MONTHS,dfFiltrados$HEAD.CIRCUMFERENCE,  xlab = "Edad en anios", ylab = "HEAD.CIRCUMFERENCE  en cm", col= dfFiltrados$SEX, main="HEAD.CIRCUMFERENCE en funcion de edad toda la poblacion")
+
+```
+HAND.LENGTH
+```{r}
+plot(dfFiltrados$AGE.IN.MONTHS,dfFiltrados$HAND.LENGTH,  xlab = "Edad en anios", ylab = "HAND.LENGTH  en cm", col= dfFiltrados$SEX, main="HAND.LENGTH en funcion de edad toda la poblacion")
+
+```
+UPPER.ARM.CIRCUMFERENCE
+```{r}
+plot(dfFiltrados$AGE.IN.MONTHS,dfFiltrados$UPPER.ARM.CIRCUMFERENCE,  xlab = "Edad en anios", ylab = "UPPER.ARM.CIRCUMFERENCE  en cm", col= dfFiltrados$SEX, main="UPPER.ARM.CIRCUMFERENCE en funcion de edad toda la poblacion")
+
+```
+```{r}
+plot(dfFiltrados$AGE.IN.MONTHS,dfFiltrados$FOOT.LENGTH,  xlab = "Edad en anios", ylab = "FOOT.LENGTH  en cm", col= dfFiltrados$SEX, main="FOOT.LENGTH en funcion de edad toda la poblacion")
+
+```
 ```{r}
 
 modPesoEnEdadBlan = lm(WEIGHT~poly(AGE.IN.MONTHS,2), data=whites)
@@ -138,19 +190,7 @@ lines(puntosIntervalo, predict(modPesoEnEdadBlan, newdata = dataFrameEvaluar), c
 lines(puntosIntervalo, predict(modPesoEnEdadNeg, newdata = dataFrameEvaluar), col='pink', lwd=3)
 
 ```
-```{r}
-peso = dfFiltrados$WEIGHT
-edad = dfFiltrados$AGE.IN.MONTHS
-altura = dfFiltrados$STATURE
-sexo = dfFiltrados$SEX
-colores = c('blue','red')
 
-fig <- plot_ly(x=~altura, y=~edad, z=~peso, marker = list(color = colores[dfFiltrados$SEX], showscale = F) , type="scatter3d", mode="markers", col=sexo, size = 1)
-fig <- fig %>% layout(title = 'Peso en funcion de altura y edad'
-         )
-
-fig
-```
 ```{r}
 table(dfFiltrados$RACE)
 #Cinco niveles, WHITE = 1, BLACK = 2, ORIENTAL = 3, AMERICAN INDIAN = 4, MIXED = 5.
