@@ -11,8 +11,13 @@ library(tidyverse) # entorno tidy
 library(dplyr) # manejo de datos
 library(GGally) # scatterplots multiples
 library(rgl) # para graficos 3D
+library(dplyr)
 ```
 
+%>% significa pipeline
+x %>% f(y) es lo mismo que f(x,y)
+o tambien
+y %>% f(x, ., z) es lo mismo que f(x,y,z)
 
 ```{r}
 df = read.csv("chicos.csv", stringsAsFactors = F)
@@ -175,7 +180,7 @@ plot(dfFiltrados$AGE,dfFiltrados$UPPER.ARM.CIRCUMFERENCE,  xlab = "Edad en anios
 
 ```
 ```{r}
-plot(dfFiltrados$AGE,dfFiltrados$FOOT.LENGTH,  xlab = "Edad en anios", ylab = "FOOT.LENGTH  en cm", col= dfFiltrados$SEX, main="FOOT.LENGTH en funcion de edad toda la poblacion")
+plot(dfFiltrados$AGE,dfFiltrados$FOOT.LENGTH,  xlab = "Edad en anios", ylab = "FOOT.LENGTH  en cm", col= dfFiltrados$SEX, main="FOOT.LENGTH en funcion de edad toda la poblacion", xlim=c(16,17))
 
 ```
 ```{r}
@@ -201,9 +206,34 @@ table(dfFiltrados$SEX)
 #En cuanto a sexo no
 ```
 
-Las personas mas pesadas, desarollan piernas mas anchas para soportar su peso que alguien de su misma altura menos pesada?
-
-Podemos identificar a las personas con enanismo? ademas de menor altura para su edad, que otras variables tienen fundamentalmente distintas?
 
 A que edad pegan "el estiron" los hombres y cuando las mujeres? existe un momento concreto? Ademas de altura, que otras medidas cambian considerablemente? (medida de cintura en mujeres por ej, ensanchamiento de espalda hombres?)
+```{r}
+crecimientos = data_frame( 2:19)
+for(i in 2:12){
+  crecimientos = cbind(crecimientos, 2:19)
+}
+
+colnames(crecimientos) = c("WEIGHT","STATURE", "SEX", "RACE","AGE","WRIST.CIRCUMFERENCE","HEAD.CIRCUMFERENCE","SHOULDER.BREADTH","ELBOW.HAND.LENGTH","HAND.LENGTH","UPPER.ARM.CIRCUMFERENCE","FOOT.LENGTH")
+
+
+listaModelos <- c()
+for(i in 3:20){
+  dfEdad <- dfFiltrados[(dfFiltrados$AGE > (i - 1)) &
+                                             (dfFiltrados$AGE < i),]
+  if(nrow(dfEdad) > 0){
+    for (j in (1:ncol(crecimientos))) {
+      if(colnames(crecimientos)[j]!="AGE"){
+      f = paste(colnames(crecimientos)[j], "AGE", sep="~")
+      formu = formula(f)
+      modelo = lm( formu, dfEdad)
+      crecimientos[i-2,j] = modelo$coefficients[[2]]
+      }
+    }
+  }
+}
+```
+```{r}
+
+```
 
