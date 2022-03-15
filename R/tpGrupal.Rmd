@@ -49,12 +49,13 @@ dfFiltrados = df[indices,]
 dfFiltrados$WEIGHT = dfFiltrados$WEIGHT/10
 dfFiltrados$STATURE = dfFiltrados$STATURE/10
 dfFiltrados$AGE = dfFiltrados$AGE.IN.MONTHS / 12
+
+
+dfFiltrados = dfFiltrados[ , c("WEIGHT","STATURE", "SEX", "RACE","AGE","WRIST.CIRCUMFERENCE","HEAD.CIRCUMFERENCE","SHOULDER.BREADTH","ELBOW.HAND.LENGTH","HAND.LENGTH","UPPER.ARM.CIRCUMFERENCE","FOOT.LENGTH")]
 mujeres = dfFiltrados[dfFiltrados$SEX==2, ]
 hombres = dfFiltrados[dfFiltrados$SEX==1,]
 whites = dfFiltrados[dfFiltrados$RACE==1,]
 blacks = dfFiltrados[dfFiltrados$RACE==2,]
-
-dfFiltrados = dfFiltrados[ , c("WEIGHT","STATURE", "SEX", "RACE","AGE","WRIST.CIRCUMFERENCE","HEAD.CIRCUMFERENCE","SHOULDER.BREADTH","ELBOW.HAND.LENGTH","HAND.LENGTH","UPPER.ARM.CIRCUMFERENCE","FOOT.LENGTH")]
 ```
 
 ```{r}
@@ -69,8 +70,6 @@ range(dfFiltrados$AGE)
 ```{r}
 View(dfFiltrados)
 correlaciones = (cor(dfFiltrados$AGE, dfFiltrados[-c(1)]))
-```
-```{r}
 correlaciones
 ```
 
@@ -209,31 +208,155 @@ table(dfFiltrados$SEX)
 
 A que edad pegan "el estiron" los hombres y cuando las mujeres? existe un momento concreto? Ademas de altura, que otras medidas cambian considerablemente? (medida de cintura en mujeres por ej, ensanchamiento de espalda hombres?)
 ```{r}
-crecimientos = data_frame( 2:19)
+crecimientosHom = data_frame( 2:19)
+crecimientosMuj = data_frame( 2:19)
+
 for(i in 2:12){
-  crecimientos = cbind(crecimientos, 2:19)
+  crecimientosHom = cbind(crecimientosHom, 2:19)
+  crecimientosMuj = cbind(crecimientosMuj, 2:19)
 }
 
-colnames(crecimientos) = c("WEIGHT","STATURE", "SEX", "RACE","AGE","WRIST.CIRCUMFERENCE","HEAD.CIRCUMFERENCE","SHOULDER.BREADTH","ELBOW.HAND.LENGTH","HAND.LENGTH","UPPER.ARM.CIRCUMFERENCE","FOOT.LENGTH")
+colnames(crecimientosHom) = c("WEIGHT","STATURE", "SEX", "RACE","AGE","WRIST.CIRCUMFERENCE","HEAD.CIRCUMFERENCE","SHOULDER.BREADTH","ELBOW.HAND.LENGTH","HAND.LENGTH","UPPER.ARM.CIRCUMFERENCE","FOOT.LENGTH")
+colnames(crecimientosMuj) = c("WEIGHT","STATURE", "SEX", "RACE","AGE","WRIST.CIRCUMFERENCE","HEAD.CIRCUMFERENCE","SHOULDER.BREADTH","ELBOW.HAND.LENGTH","HAND.LENGTH","UPPER.ARM.CIRCUMFERENCE","FOOT.LENGTH")
 
+sdHom = crecimientosHom
+sdmuj = crecimientosMuj
 
 listaModelos <- c()
 for(i in 3:20){
-  dfEdad <- dfFiltrados[(dfFiltrados$AGE > (i - 1)) &
-                                             (dfFiltrados$AGE < i),]
-  if(nrow(dfEdad) > 0){
-    for (j in (1:ncol(crecimientos))) {
-      if(colnames(crecimientos)[j]!="AGE"){
-      f = paste(colnames(crecimientos)[j], "AGE", sep="~")
-      formu = formula(f)
-      modelo = lm( formu, dfEdad)
-      crecimientos[i-2,j] = modelo$coefficients[[2]]
+  dfEdadHom <- dfFiltrados[(dfFiltrados$AGE > (i - 1)) &
+                                             (dfFiltrados$AGE < i) & dfFiltrados$SEX==1,]
+  dfEdadMuj <- dfFiltrados[(dfFiltrados$AGE > (i - 1)) &
+                                             (dfFiltrados$AGE < i) & dfFiltrados$SEX==2,]
+  if(nrow(dfEdadHom) > 0){
+    for (j in (1:ncol(crecimientosHom))) {
+      
+      if(colnames(crecimientosHom)[j]!="AGE"){
+        fHom = paste(colnames(crecimientosHom)[j], "AGE", sep="~")
+        fMuj = paste(colnames(crecimientosMuj)[j], "AGE", sep="~")
+        formuHom = formula(fHom)
+        formuMuj = formula(fMuj)
+        modeloHom = lm( formuHom, dfEdadHom)
+        modeloMuj = lm( formuMuj, dfEdadMuj)
+        crecimientosHom[i-2,j] = modeloHom$coefficients[[2]]
+        crecimientosMuj[i-2,j] = modeloMuj$coefficients[[2]]
+        out = summary(modeloHom)
+        sdHom[i-2, j] = out$coefficients[2,2]
+        out = summary(modeloMuj)
+        sdmuj[i-2, j] = out$coefficients[2,2]
       }
     }
   }
+  print(length(dfEdadMuj[,1]))
+  print(length(dfEdadHom[,1]))
 }
+crecimientosHom <- subset( crecimientosHom, select = -AGE )
+crecimientosMuj <- subset( crecimientosMuj, select = -AGE )
+crecimientosHom <- crecimientosHom[-c(18), ]
+crecimientosMuj <- crecimientosMuj[-c(18), ]
+sdHom <- subset( sdHom, select = -AGE )
+sdmuj <- subset( sdmuj, select = -AGE )
+sdHom <- sdHom[-c(18), ]
+sdmuj <- sdmuj[-c(18), ]
 ```
 ```{r}
-
+out = summary(modeloHom)
+out$coefficients[2,2]
+out
+```
+```{r}
+crecimientosHom$WEIGHT + sdHom$WEIGHT
 ```
 
+```{r}
+mi= -26#min(crecimientosHom$WEIGHT - sdHom$WEIGHT , crecimientosMuj$WEIGHT - sdmuj$WEIGHT)
+ma = max(crecimientosHom$WEIGHT + sdHom$WEIGHT, crecimientosMuj$WEIGHT + sdmuj$WEIGHT)
+plot(2:18, crecimientosHom$WEIGHT, col = 'blue', xlab = "Edad", ylab = "Crecimiento de peso por anio en KG", ylim = c(mi, ma))
+points(2:18, crecimientosMuj$WEIGHT, col = 'red')
+lines(2:18, crecimientosHom$WEIGHT, col = 'blue')
+lines(2:18, crecimientosMuj$WEIGHT, col = 'red')
+
+segments(2:18, crecimientosHom$WEIGHT + sdHom$WEIGHT, 2:18, crecimientosHom$WEIGHT - sdHom$WEIGHT, col = 'blue' )
+segments(2:18, crecimientosMuj$WEIGHT + sdmuj$WEIGHT, 2:18, crecimientosMuj$WEIGHT - sdmuj$WEIGHT, col = 'red' )
+
+abline(h=0)
+```
+```{r}
+plot(2:18, crecimientosHom$STATURE, col = 'blue',  xlab = "Edad", ylab = "Crecimiento de altura por anio en CM")
+points(2:18, crecimientosMuj$STATURE, col = 'red')
+lines(2:18, crecimientosHom$STATURE, col = 'blue')
+lines(2:18, crecimientosMuj$STATURE, col = 'red')
+
+segments(2:18, crecimientosHom$STATURE + sdHom$STATURE, 2:18, crecimientosHom$STATURE - sdHom$STATURE, col = 'blue' )
+segments(2:18, crecimientosMuj$STATURE + sdmuj$STATURE, 2:18, crecimientosMuj$STATURE - sdmuj$STATURE, col = 'red' )
+abline(h=0)
+```
+```{r}
+mi= min(crecimientosHom$ELBOW.HAND.LENGTH - sdHom$ELBOW.HAND.LENGTH , crecimientosMuj$ELBOW.HAND.LENGTH - sdmuj$ELBOW.HAND.LENGTH)
+ma = max(crecimientosHom$ELBOW.HAND.LENGTH + sdHom$ELBOW.HAND.LENGTH, crecimientosMuj$ELBOW.HAND.LENGTH + sdmuj$ELBOW.HAND.LENGTH)
+plot(2:18, crecimientosHom$ELBOW.HAND.LENGTH, col = 'blue', xlab = "Edad", ylab = "Crecimiento de ELBOW HAND por anio en CM", ylim = c(mi, ma))
+points(2:18, crecimientosMuj$ELBOW.HAND.LENGTH, col = 'red')
+lines(2:18, crecimientosHom$ELBOW.HAND.LENGTH, col = 'blue')
+lines(2:18, crecimientosMuj$ELBOW.HAND.LENGTH, col = 'red')
+
+segments(2:18, crecimientosHom$ELBOW.HAND.LENGTH + sdHom$ELBOW.HAND.LENGTH, 2:18, crecimientosHom$ELBOW.HAND.LENGTH - sdHom$ELBOW.HAND.LENGTH, col = 'blue' )
+segments(2:18, crecimientosMuj$ELBOW.HAND.LENGTH + sdmuj$ELBOW.HAND.LENGTH, 2:18, crecimientosMuj$ELBOW.HAND.LENGTH - sdmuj$ELBOW.HAND.LENGTH, col = 'red' )
+
+abline(h=0)
+```
+
+```{r}
+mi= min(crecimientosHom$WRIST.CIRCUMFERENCE - sdHom$WRIST.CIRCUMFERENCE , crecimientosMuj$WRIST.CIRCUMFERENCE - sdmuj$WRIST.CIRCUMFERENCE)
+ma = max(crecimientosHom$WRIST.CIRCUMFERENCE + sdHom$WRIST.CIRCUMFERENCE, crecimientosMuj$WRIST.CIRCUMFERENCE + sdmuj$WRIST.CIRCUMFERENCE)
+plot(2:18, crecimientosHom$WRIST.CIRCUMFERENCE, col = 'blue', xlab = "Edad", ylab = "Crecimiento de CINTURA por anio en CM", ylim = c(mi, ma))
+points(2:18, crecimientosMuj$WRIST.CIRCUMFERENCE, col = 'red')
+lines(2:18, crecimientosHom$WRIST.CIRCUMFERENCE, col = 'blue')
+lines(2:18, crecimientosMuj$WRIST.CIRCUMFERENCE, col = 'red')
+
+segments(2:18, crecimientosHom$WRIST.CIRCUMFERENCE + sdHom$WRIST.CIRCUMFERENCE, 2:18, crecimientosHom$WRIST.CIRCUMFERENCE - sdHom$WRIST.CIRCUMFERENCE, col = 'blue' )
+segments(2:18, crecimientosMuj$WRIST.CIRCUMFERENCE + sdmuj$WRIST.CIRCUMFERENCE, 2:18, crecimientosMuj$WRIST.CIRCUMFERENCE - sdmuj$WRIST.CIRCUMFERENCE, col = 'red' )
+
+abline(h=0)
+```
+
+```{r}
+mi= min(crecimientosHom$FOOT.LENGTH - sdHom$FOOT.LENGTH , crecimientosMuj$FOOT.LENGTH - sdmuj$FOOT.LENGTH)
+ma = max(crecimientosHom$FOOT.LENGTH + sdHom$FOOT.LENGTH, crecimientosMuj$FOOT.LENGTH + sdmuj$FOOT.LENGTH)
+plot(2:18, crecimientosHom$FOOT.LENGTH, col = 'blue', xlab = "Edad", ylab = "Crecimiento de PIES por anio en CM", ylim = c(mi, ma))
+points(2:18, crecimientosMuj$FOOT.LENGTH, col = 'red')
+lines(2:18, crecimientosHom$FOOT.LENGTH, col = 'blue')
+lines(2:18, crecimientosMuj$FOOT.LENGTH, col = 'red')
+
+segments(2:18, crecimientosHom$FOOT.LENGTH + sdHom$FOOT.LENGTH, 2:18, crecimientosHom$FOOT.LENGTH - sdHom$FOOT.LENGTH, col = 'blue' )
+segments(2:18, crecimientosMuj$FOOT.LENGTH + sdmuj$FOOT.LENGTH, 2:18, crecimientosMuj$FOOT.LENGTH - sdmuj$FOOT.LENGTH, col = 'red' )
+
+abline(h=0)
+```
+
+```{r}
+mi= min(crecimientosHom$HAND.LENGTH - sdHom$HAND.LENGTH , crecimientosMuj$HAND.LENGTH - sdmuj$HAND.LENGTH)
+ma = max(crecimientosHom$HAND.LENGTH + sdHom$HAND.LENGTH, crecimientosMuj$HAND.LENGTH + sdmuj$HAND.LENGTH)
+plot(2:18, crecimientosHom$HAND.LENGTH, col = 'blue', xlab = "Edad", ylab = "Crecimiento de MANOS por anio en CM", ylim = c(mi, ma))
+points(2:18, crecimientosMuj$HAND.LENGTH, col = 'red')
+lines(2:18, crecimientosHom$HAND.LENGTH, col = 'blue')
+lines(2:18, crecimientosMuj$HAND.LENGTH, col = 'red')
+
+segments(2:18, crecimientosHom$HAND.LENGTH + sdHom$HAND.LENGTH, 2:18, crecimientosHom$HAND.LENGTH - sdHom$HAND.LENGTH, col = 'blue' )
+#segments(2:18, crecimientosMuj$HAND.LENGTH + sdmuj$HAND.LENGTH, 2:18, crecimientosMuj$HAND.LENGTH - sdmuj$HAND.LENGTH, col = 'red' )
+
+abline(h=0)
+```
+
+```{r}
+mi= min(crecimientosHom$SHOULDER.BREADTH - sdHom$SHOULDER.BREADTH , crecimientosMuj$SHOULDER.BREADTH - sdmuj$SHOULDER.BREADTH)
+ma = max(crecimientosHom$SHOULDER.BREADTH + sdHom$SHOULDER.BREADTH, crecimientosMuj$SHOULDER.BREADTH + sdmuj$SHOULDER.BREADTH)
+plot(2:18, crecimientosHom$SHOULDER.BREADTH, col = 'blue', xlab = "Edad", ylab = "Crecimiento de SHOULDER.BREADTH por anio en CM", ylim = c(mi, ma))
+points(2:18, crecimientosMuj$SHOULDER.BREADTH, col = 'red')
+lines(2:18, crecimientosHom$SHOULDER.BREADTH, col = 'blue')
+lines(2:18, crecimientosMuj$SHOULDER.BREADTH, col = 'red')
+
+segments(2:18, crecimientosHom$SHOULDER.BREADTH + sdHom$SHOULDER.BREADTH, 2:18, crecimientosHom$SHOULDER.BREADTH - sdHom$SHOULDER.BREADTH, col = 'blue' )
+segments(2:18, crecimientosMuj$SHOULDER.BREADTH + sdmuj$SHOULDER.BREADTH, 2:18, crecimientosMuj$SHOULDER.BREADTH - sdmuj$SHOULDER.BREADTH, col = 'red' )
+
+abline(h=0)
+```

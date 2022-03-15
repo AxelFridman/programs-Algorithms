@@ -1,0 +1,414 @@
+---
+title: "Informe TP final grupal"
+output: html_notebook
+author: "German Schischlo, Juan Cruz Barcos y Axel Fridman"
+---
+
+En este informe se pretende explorar el dataset "AnthroKids - Anthropometric Data of Children" encontrado en https://math.nist.gov/~SRessler/anthrokids/.
+Siguiendo la linea de algunas preguntas que los participantes nos hicimos durante el desarollo del trabajo.
+
+Para empezar necesitamos usar algunas librerias comunes, ya sea para manipular o graficar datos.
+
+```{r}
+library("plotly")
+library("plot3D")
+library(tidyverse) # entorno tidy
+library(dplyr) # manejo de datos
+library(GGally) # scatterplots multiples
+library(rgl) # para graficos 3D
+library(dplyr)
+```
+
+```{r}
+df = read.csv("chicos.csv", stringsAsFactors = F)
+```
+
+El dataset original estaba lleno de valores incompletos, en los cuales se habia dejado un 0 en representacion de "sin medir". 
+Es por eso, que a la hora de limpiar el dataset, decidimos primero explorar que medidas de los chicos nos parecian mas interesantes y descartar todo el resto del dataset que tuviera ceros en esas mediciones.
+Esto lo hicimos bajo la hipotesis de que todas las medidas de cualquier ser humano por mas chico que sea son mayores que 0. 
+
+Alguna consideracion de esto: es que como nosotros sacamos todas las personas cuya 'longitud de mano' no sea mayor que 0, podria haber un chico/chica perfectamente valido en el dataset que no tenia manos, y lo descartamos porque no tenemos como diferenciarlo/a de las no mediciones del resto. Vale otras columnas del dataset tambien.
+
+
+```{r}
+indices = (
+  ! is.na(df$WEIGHT) &
+  ! is.na(df$STATURE) &
+  ! is.na(df$SEX) &
+  ! is.na(df$RACE) &
+  ! is.na(df$AGE.IN.YEARS) &
+  ! is.na(df$AGE.IN.MONTHS) &
+  df$WEIGHT>0 &
+  df$STATURE>0 &
+  df$RACE != 0 &
+    
+  df$WRIST.CIRCUMFERENCE>0 &
+  df$HEAD.CIRCUMFERENCE>0 &
+  df$SHOULDER.BREADTH>0 &
+  df$ELBOW.HAND.LENGTH>0 &
+  df$HAND.LENGTH>0 &
+  df$UPPER.ARM.CIRCUMFERENCE>0 &
+  df$FOOT.LENGTH>0 &
+    
+  (df$SEX == 1 | df$SEX==2)
+    )
+
+dfFiltrados = df[indices,]
+dfFiltrados$WEIGHT = dfFiltrados$WEIGHT/10
+dfFiltrados$STATURE = dfFiltrados$STATURE/10
+dfFiltrados$HAND.LENGTH = dfFiltrados$HAND.LENGTH/10
+dfFiltrados$UPPER.ARM.CIRCUMFERENCE = dfFiltrados$UPPER.ARM.CIRCUMFERENCE/10
+dfFiltrados$ELBOW.HAND.LENGTH = dfFiltrados$ELBOW.HAND.LENGTH/10
+dfFiltrados$AGE = dfFiltrados$AGE.IN.MONTHS / 12
+
+dfFiltrados = dfFiltrados[ , c("WEIGHT","STATURE", "SEX", "RACE","AGE","WRIST.CIRCUMFERENCE","HEAD.CIRCUMFERENCE","SHOULDER.BREADTH","ELBOW.HAND.LENGTH","HAND.LENGTH","UPPER.ARM.CIRCUMFERENCE","FOOT.LENGTH")]
+mujeres = dfFiltrados[dfFiltrados$SEX==2, ]
+hombres = dfFiltrados[dfFiltrados$SEX==1,]
+```
+
+Nos quedan entonces como columnas "WEIGHT","STATURE", "SEX", "RACE","AGE","WRIST.CIRCUMFERENCE","HEAD.CIRCUMFERENCE","SHOULDER.BREADTH","ELBOW.HAND.LENGTH","HAND.LENGTH","UPPER.ARM.CIRCUMFERENCE","FOOT.LENGTH".
+
+Antes de graficar nos parecio interesante ver cuantos teniamos de cada variable categorica (Sexo y raza) para poder interpretar mejor y decidir sobre que graficar.
+
+```{r}
+table(dfFiltrados$RACE)
+#Cinco niveles, WHITE = 1, BLACK = 2, ORIENTAL = 3, AMERICAN INDIAN = 4, MIXED = 5.
+#Absoluta disparidad de muestreo en cuanto a raza.
+```
+Es muy evidente como en terminos de raza, hay un 87% blancos, 9% de color y menos del 4% de otras razas. Con lo cual nos propusimos analizar blancos, de color, y tambien orientales y mixtos teniendo en cuenta las pocas muestras que son y realizando tecnicas de bootstrap que reflejen esa variabilidad de la poblacion real que no podemos acceder por el tamaño del dataset.
+
+```{r}
+table(dfFiltrados$SEX)
+#En cuanto a sexo no
+```
+
+Mientras que a nivel sexo esta bastante bien distribuido.
+
+Antes de graficar, es importante notar como todas las medidas corporales tienen una correlacion positiva muy alta con la edad. Mientras que las categoricas no, lo que nos da evidencia necesaria pero no suficiente para decir que las categoricas estan bien  distribuidas en la edad. Osea que no todos los chicos son viejos y las chicas jovenes o que no hay mas personas de color a medida que aumenta la edad. Obviamente edad esta correlacionada al 100% con si misma. 
+```{r}
+correlaciones = (cor(dfFiltrados$AGE, dfFiltrados[-c(1)]))
+correlaciones
+```
+
+Con el fin de analizar si hay un tal "estiron" y cuando se corresponde segun el sexo, nos preguntamos:
+# ¿Como cambia cada medida corporal en funcion de la edad segun el sexo? ¿A que edad crece mas cada parte?
+
+Empezamos por la mas evidente en cada chico/a, la altura, y rapidamente analizando como variaba el error de validacion cruzada de cada modelo, concordamos de que el modelo que mejor ajusta es el polinomio de grado 2.
+Ahora esto era cierto para toda la poblacion, si dividimos por hombres y mujeres sucede lo siguiente:
+```{r}
+b = data_frame(1:1001)
+puntosIntervalo = seq(2,20, (20-2)/1000)
+b = cbind(b, puntosIntervalo)
+colnames(b) = c("indice", "AGE")
+dataFrameEvaluar = b
+
+plot(hombres$AGE,hombres$STATURE,  xlab = "Edad en años", ylab = "Altura en cm", main="Altura en funcion de edad de hombres y mujeres", col='blue')
+modAlturaEnEdadHom = lm(STATURE~poly(AGE,2), data=hombres)
+modAlturaEnEdadMuj = lm(STATURE~poly(AGE,2), data=mujeres)
+points(mujeres$AGE,mujeres$STATURE, col='red')
+
+lines(puntosIntervalo, predict(modAlturaEnEdadHom, newdata = dataFrameEvaluar), col='light blue', lwd=3)
+lines(puntosIntervalo, predict(modAlturaEnEdadMuj, newdata = dataFrameEvaluar), col='pink', lwd=3)
+
+```
+
+Como vemos en el grafico, ¡el crecimiento de los hombres parece lineal! Por mas de que al modelo de los hombres tambien le demos un grado de libertad mas. ¿Porque los el modelo de hombres "no usa" este grado extra? Por el final, notemos como los datos son extremadamente similares hasta los 14/15 años, y este es el momento en el que la altura de las mujeres se "achata", es decir, deja de crecer. En contraste en los hombres esto pareceria no suceder, o en menor escala. 
+
+¿Sucede esto mismo con otras partes del cuerpo y otras medidas? ¡No, pero en algunas medidas si!
+```{r, fig.width=12, fig.height=12}
+par(mfrow=c(2,2))
+plot(hombres$AGE,hombres$ELBOW.HAND.LENGTH,  xlab = "Edad en años", ylab = "Distancia de codo a mano en cm", main="Distancia codo mano en funcion de edad de hombres y mujeres", col='blue')
+modAlturaEnEdadHom = lm(ELBOW.HAND.LENGTH~poly(AGE,2), data=hombres)
+modAlturaEnEdadMuj = lm(ELBOW.HAND.LENGTH~poly(AGE,2), data=mujeres)
+points(mujeres$AGE,mujeres$ELBOW.HAND.LENGTH, col='red')
+lines(puntosIntervalo, predict(modAlturaEnEdadHom, newdata = dataFrameEvaluar), col='light blue', lwd=3)
+lines(puntosIntervalo, predict(modAlturaEnEdadMuj, newdata = dataFrameEvaluar), col='pink', lwd=3)
+plot(hombres$AGE,hombres$HAND.LENGTH,  xlab = "Edad en años", ylab = "Longitud mano en cm", main="Tamaño mano medida en funcion de edad de hombres y mujeres", col='blue')
+modAlturaEnEdadHom = lm(HAND.LENGTH~poly(AGE,2), data=hombres)
+modAlturaEnEdadMuj = lm(HAND.LENGTH~poly(AGE,2), data=mujeres)
+points(mujeres$AGE,mujeres$HAND.LENGTH, col='red')
+lines(puntosIntervalo, predict(modAlturaEnEdadHom, newdata = dataFrameEvaluar), col='light blue', lwd=3)
+lines(puntosIntervalo, predict(modAlturaEnEdadMuj, newdata = dataFrameEvaluar), col='pink', lwd=3)
+plot(hombres$AGE,hombres$WEIGHT,  xlab = "Edad en años", ylab = "Peso en KG", main="Peso en funcion de edad de hombres y mujeres", col='blue')
+modAlturaEnEdadHom = lm(WEIGHT~poly(AGE,2), data=hombres)
+modAlturaEnEdadMuj = lm(WEIGHT~poly(AGE,2), data=mujeres)
+points(mujeres$AGE,mujeres$WEIGHT, col='red')
+lines(puntosIntervalo, predict(modAlturaEnEdadHom, newdata = dataFrameEvaluar), col='light blue', lwd=3)
+lines(puntosIntervalo, predict(modAlturaEnEdadMuj, newdata = dataFrameEvaluar), col='pink', lwd=3)
+plot(hombres$AGE,hombres$UPPER.ARM.CIRCUMFERENCE,  xlab = "Edad en años", ylab = "Circunferencia brazo en cm", main="Circunferencia del brazo en funcion de edad de hombres y mujeres", col='blue')
+modAlturaEnEdadHom = lm(UPPER.ARM.CIRCUMFERENCE~poly(AGE,2), data=hombres)
+modAlturaEnEdadMuj = lm(UPPER.ARM.CIRCUMFERENCE~poly(AGE,2), data=mujeres)
+points(mujeres$AGE,mujeres$UPPER.ARM.CIRCUMFERENCE, col='red')
+lines(puntosIntervalo, predict(modAlturaEnEdadHom, newdata = dataFrameEvaluar), col='light blue', lwd=3)
+lines(puntosIntervalo, predict(modAlturaEnEdadMuj, newdata = dataFrameEvaluar), col='pink', lwd=3)
+```
+Notemos como en todos los graficos las mujeres de 15 en adelante suelen tener medidas mas chicas. La distincion es que en el tamaño de la distancia del codo a la punta de la mano y en el tamaño de la mano, el modelo tiene el mismo comportamiento que en altura, hombres lineal y mujeres cuadrartico que se "estanca". Pero en los otros 2 graficos, el mejor modelo de grado 2 tiene a los hombres creciendo cuadraticamente (mas y mas) mientras que las mujeres crecen de manera lineal. 
+
+Esto lo podemos analizar si miramos como se relacionan entre si algunas columnas, mas alla de la edad como parametro. 
+```{r}
+
+invertirSexo = function(vec){
+  res = c()
+  for(i in 1:length(vec)){
+    if(vec[i]==1){
+      res[i]=2
+    }
+    else{
+      res[i]=1
+    }
+  }
+  return(res)
+}
+
+dfFiltrados$SEXinvertido = invertirSexo(dfFiltrados$SEX)
+ggp <- ggpairs(dfFiltrados,
+               columns = c(1, 2, 4, 5),
+               mapping = ggplot2::aes(color = as.factor(SEXinvertido)))
+print(ggp, progress = FALSE)
+dfFiltrados = dfFiltrados[ , c("WEIGHT","STATURE", "SEX", "RACE","AGE","WRIST.CIRCUMFERENCE","HEAD.CIRCUMFERENCE","SHOULDER.BREADTH","ELBOW.HAND.LENGTH","HAND.LENGTH","UPPER.ARM.CIRCUMFERENCE","FOOT.LENGTH")]
+
+```
+Tomando a 1 (el rojo) como las mujeres y el 2 (azul) como los hombres. Vemos que el peso de las mujeres esta mas concentrado mientras que el de los hombres se esparce mas, mismo con la altura. A nivel proporcional del sexo con el tiempo vemos que se mantiene a nivel general. Por otro lado, esto es algo que no estamos entregando en el informe final pero las razas no muestran una diferencia consdierativa a nivel estatura y peso. 
+Ademas de estar muy correlacionadas con la edad el peso y la altura, tambien lo estan entre ellas, lo cual puede explicar como si una persona es mas alta, pesa mas y entonces eso explica el cambio de concavidad entre los graficos de altura y peso en funcion de la edad.
+
+Siguindo la pregunta de cuando crece mas, tratamos de mirar un poco mas el micro de cada edad en vez de un modelo general que me diga como varia cada variable en el tiempo. Dividimos en 18 grupos 1 en cada intervalo de 1 año y nos fijamos, dado un modelo para ese grupo, como cambia esa variable en el tiempo. Y graficamos las pendientes de ese modelo.
+
+```{r}
+crecimientosHom = data_frame( 2:19)
+crecimientosMuj = data_frame( 2:19)
+
+for(i in 2:12){
+  crecimientosHom = cbind(crecimientosHom, 2:19)
+  crecimientosMuj = cbind(crecimientosMuj, 2:19)
+}
+
+colnames(crecimientosHom) = c("WEIGHT","STATURE", "SEX", "RACE","AGE","WRIST.CIRCUMFERENCE","HEAD.CIRCUMFERENCE","SHOULDER.BREADTH","ELBOW.HAND.LENGTH","HAND.LENGTH","UPPER.ARM.CIRCUMFERENCE","FOOT.LENGTH")
+colnames(crecimientosMuj) = c("WEIGHT","STATURE", "SEX", "RACE","AGE","WRIST.CIRCUMFERENCE","HEAD.CIRCUMFERENCE","SHOULDER.BREADTH","ELBOW.HAND.LENGTH","HAND.LENGTH","UPPER.ARM.CIRCUMFERENCE","FOOT.LENGTH")
+
+sdHom = crecimientosHom
+sdmuj = crecimientosMuj
+
+listaModelos <- c()
+for(i in 3:20){
+  dfEdadHom <- dfFiltrados[(dfFiltrados$AGE > (i - 1)) &
+                                             (dfFiltrados$AGE < i) & dfFiltrados$SEX==1,]
+  dfEdadMuj <- dfFiltrados[(dfFiltrados$AGE > (i - 1)) &
+                                             (dfFiltrados$AGE < i) & dfFiltrados$SEX==2,]
+  if(nrow(dfEdadHom) > 0){
+    for (j in (1:ncol(crecimientosHom))) {
+      
+      if(colnames(crecimientosHom)[j]!="AGE"){
+        fHom = paste(colnames(crecimientosHom)[j], "AGE", sep="~")
+        fMuj = paste(colnames(crecimientosMuj)[j], "AGE", sep="~")
+        formuHom = formula(fHom)
+        formuMuj = formula(fMuj)
+        modeloHom = lm( formuHom, dfEdadHom)
+        modeloMuj = lm( formuMuj, dfEdadMuj)
+        crecimientosHom[i-2,j] = modeloHom$coefficients[[2]]
+        crecimientosMuj[i-2,j] = modeloMuj$coefficients[[2]]
+        out = summary(modeloHom)
+        sdHom[i-2, j] = out$coefficients[2,2]
+        out = summary(modeloMuj)
+        sdmuj[i-2, j] = out$coefficients[2,2]
+      }
+    }
+  }
+  print(length(dfEdadMuj[,1]))
+  print(length(dfEdadHom[,1]))
+}
+crecimientosHom <- subset( crecimientosHom, select = -AGE )
+crecimientosMuj <- subset( crecimientosMuj, select = -AGE )
+crecimientosHom <- crecimientosHom[-c(18), ]
+crecimientosMuj <- crecimientosMuj[-c(18), ]
+sdHom <- subset( sdHom, select = -AGE )
+sdmuj <- subset( sdmuj, select = -AGE )
+sdHom <- sdHom[-c(18), ]
+sdmuj <- sdmuj[-c(18), ]
+```
+
+Tomemos por ejemplo el tamaño de la mano.
+```{r, fig.width=12, fig.height=12}
+{par(mfrow=c(3,2))
+mi= -26#min(crecimientosHom$WEIGHT - sdHom$WEIGHT , crecimientosMuj$WEIGHT - sdmuj$WEIGHT)
+ma = max(crecimientosHom$WEIGHT + sdHom$WEIGHT, crecimientosMuj$WEIGHT + sdmuj$WEIGHT)
+plot(2:18, crecimientosHom$WEIGHT, col = 'blue', xlab = "Edad", ylab = "Crecimiento de peso por anio en KG", ylim = c(mi, ma))
+points(2:18, crecimientosMuj$WEIGHT, col = 'red')
+lines(2:18, crecimientosHom$WEIGHT, col = 'blue')
+lines(2:18, crecimientosMuj$WEIGHT, col = 'red')
+
+segments(2:18, crecimientosHom$WEIGHT + sdHom$WEIGHT, 2:18, crecimientosHom$WEIGHT - sdHom$WEIGHT, col = 'blue' )
+segments(2:18, crecimientosMuj$WEIGHT + sdmuj$WEIGHT, 2:18, crecimientosMuj$WEIGHT - sdmuj$WEIGHT, col = 'red' )
+
+abline(h=0)
+
+plot(2:18, crecimientosHom$STATURE, col = 'blue',  xlab = "Edad", ylab = "Crecimiento de altura por anio en CM")
+points(2:18, crecimientosMuj$STATURE, col = 'red')
+lines(2:18, crecimientosHom$STATURE, col = 'blue')
+lines(2:18, crecimientosMuj$STATURE, col = 'red')
+
+segments(2:18, crecimientosHom$STATURE + sdHom$STATURE, 2:18, crecimientosHom$STATURE - sdHom$STATURE, col = 'blue' )
+segments(2:18, crecimientosMuj$STATURE + sdmuj$STATURE, 2:18, crecimientosMuj$STATURE - sdmuj$STATURE, col = 'red' )
+abline(h=0)
+
+mi= min(crecimientosHom$HAND.LENGTH - sdHom$HAND.LENGTH , crecimientosMuj$HAND.LENGTH - sdmuj$HAND.LENGTH)
+ma = max(crecimientosHom$HAND.LENGTH + sdHom$HAND.LENGTH, crecimientosMuj$HAND.LENGTH + sdmuj$HAND.LENGTH)
+plot(2:18, crecimientosHom$HAND.LENGTH, col = 'blue', xlab = "Edad", ylab = "Crecimiento de MANOS por año en CM", ylim = c(mi, ma))
+points(2:18, crecimientosMuj$HAND.LENGTH, col = 'red')
+lines(2:18, crecimientosHom$HAND.LENGTH, col = 'blue')
+lines(2:18, crecimientosMuj$HAND.LENGTH, col = 'red')
+
+segments(2:18, crecimientosHom$HAND.LENGTH + sdHom$HAND.LENGTH, 2:18, crecimientosHom$HAND.LENGTH - sdHom$HAND.LENGTH, col = 'blue' )
+segments(2:18, crecimientosMuj$HAND.LENGTH + sdmuj$HAND.LENGTH, 2:18, crecimientosMuj$HAND.LENGTH - sdmuj$HAND.LENGTH, col = 'red' )
+
+abline(h=0)
+
+mi= min(crecimientosHom$FOOT.LENGTH - sdHom$FOOT.LENGTH , crecimientosMuj$FOOT.LENGTH - sdmuj$FOOT.LENGTH)
+ma = max(crecimientosHom$FOOT.LENGTH + sdHom$FOOT.LENGTH, crecimientosMuj$FOOT.LENGTH + sdmuj$FOOT.LENGTH)
+plot(2:18, crecimientosHom$FOOT.LENGTH, col = 'blue', xlab = "Edad", ylab = "Crecimiento de PIES por anio en CM", ylim = c(mi, ma))
+points(2:18, crecimientosMuj$FOOT.LENGTH, col = 'red')
+lines(2:18, crecimientosHom$FOOT.LENGTH, col = 'blue')
+lines(2:18, crecimientosMuj$FOOT.LENGTH, col = 'red')
+
+segments(2:18, crecimientosHom$FOOT.LENGTH + sdHom$FOOT.LENGTH, 2:18, crecimientosHom$FOOT.LENGTH - sdHom$FOOT.LENGTH, col = 'blue' )
+segments(2:18, crecimientosMuj$FOOT.LENGTH + sdmuj$FOOT.LENGTH, 2:18, crecimientosMuj$FOOT.LENGTH - sdmuj$FOOT.LENGTH, col = 'red' )
+
+abline(h=0)
+
+mi= min(crecimientosHom$WRIST.CIRCUMFERENCE - sdHom$WRIST.CIRCUMFERENCE , crecimientosMuj$WRIST.CIRCUMFERENCE - sdmuj$WRIST.CIRCUMFERENCE)
+ma = max(crecimientosHom$WRIST.CIRCUMFERENCE + sdHom$WRIST.CIRCUMFERENCE, crecimientosMuj$WRIST.CIRCUMFERENCE + sdmuj$WRIST.CIRCUMFERENCE)
+plot(2:18, crecimientosHom$WRIST.CIRCUMFERENCE, col = 'blue', xlab = "Edad", ylab = "Crecimiento de CINTURA por anio en CM", ylim = c(mi, ma))
+points(2:18, crecimientosMuj$WRIST.CIRCUMFERENCE, col = 'red')
+lines(2:18, crecimientosHom$WRIST.CIRCUMFERENCE, col = 'blue')
+lines(2:18, crecimientosMuj$WRIST.CIRCUMFERENCE, col = 'red')
+
+segments(2:18, crecimientosHom$WRIST.CIRCUMFERENCE + sdHom$WRIST.CIRCUMFERENCE, 2:18, crecimientosHom$WRIST.CIRCUMFERENCE - sdHom$WRIST.CIRCUMFERENCE, col = 'blue' )
+segments(2:18, crecimientosMuj$WRIST.CIRCUMFERENCE + sdmuj$WRIST.CIRCUMFERENCE, 2:18, crecimientosMuj$WRIST.CIRCUMFERENCE - sdmuj$WRIST.CIRCUMFERENCE, col = 'red' )
+
+abline(h=0)
+
+mi= min(crecimientosHom$SHOULDER.BREADTH - sdHom$SHOULDER.BREADTH , crecimientosMuj$SHOULDER.BREADTH - sdmuj$SHOULDER.BREADTH)
+ma = max(crecimientosHom$SHOULDER.BREADTH + sdHom$SHOULDER.BREADTH, crecimientosMuj$SHOULDER.BREADTH + sdmuj$SHOULDER.BREADTH)
+plot(2:18, crecimientosHom$SHOULDER.BREADTH, col = 'blue', xlab = "Edad", ylab = "Crecimiento de SHOULDER.BREADTH por anio en CM", ylim = c(mi, ma))
+points(2:18, crecimientosMuj$SHOULDER.BREADTH, col = 'red')
+lines(2:18, crecimientosHom$SHOULDER.BREADTH, col = 'blue')
+lines(2:18, crecimientosMuj$SHOULDER.BREADTH, col = 'red')
+
+segments(2:18, crecimientosHom$SHOULDER.BREADTH + sdHom$SHOULDER.BREADTH, 2:18, crecimientosHom$SHOULDER.BREADTH - sdHom$SHOULDER.BREADTH, col = 'blue' )
+segments(2:18, crecimientosMuj$SHOULDER.BREADTH + sdmuj$SHOULDER.BREADTH, 2:18, crecimientosMuj$SHOULDER.BREADTH - sdmuj$SHOULDER.BREADTH, col = 'red' )
+
+abline(h=0)}
+```
+Aca graficamos un estimativo de la derivada del peso, altura y otras variables, en funcion de la edad. ¿Y cuan precisa es esa derivada? Graficamos tambien una barra que toma el desvio estandar del modelo y se lo suma/resta.
+Tal como podemos ver, tenemos gran variabilidad, pero era de esperarse ya que reducimos mucho el tamaño del dataset a analizar cuando dividimos en 18 grupos y esos 18 grupos en 36 grupos cuando segregamos entre hombres y mujeres. 
+Aun asi, que conclusiones podemos ver y sacar de estos graficos? Para nosotros la mayor riqueza esta en analizar que le pasa a TODOS los graficos a nivel general, ya que, aun habiendo mucha incerteza se ve que los mayores picos positivos estan entre los 12 y 14, una informacion que antes no podiamos ver mirando el panorama general. 
+
+```{r}
+dfNormalizado <- dfFiltrados
+index <- c(1,2,6,7,8,9,10,11,12)
+```
+
+
+```{r}
+for (i in 3:20) {
+  for (j in index) {
+    dfNormalizado[dfNormalizado$AGE >= i - 1 & dfNormalizado$AGE <= i, j] <- dfNormalizado[dfNormalizado$AGE >= i-1 & dfNormalizado$AGE <= i, j] - min(dfNormalizado[dfNormalizado$AGE >= i-1 & dfNormalizado$AGE <= i, j])
+    dfNormalizado[dfNormalizado$AGE >= i-1 & dfNormalizado$AGE <= i, j] <- dfNormalizado[dfNormalizado$AGE >= i-1 & dfNormalizado$AGE <= i, j] / (max(dfNormalizado[dfNormalizado$AGE >= i-1 & dfNormalizado$AGE <= i, j])+0.00001)
+  }
+}
+```
+
+```{r}
+dfWhite <- dfNormalizado[dfNormalizado$RACE == 1,]
+dfColor <- dfNormalizado[dfNormalizado$RACE == 2,]
+```
+```{r}
+indiceWhite <- sample(nrow(dfWhite), 100)
+indiceColor <- sample(nrow(dfColor), 100)
+muestraWhite <- dfWhite[indiceWhite,]
+muestraColor <- dfColor[indiceColor,]
+```
+
+```{r}
+muestraRazas <- rbind(muestraWhite, muestraColor)
+ggplot(data = dfNormalizado,
+       aes(x = STATURE, y = WEIGHT)) +
+  geom_point(col = "lightblue", pch=1) +
+  theme_minimal() +
+  xlim(0, 1)
+```
+```{r}
+dfVariacion <- dfFiltrados
+```
+```{r}
+for(i in 3:20){
+  for(j in index){
+    dfVariacion[dfVariacion$AGE > i - 1 &
+                  dfVariacion$AGE <= i,j] <- abs((dfVariacion[dfVariacion$AGE > i - 1 &
+                  dfVariacion$AGE <= i,j] - mean(dfVariacion[dfVariacion$AGE > i - 1
+                                                        & dfVariacion$AGE <= i,j])) / mean(dfVariacion[dfVariacion$AGE > i - 1 &
+                  dfVariacion$AGE <= i,j]))
+  }
+}
+```
+```{r, warning = FALSE}
+ggplot(data = dfVariacion,
+       aes(x = AGE, y = WEIGHT)) +
+  geom_point(col = "orange1") +
+  theme_minimal() +
+  geom_hline(yintercept = mean(dfVariacion$WEIGHT)) + 
+  ylim(0, 1)
+```
+
+```{r}
+dfNormalizado$tamanio = dfNormalizado$STATURE * dfNormalizado$WEIGHT
+```
+```{r}
+hist(dfNormalizado$tamanio, breaks=60, xlab = "Tamaño de cada persona")
+abline(v=quantile(dfNormalizado$tamanio, 0.25))
+abline(v=quantile(dfNormalizado$tamanio, 0.75))
+
+ordenTamanio = dfNormalizado[order(dfNormalizado$tamanio, decreasing = F),]
+```
+```{r}
+
+chicos = head(ordenTamanio,nrow(ordenTamanio)/100)#ordenTamanio[1:(length(ordenTamanio)/100),]
+grandotes = tail(ordenTamanio, nrow(ordenTamanio)/100)
+#grandotes = ordenTamanio[(length(ordenTamanio)*99/100):length(ordenTamanio),]
+```
+```{r}
+grandotes
+```
+```{r}
+cols = function(valor){
+  if(valor<quantile(dfNormalizado$tamanio, 0.01)){
+    #chico
+    return(1)
+  }
+  else if(valor>quantile(dfNormalizado$tamanio, 0.99)){
+    # grande
+    return(2)
+  }
+  else{
+    #normal
+    return(3)
+  }
+}
+```
+
+```{r}
+dfNormalizado$grupoTamanio = cols(dfNormalizado$tamanio)
+dfNormalizado[dfNormalizado$grupoTamanio == 1,]
+range(dfNormalizado$grupoTamanio)
+```
+
+
+```{r}
+muestraRazas <- rbind(muestraWhite, muestraColor)
+ggplot(data = dfNormalizado,
+       aes(x = STATURE, y = WEIGHT)) +
+  geom_point(col = cols(ordenTamanio$tamanio), pch=1) +
+  theme_minimal() +
+  xlim(0, 1)
+
+```
+
