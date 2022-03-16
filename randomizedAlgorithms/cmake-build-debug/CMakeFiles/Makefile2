@@ -54,16 +54,16 @@ RM = /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/imac/Documents/GitHub2/programas-algoritmos/stassenMatrixMultiplication
+CMAKE_SOURCE_DIR = /Users/imac/Documents/GitHub2/programas-algoritmos/randomizedAlgorithms
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/imac/Documents/GitHub2/programas-algoritmos/stassenMatrixMultiplication/cmake-build-debug
+CMAKE_BINARY_DIR = /Users/imac/Documents/GitHub2/programas-algoritmos/randomizedAlgorithms/cmake-build-debug
 
 #=============================================================================
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/stassenMatrixMultiplication.dir/all
+all: CMakeFiles/randomizedAlgorithms.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -71,34 +71,34 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
-clean: CMakeFiles/stassenMatrixMultiplication.dir/clean
+clean: CMakeFiles/randomizedAlgorithms.dir/clean
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/stassenMatrixMultiplication.dir
+# Target rules for target CMakeFiles/randomizedAlgorithms.dir
 
 # All Build rule for target.
-CMakeFiles/stassenMatrixMultiplication.dir/all:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/stassenMatrixMultiplication.dir/build.make CMakeFiles/stassenMatrixMultiplication.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/stassenMatrixMultiplication.dir/build.make CMakeFiles/stassenMatrixMultiplication.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/imac/Documents/GitHub2/programas-algoritmos/stassenMatrixMultiplication/cmake-build-debug/CMakeFiles --progress-num=1,2 "Built target stassenMatrixMultiplication"
-.PHONY : CMakeFiles/stassenMatrixMultiplication.dir/all
+CMakeFiles/randomizedAlgorithms.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/randomizedAlgorithms.dir/build.make CMakeFiles/randomizedAlgorithms.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/randomizedAlgorithms.dir/build.make CMakeFiles/randomizedAlgorithms.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/imac/Documents/GitHub2/programas-algoritmos/randomizedAlgorithms/cmake-build-debug/CMakeFiles --progress-num=1,2 "Built target randomizedAlgorithms"
+.PHONY : CMakeFiles/randomizedAlgorithms.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/stassenMatrixMultiplication.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/imac/Documents/GitHub2/programas-algoritmos/stassenMatrixMultiplication/cmake-build-debug/CMakeFiles 2
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/stassenMatrixMultiplication.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/imac/Documents/GitHub2/programas-algoritmos/stassenMatrixMultiplication/cmake-build-debug/CMakeFiles 0
-.PHONY : CMakeFiles/stassenMatrixMultiplication.dir/rule
+CMakeFiles/randomizedAlgorithms.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/imac/Documents/GitHub2/programas-algoritmos/randomizedAlgorithms/cmake-build-debug/CMakeFiles 2
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/randomizedAlgorithms.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/imac/Documents/GitHub2/programas-algoritmos/randomizedAlgorithms/cmake-build-debug/CMakeFiles 0
+.PHONY : CMakeFiles/randomizedAlgorithms.dir/rule
 
 # Convenience name for target.
-stassenMatrixMultiplication: CMakeFiles/stassenMatrixMultiplication.dir/rule
-.PHONY : stassenMatrixMultiplication
+randomizedAlgorithms: CMakeFiles/randomizedAlgorithms.dir/rule
+.PHONY : randomizedAlgorithms
 
 # clean rule for target.
-CMakeFiles/stassenMatrixMultiplication.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/stassenMatrixMultiplication.dir/build.make CMakeFiles/stassenMatrixMultiplication.dir/clean
-.PHONY : CMakeFiles/stassenMatrixMultiplication.dir/clean
+CMakeFiles/randomizedAlgorithms.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/randomizedAlgorithms.dir/build.make CMakeFiles/randomizedAlgorithms.dir/clean
+.PHONY : CMakeFiles/randomizedAlgorithms.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

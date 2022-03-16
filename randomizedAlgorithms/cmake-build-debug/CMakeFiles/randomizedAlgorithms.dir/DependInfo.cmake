@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/Users/imac/Documents/GitHub2/programas-algoritmos/stassenMatrixMultiplication/main.cpp" "/Users/imac/Documents/GitHub2/programas-algoritmos/stassenMatrixMultiplication/cmake-build-debug/CMakeFiles/stassenMatrixMultiplication.dir/main.cpp.o"
+  "/Users/imac/Documents/GitHub2/programas-algoritmos/randomizedAlgorithms/main.cpp" "/Users/imac/Documents/GitHub2/programas-algoritmos/randomizedAlgorithms/cmake-build-debug/CMakeFiles/randomizedAlgorithms.dir/main.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "AppleClang")
 
