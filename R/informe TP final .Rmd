@@ -89,6 +89,34 @@ Antes de graficar, es importante notar como todas las medidas corporales tienen 
 correlaciones = (cor(dfFiltrados$AGE, dfFiltrados[-c(1)]))
 correlaciones
 ```
+```{r}
+PMAE=function(x,y){
+  return(sum(abs(x-y))/sum(abs(x)))
+}
+```
+```{r}
+
+crossval = function(datos, modelo, n_obs, fun_error, n_muestras=10){
+  #¨df[sample(nrow(df), 3), ]
+  errores = c()
+  for(i in (1:n_muestras)){
+    ind = sample(nrow(datos),n_obs)
+    
+    datosEval = datos[ind,]
+    datosTrain = datos[-ind, ]
+    modeloActual = lm(UPPER.ARM.CIRCUMFERENCE~poly(AGE,2), data = datosTrain)
+   
+    
+    #loPredecible = as.character(modelo[[2]])
+    #print(datosEval$loPredecible)
+    errores[i] = fun_error(datosEval$UPPER.ARM.CIRCUMFERENCE, predict(modeloActual, datosEval))
+  }
+  #los errores obtenidos, el error promedio, su varianza, la formula
+  #del modelo empleado y el modelo ajustado usando todos los datos.
+  respuesta = list(errores, mean(errores), var(errores), modelo, lm(modelo, data = datos))
+  return(respuesta)
+}
+```
 
 Con el fin de analizar si hay un tal "estiron" y cuando se corresponde segun el sexo, nos preguntamos:
 # ¿Como cambia cada medida corporal en funcion de la edad segun el sexo? ¿A que edad crece mas cada parte?
@@ -111,6 +139,10 @@ lines(puntosIntervalo, predict(modAlturaEnEdadHom, newdata = dataFrameEvaluar), 
 lines(puntosIntervalo, predict(modAlturaEnEdadMuj, newdata = dataFrameEvaluar), col='pink', lwd=3)
 
 ```
+```{r}
+crossval(mujeres, modAlturaEnEdadMuj, 1, PMAE, 100)
+```
+
 
 Como vemos en el grafico, ¡el crecimiento de los hombres parece lineal! Por mas de que al modelo de los hombres tambien le demos un grado de libertad mas. ¿Porque los el modelo de hombres "no usa" este grado extra? Por el final, notemos como los datos son extremadamente similares hasta los 14/15 años, y este es el momento en el que la altura de las mujeres se "achata", es decir, deja de crecer. En contraste en los hombres esto pareceria no suceder, o en menor escala. 
 
