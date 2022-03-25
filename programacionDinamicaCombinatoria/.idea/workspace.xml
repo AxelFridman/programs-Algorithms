@@ -11,13 +11,17 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2e7fc9ef-72cf-4713-99a4-144f9680f74f" name="Changes" comment="agregado combinatoria con error 9 5 en adelante">
+    <list default="true" id="2e7fc9ef-72cf-4713-99a4-144f9680f74f" name="Changes" comment="combinatoria ok">
+      <change afterPath="$PROJECT_DIR$/../practica1Algo3/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../practica1Algo3/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../practica1Algo3/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../practica1Algo3/.idea/practica1Algo3.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../practica1Algo3/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../practica1Algo3/CMakeLists.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../practica1Algo3/main.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../mergesort/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/../mergesort/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/programacionDinamicaCombinatoria.dir/main.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/programacionDinamicaCombinatoria.dir/main.cpp.o" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/programacionDinamicaCombinatoria" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/programacionDinamicaCombinatoria" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,14 +53,14 @@
     <property name="settings.editor.selected.configurable" value="CMakeSettings" />
   </component>
   <component name="RunManager">
-    <configuration name="programacionDinamicaCombinatoria" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="programacionDinamicaCombinatoria" TARGET_NAME="programacionDinamicaCombinatoria" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="programacionDinamicaCombinatoria" RUN_TARGET_NAME="programacionDinamicaCombinatoria">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+    <configuration name="programacionDinamicaCombinatoria" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="programacionDinamicaCombinatoria" TARGET_NAME="programacionDinamicaCombinatoria" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="programacionDinamicaCombinatoria" RUN_TARGET_NAME="programacionDinamicaCombinatoria">
       <method v="2">
-        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
   </component>
@@ -70,7 +74,8 @@
       <updated>1647961677992</updated>
       <workItem from="1647961681660" duration="6362000" />
       <workItem from="1647974196643" duration="915000" />
-      <workItem from="1648041214606" duration="369000" />
+      <workItem from="1648041214606" duration="616000" />
+      <workItem from="1648207650510" duration="560000" />
     </task>
     <task id="LOCAL-00001" summary="agregado combinatoria con error 9 5 en adelante">
       <created>1647976582277</created>
@@ -79,7 +84,14 @@
       <option name="project" value="LOCAL" />
       <updated>1647976582277</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="combinatoria ok">
+      <created>1648171128187</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1648171128187</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -99,6 +111,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="agregado combinatoria con error 9 5 en adelante" />
-    <option name="LAST_COMMIT_MESSAGE" value="agregado combinatoria con error 9 5 en adelante" />
+    <MESSAGE value="combinatoria ok" />
+    <option name="LAST_COMMIT_MESSAGE" value="combinatoria ok" />
   </component>
 </project>
