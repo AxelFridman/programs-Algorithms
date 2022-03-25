@@ -40,7 +40,6 @@ int combinatorio(int n, int k){
     v[0] = 1;
     for (int j = 0; j<n+1; j++){
         m.push_back(v);
-        m[j][j]=1;
     }
     int res = (combinatorioRecursivo(n, k, m));
     //visualizarMatriz(m);
