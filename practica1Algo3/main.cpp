@@ -12,6 +12,8 @@ void visualizarVector(const vector<tipo> v){
     }
     std :: cout << " "<< endl ;
 }
+
+
 void visualizarMatriz(vector<vector<int> > v){
     std :: cout << "--------"<<endl ;
     for(int i=0;i<v.size();i++){
@@ -90,6 +92,7 @@ void solucionesCuadradoMagico(int i, int j, vector<vector<int>> &cuadradoMagico,
             }
         }
 }
+
 vector<vector<vector<int>>> cuadradoMagico(int n, int numMagico){
     vector<vector<vector<int>>> res = {};
     vector<vector<int>> m = {};
@@ -104,13 +107,50 @@ vector<vector<vector<int>>> cuadradoMagico(int n, int numMagico){
     solucionesCuadradoMagico(0,0, m, numerosFaltantes, numMagico, res);
     return res;
 }
+int maxi(int a, int b){
+    if(a>b){
+        return a;
+    }
+    else{
+        return b;
+    }
+}
+int sumaDesdeHasta(vector<int> v, int i, int j){
+    int sum = 0;
+    for (int k = i; k <= j; k++) {
+        sum = sum + v[k];
+    }
+    return sum;
+}
+int numeroJugadorEjPracticoClase(vector<int> v, int i, int j, int sumaT, vector<vector<int>> &mat){
+    if(j-i<=1){
+        return maxi(v[i], v[j]);
+    }
+    if(mat[i][j]==0) {
+        mat[i][j] = maxi(sumaT - numeroJugadorEjPracticoClase(v, i + 1, j, sumaT - v[i], mat),
+                    sumaT - numeroJugadorEjPracticoClase(v, i, j - 1, sumaT - v[j], mat));
+    }
+    return mat[i][j];
+}
+
 int main() {
     //int m = combinatorio(12,4);
-    vector<vector<vector<int>>> res = cuadradoMagico(4, 34);
-    for(int k=0; k<res.size(); k++){
-        visualizarMatriz(res[k]);
+    //vector<vector<vector<int>>> res = cuadradoMagico(3, 15);
+    //for(int k=0; k<res.size(); k++){
+    //    visualizarMatriz(res[k]);
+    //}
+    //std :: cout << res.size()<< endl ;
+    vector<int> v= {1,20,30,400,5,60,7,8,9};
+    //numeroJugadorEjPracticoClase(v, 0, v.size()-1);
+    int a = 0;
+    int b = v.size()-1;
+    int sumaT = sumaDesdeHasta(v, a, b);
+    vector<vector<int>> valores = {};
+    vector<int> val(b+1);
+    for (int j = 0; j<=b; j++){
+        valores.push_back(val);
     }
-    std :: cout << res.size()<< endl ;
-
+    std :: cout << numeroJugadorEjPracticoClase(v, a, b, sumaT, valores)  << endl ;
+    visualizarMatriz(valores);
     return 0;
 }
