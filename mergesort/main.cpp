@@ -80,9 +80,23 @@ bool estaOrdenado(vector<tipo1> v){
     return res;
 }
 
+template<typename tipo>
+void swap(tipo &tA, int i, int j){
+    auto old = tA[i];
+    tA[i] = tA[j];
+    tA[j] = old;
+}
+
+template<typename tipo>
+void revertirOrden(tipo &tA){
+    for(int i=0; i<int(tA.size()/2); i++){
+        swap(tA, i, tA.size()-i-1);
+    }
+}
+
 int main() {
     std::cout << "Hello, World!" << std::endl;
-    vector<float> v1 = {-1.1, 1.1 ,21.1,32.1, 139.1};
+    vector<float> v1 = {-1.1, 1.1 ,21.1,32.1, 139.1,0};
     vector<float> v2 = {-2.1, 2.1 ,4.1,13.1, 16.1, 90, 150};
     vector<float> v4 = {52.1, 2.1 ,14.1,13.1, 16.1, 90, 1};
 
@@ -100,12 +114,15 @@ int main() {
     cout << endl;
 
     //visualizarVector(v);
-    cout << estaOrdenado(v);
+    //cout << estaOrdenado(v);
     cout << endl;
 
-    mergeSort(v);
-    //visualizarVector(v);
-    cout << estaOrdenado(v);
+    mergeSort(v1);
+    visualizarVector(v1);
+    revertirOrden(v1);
+    visualizarVector(v1);
+
+    //cout << estaOrdenado(v);
 
 
     return 0;

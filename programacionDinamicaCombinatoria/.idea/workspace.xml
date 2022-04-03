@@ -12,8 +12,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2e7fc9ef-72cf-4713-99a4-144f9680f74f" name="Changes" comment="combinatoria ok">
-      <change beforePath="$PROJECT_DIR$/../practica1Algo3/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../practica1Algo3/main.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,11 +45,6 @@
     <property name="settings.editor.selected.configurable" value="CMakeSettings" />
   </component>
   <component name="RunManager">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="programacionDinamicaCombinatoria" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="programacionDinamicaCombinatoria" TARGET_NAME="programacionDinamicaCombinatoria" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="programacionDinamicaCombinatoria" RUN_TARGET_NAME="programacionDinamicaCombinatoria">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -68,6 +63,7 @@
       <workItem from="1647974196643" duration="915000" />
       <workItem from="1648041214606" duration="616000" />
       <workItem from="1648207650510" duration="560000" />
+      <workItem from="1648318865449" duration="530000" />
     </task>
     <task id="LOCAL-00001" summary="agregado combinatoria con error 9 5 en adelante">
       <created>1647976582277</created>
@@ -105,5 +101,16 @@
     <MESSAGE value="agregado combinatoria con error 9 5 en adelante" />
     <MESSAGE value="combinatoria ok" />
     <option name="LAST_COMMIT_MESSAGE" value="combinatoria ok" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/main.cpp</url>
+          <line>8</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
