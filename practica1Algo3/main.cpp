@@ -115,6 +115,14 @@ int maxi(int a, int b){
         return b;
     }
 }
+int mini(int a, int b){
+    if(a>b){
+        return b;
+    }
+    else{
+        return a;
+    }
+}
 int sumaDesdeHasta(vector<int> v, int i, int j){
     int sum = 0;
     for (int k = i; k <= j; k++) {
@@ -132,25 +140,75 @@ int numeroJugadorEjPracticoClase(vector<int> v, int i, int j, int sumaT, vector<
     }
     return mat[i][j];
 }
-
-int main() {
-    //int m = combinatorio(12,4);
-    //vector<vector<vector<int>>> res = cuadradoMagico(3, 15);
-    //for(int k=0; k<res.size(); k++){
-    //    visualizarMatriz(res[k]);
-    //}
-    //std :: cout << res.size()<< endl ;
-    vector<int> v= {1,20,30,400,5,60,7,8,9};
-    //numeroJugadorEjPracticoClase(v, 0, v.size()-1);
-    int a = 0;
-    int b = v.size()-1;
-    int sumaT = sumaDesdeHasta(v, a, b);
-    vector<vector<int>> valores = {};
-    vector<int> val(b+1);
-    for (int j = 0; j<=b; j++){
-        valores.push_back(val);
+int sumaDeMonedas(vector<int> &solucionParcial){
+    int suma = 0;
+    for (int i = 0; i < solucionParcial.size(); ++i) {
+        suma = suma + solucionParcial[i];
     }
-    std :: cout << numeroJugadorEjPracticoClase(v, a, b, sumaT, valores)  << endl ;
-    visualizarMatriz(valores);
+    return suma;
+}
+
+int maximaGananciaAstroVoid(int c, int j, vector<int> precios, vector<vector<int>> &estructuraMemoizacion){
+    if(j==-1){
+        return 0;
+    }
+    if(c<0 or c>j){
+        return -99999999;
+    }
+    if(estructuraMemoizacion[c][j]==0){
+        estructuraMemoizacion[c][j] = maximaGananciaAstroVoid(c-1, j-1, precios, estructuraMemoizacion);
+    }
+    if(estructuraMemoizacion[c+2][j]==0){
+        estructuraMemoizacion[c+2][j] = maximaGananciaAstroVoid(c+1, j-1, precios, estructuraMemoizacion) ;
+    }
+    if(estructuraMemoizacion[c+1][j]==0){
+        estructuraMemoizacion[c+1][j] = maximaGananciaAstroVoid(c, j-1, precios, estructuraMemoizacion);
+    }
+    int siComp = estructuraMemoizacion[c][j] - precios[j];
+    int siVend = estructuraMemoizacion[c+2][j]+ precios[j];
+    int SiNada = estructuraMemoizacion[c+1][j];
+    estructuraMemoizacion[c+1][j+1] = maxi(siComp, maxi(siVend, SiNada));
+    return estructuraMemoizacion[c+1][j+1];
+}
+vector<vector<int>> minimaVidaJuego(vector<vector<int>> juego){
+    vector<vector<int>> estructuraMemoizacion={};
+    vector<int> js(juego[0].size());
+    for (int i = 0; i < juego.size(); ++i) {
+        estructuraMemoizacion.push_back(js);
+    }
+    estructuraMemoizacion[0][0] = maxi(1, - juego[0][0] + 1);
+    for (int i = 0; i < juego[0].size(); ++i) {
+        for (int j = 0; j < juego.size(); ++j) {
+            if(i==0 and j!=0){
+                estructuraMemoizacion[j][i] = maxi(estructuraMemoizacion[j-1][i]-juego[j][i], 1);
+            }
+            if(j==0 and i!=0) {
+                estructuraMemoizacion[j][i] = maxi(estructuraMemoizacion[j][i - 1] - juego[j][i], 1);
+            }
+            else{
+                if(i!=0 and j!=0){
+                    int mins = mini(estructuraMemoizacion[j][i-1], estructuraMemoizacion[j-1][i]);
+                    estructuraMemoizacion[j][i] = maxi(mins- juego[j][i], maxi(1, mins));
+                }
+            }
+        }
+    }
+    return estructuraMemoizacion;
+}
+int main() {
+    /*
+    vector<vector<int>> estructuraMemoizacion={};
+    vector<int> monedas = {1,2,4,8,1,0,10};
+    vector<int> js(monedas.size()+1);
+    for (int i = 0; i < js.size()+1; ++i) {
+        estructuraMemoizacion.push_back(js);
+    }
+    visualizarMatriz(estructuraMemoizacion);
+    std :: cout <<  maximaGananciaAstroVoid(0, monedas.size()-1, monedas, estructuraMemoizacion) ;
+    */
+    vector<vector<int>> juego = {{-11,-1,2},{-4,2,-1},{-1,1,30}};
+    vector<vector<int>> res = minimaVidaJuego(juego);
+    visualizarMatriz(juego);
+    visualizarMatriz(res);
     return 0;
 }

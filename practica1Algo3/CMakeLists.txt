@@ -3,4 +3,4 @@ project(practica1Algo3)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(practica1Algo3 main.cpp)
+add_executable(practica1Algo3 main.cpp abbAVL.cpp)
