@@ -17,20 +17,19 @@ private:
 public:
 
     /**
-     * Constructor por defecto de la clase Lista.
+     * Constructor por defecto de la clase Heap.
      */
     Heap();
-    /**
-     Heap makeHeapFromVector(vector<tipo1>);
 
-    /**
-     * Agrega un elemento al principio de la Lista.
-     * @param elem elemento a agregar
-     */
-    void agregar(const tipo1& elem);
+
+     // Agrega un elemento al heap
+    void agregarElemento(const tipo1& elem);
 
     void bajar(vector<tipo1> &v, int i); // Reacomoda heap desde la pos i.
+
+    // Funcion interna para reacomdor heap cuando recibe vector
     void array2heap(vector<tipo1> &v);
+
     void swap(vector<tipo1> &v, int i, int j);
     /**
      * Saca el elemento minimo del heap.
@@ -45,8 +44,8 @@ public:
      */
     int longitud() const;
 
-
-    Heap<tipo1> makeHeapFromVector(vector<tipo1> v);
+    // funcion que permite recibir un vector y pasarlo a heap.
+    void makeHeapFromVector(vector<tipo1> v);
 };
 
 template<class tipo1>
@@ -69,12 +68,11 @@ void Heap<tipo1>::array2heap(vector<tipo1> &v) {
 }
 
 template<class tipo1>
-Heap<tipo1> Heap<tipo1>::makeHeapFromVector(vector<tipo1> v) {
-    Heap nuevo = Heap();
+void Heap<tipo1>::makeHeapFromVector(vector<tipo1> v) {
     array2heap(v);
-    nuevo.heap = v;
-    nuevo.longi = nuevo.heap.size();
-    return nuevo;
+    heap = v;
+    longi = heap.size();
+    return;
 }
 
 template<class tipo1>
@@ -82,8 +80,10 @@ tipo1 Heap<tipo1>::desencolar() {
     tipo1 valor = heap[0];
     tipo1 ult = heap[longi-1];
     heap.erase(heap.end()-1);
+    longi = longi-1;
     heap[0] = ult;
     bajar(heap, 0);
+
     return valor;
 }
 
@@ -108,6 +108,39 @@ void Heap<tipo1>::swap(vector<tipo1> &v, int i, int j) {
     tipo1 aux = v[j];
     v[j] = v[i];
     v[i] = aux;
+}
+
+template<class tipo1>
+void Heap<tipo1>::agregarElemento(const tipo1 &elem) {
+    heap.push_back(elem);
+    longi = longi + 1;
+    int posicion = longi-1;
+    if(posicion==0){
+        return;
+    }
+    bool esPosicionPar = true;
+    if(posicion%2==0){
+        esPosicionPar = true;
+    }
+    else{
+        esPosicionPar = false;
+    }
+    while (posicion!=0 and ((esPosicionPar and heap[posicion]>heap[(posicion-2)/2]) or ((not esPosicionPar and heap[posicion]>heap[(posicion-1)/2])))){
+        if(esPosicionPar){
+            swap(heap, posicion, (posicion-2)/2);
+            posicion = (posicion-2)/2;
+        }
+        else{
+            swap(heap, posicion, (posicion-1)/2);
+            posicion = (posicion-1)/2;
+        }
+        if(posicion%2==0){
+            esPosicionPar = true;
+        }
+        else{
+            esPosicionPar = false;
+        }
+    }
 }
 
 void inicializarFuenteUnica(map<pair<int, int>, int> &grafo, int tamanioGrafo, vector<pair<int, int>> &s, int nodoInicial){
@@ -152,6 +185,16 @@ void dijkstra(map<pair<int, int>, int> &grafo, int tamanioGrafo, vector<pair<int
 
 }
 int main() {
+    Heap<int> h1 = Heap<int>();
+    vector<int> v = {1,2,3,4,5,6,7};
+    h1.makeHeapFromVector(v);
+    h1.agregarElemento(8);
+    h1.agregarElemento(9);
+    h1.agregarElemento(10);
+
+    h1.desencolar();
+    h1.desencolar();
+    h1.desencolar();
 
     map<pair<int, int>, int> grafo = {
             {make_pair(0,1), -10},
