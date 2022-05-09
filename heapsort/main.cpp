@@ -69,7 +69,7 @@ bool estaOrdenado(vector<tipo1> v){
     return res;
 }
 int main() {
-    int largo = 10000000;
+    int largo = 1000000;
     vector<float> v={};
     for(int j=0; j<largo; j++){
         float q = j;
