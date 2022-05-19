@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-
+#include <map>
 using namespace std;
 
 
@@ -12,38 +12,32 @@ private:
 
     int longi;
     vector<tipo1> heap;
+    map<tipo1,int> mapaNodoIndices;
 public:
 
     /**
      * Constructor por defecto de la clase Heap.
      */
     Heap();
-
-
      // Agrega un elemento al heap
     void agregarElemento(const tipo1& elem);
 
     void bajar(vector<tipo1> &v, int i); // Reacomoda heap desde la pos i.
-
+    void subir(vector<tipo1> &v, int i);
     // Funcion interna para reacomdor heap cuando recibe vector
-    void array2heap(vector<tipo1> &v);
-
     void swap(vector<tipo1> &v, int i, int j);
     /**
      * Saca el elemento minimo del heap.
      * @param elem elemento a agregar
      */
     tipo1 desencolar();
-    /**
 
-    /**
-     * Devuelve la cantidad de elementos que contiene la Lista.
-     * @return
-     */
     int longitud() const;
     vector<tipo1> verHeap();
     // funcion que permite recibir un vector y pasarlo a heap.
     void makeHeapFromVector(vector<tipo1> v);
+    int dameIndiceDeElemento(tipo1 elem);
+    void modificarElemento(tipo1 viejoElem, tipo1 nuevoElem);
 };
 
 template<class tipo1>
@@ -59,17 +53,15 @@ Heap<tipo1>::Heap() {
 
 
 template<class tipo1>
-void Heap<tipo1>::array2heap(vector<tipo1> &v) {
+void Heap<tipo1>::makeHeapFromVector(vector<tipo1> v) {
     for(int i=v.size()-1; i>=0; i--){
         bajar(v, i);
     }
-}
-
-template<class tipo1>
-void Heap<tipo1>::makeHeapFromVector(vector<tipo1> v) {
-    array2heap(v);
     heap = v;
     longi = heap.size();
+    for(int j=0; j<longi;j++){
+        mapaNodoIndices[heap[j]]=j;
+    }
     return;
 }
 
@@ -78,6 +70,7 @@ tipo1 Heap<tipo1>::desencolar() {
     tipo1 valor = heap[0];
     tipo1 ult = heap[longi-1];
     heap.erase(heap.end()-1);
+    mapaNodoIndices.erase(valor);
     longi = longi-1;
     heap[0] = ult;
     bajar(heap, 0);
@@ -87,8 +80,10 @@ tipo1 Heap<tipo1>::desencolar() {
 
 template<class tipo1>
 void Heap<tipo1>::bajar(vector<tipo1> &v, int i) {
-    while(2*i+1 < v.size() and (v[i]>v[2*i+1] or  v[i]>v[2*i+2]) ) {
-        if (v[2 * i + 1] < v[2 * i + 2]) {
+    bool a = (2*i+1 < v.size() and v[i]>v[2*i+1]);
+    bool b = (2*i+2 < v.size() and v[i]>v[2*i+2]);
+    while(a or b ) {
+        if ( v[2 * i + 1] < v[2 * i + 2]) {
             swap(v, i, 2 * i + 1);
             i = 2*i+1;
         }
@@ -96,23 +91,24 @@ void Heap<tipo1>::bajar(vector<tipo1> &v, int i) {
             swap(v, i, 2 * i + 2);
             i = 2*i+2;
         }
-
+        a = (2*i+1 < v.size() and v[i]>v[2*i+1]);
+        b = (2*i+2 < v.size() and v[i]>v[2*i+2]);
     }
 }
 
 
 template<class tipo1>
 void Heap<tipo1>::swap(vector<tipo1> &v, int i, int j) {
+    mapaNodoIndices[v[i]] = j;
+    mapaNodoIndices[v[j]] = i;
     tipo1 aux = v[j];
     v[j] = v[i];
     v[i] = aux;
 }
 
 template<class tipo1>
-void Heap<tipo1>::agregarElemento(const tipo1 &elem) {
-    heap.push_back(elem);
-    longi = longi + 1;
-    int posicion = longi-1;
+void Heap<tipo1>::subir(vector<tipo1> &v, int i) {
+    int posicion = i;
     if(posicion==0){
         return;
     }
@@ -142,6 +138,14 @@ void Heap<tipo1>::agregarElemento(const tipo1 &elem) {
 }
 
 template<class tipo1>
+void Heap<tipo1>::agregarElemento(const tipo1 &elem) {
+    heap.push_back(elem);
+    longi = longi + 1;
+    mapaNodoIndices[elem] = longi-1;
+    subir(heap, longi-1);
+}
+
+template<class tipo1>
 vector<tipo1> Heap<tipo1>::verHeap() {
     for(int i=0;i<heap.size();i++){
         std :: cout << " "<<heap[i] ;
@@ -150,22 +154,41 @@ vector<tipo1> Heap<tipo1>::verHeap() {
     return (heap);
 }
 
+template<class tipo1>
+int Heap<tipo1>::dameIndiceDeElemento(tipo1 elem) {
+    return mapaNodoIndices[elem];
+}
+
+template<class tipo1>
+void Heap<tipo1>::modificarElemento(tipo1 viejoElem, tipo1 nuevoElem) {
+    int ind = dameIndiceDeElemento(viejoElem);
+    heap[ind] = nuevoElem;
+    mapaNodoIndices.erase(viejoElem);
+    mapaNodoIndices[nuevoElem] = ind;
+    if(nuevoElem>viejoElem){
+        bajar(heap, ind);
+    }
+    else{
+        subir(heap, ind);
+    }
+}
+
+
 int main() {
-    Heap<int> h1 = Heap<int>();
-    vector<int> v = {110, 12, 3, 1, -15, -60, -70};
-    h1.makeHeapFromVector(v);
-    h1.verHeap();
-    h1.agregarElemento(8);
-    h1.agregarElemento(9);
-    h1.agregarElemento(10);
 
-    h1.verHeap();
 
-    h1.desencolar();
-    h1.desencolar();
-    h1.desencolar();
+    Heap<int> h2 = Heap<int>();
+    h2.verHeap();
+    vector<int> v2 = {1,2,0,4};
+    h2.makeHeapFromVector(v2);
+    h2.verHeap();
+    h2.agregarElemento(3);
+    h2.agregarElemento(6);
+    h2.agregarElemento(5);
+    h2.agregarElemento(7);
+    h2.verHeap();
 
-    h1.verHeap();
+
 
     vector<pair<int,int>> p = {make_pair(2,4), make_pair(1,5)};
     bool mayor = p[0]>p[1];

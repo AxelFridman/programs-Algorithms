@@ -6,10 +6,40 @@
 #include <map>
 using namespace std;
 
+void revertirVector(vector<int> &v){
+    vector<int> w = {};
+    for (int i = v.size()-1; i >= 0; --i) {
+        w.push_back(v[i]);
+    }
+    v= w;
+}
+void visualizarVectorAristasMalas(const vector<pair<int,int>> s, int u, int v){
+    vector<int> nodos={};
+    int nodoActual = u;
+    while(nodoActual!=v){
+        //std::cout << nodoActual << " ";
+        nodos.push_back(nodoActual);
+        nodoActual = s[nodoActual].second;
+    }
+    nodos.push_back(v);
+    nodos.push_back(u);
+    revertirVector(nodos);
+    cout << "0"<< endl;
+    for (int i = 0; i < nodos.size(); ++i) {
+        cout << nodos[i] << " ";
+    }
+    cout << " "<< endl;
+}
+
 template<typename tipo>
 void visualizarVector(const vector<tipo> v){
     for(int i=0;i<v.size();i++){
-        std :: cout << " ("<<v[i].first << " " << v[i].second << ") ;" ;
+        if(v[i].first<114748364) {
+            std::cout << v[i].first << " ";//<< " " << v[i].second << ") ;" ;
+        }
+        else{
+            std::cout << "INF " ;
+        }
     }
     std :: cout << " "<< endl ;
 }
@@ -23,42 +53,37 @@ void visualizarMatrizPares(const vector<vector<tipo>> m){
 
 template<class tipo1>
 class Heap {
+
 private:
 
     int longi;
     vector<tipo1> heap;
+    map<tipo1,int> mapaNodoIndices;
 public:
 
     /**
      * Constructor por defecto de la clase Heap.
      */
     Heap();
-
-
     // Agrega un elemento al heap
     void agregarElemento(const tipo1& elem);
 
     void bajar(vector<tipo1> &v, int i); // Reacomoda heap desde la pos i.
-
+    void subir(vector<tipo1> &v, int i);
     // Funcion interna para reacomdor heap cuando recibe vector
-    void array2heap(vector<tipo1> &v);
-
     void swap(vector<tipo1> &v, int i, int j);
     /**
      * Saca el elemento minimo del heap.
      * @param elem elemento a agregar
      */
     tipo1 desencolar();
-    /**
 
-    /**
-     * Devuelve la cantidad de elementos que contiene la Lista.
-     * @return
-     */
     int longitud() const;
     vector<tipo1> verHeap();
     // funcion que permite recibir un vector y pasarlo a heap.
     void makeHeapFromVector(vector<tipo1> v);
+    int dameIndiceDeElemento(tipo1 elem);
+    void modificarElemento(tipo1 viejoElem, tipo1 nuevoElem);
 };
 
 template<class tipo1>
@@ -74,17 +99,15 @@ Heap<tipo1>::Heap() {
 
 
 template<class tipo1>
-void Heap<tipo1>::array2heap(vector<tipo1> &v) {
+void Heap<tipo1>::makeHeapFromVector(vector<tipo1> v) {
     for(int i=v.size()-1; i>=0; i--){
         bajar(v, i);
     }
-}
-
-template<class tipo1>
-void Heap<tipo1>::makeHeapFromVector(vector<tipo1> v) {
-    array2heap(v);
     heap = v;
     longi = heap.size();
+    for(int j=0; j<longi;j++){
+        mapaNodoIndices[heap[j]]=j;
+    }
     return;
 }
 
@@ -93,6 +116,7 @@ tipo1 Heap<tipo1>::desencolar() {
     tipo1 valor = heap[0];
     tipo1 ult = heap[longi-1];
     heap.erase(heap.end()-1);
+    mapaNodoIndices.erase(valor);
     longi = longi-1;
     heap[0] = ult;
     bajar(heap, 0);
@@ -102,8 +126,10 @@ tipo1 Heap<tipo1>::desencolar() {
 
 template<class tipo1>
 void Heap<tipo1>::bajar(vector<tipo1> &v, int i) {
-    while(2*i+1 < v.size() and (v[i]>v[2*i+1] or  v[i]>v[2*i+2]) ) {
-        if (v[2 * i + 1] < v[2 * i + 2]) {
+    bool a = (2*i+1 < v.size() and v[i]>v[2*i+1]);
+    bool b = (2*i+2 < v.size() and v[i]>v[2*i+2]);
+    while(a or b ) {
+        if ( v[2 * i + 1] < v[2 * i + 2]) {
             swap(v, i, 2 * i + 1);
             i = 2*i+1;
         }
@@ -111,23 +137,24 @@ void Heap<tipo1>::bajar(vector<tipo1> &v, int i) {
             swap(v, i, 2 * i + 2);
             i = 2*i+2;
         }
-
+        a = (2*i+1 < v.size() and v[i]>v[2*i+1]);
+        b = (2*i+2 < v.size() and v[i]>v[2*i+2]);
     }
 }
 
 
 template<class tipo1>
 void Heap<tipo1>::swap(vector<tipo1> &v, int i, int j) {
+    mapaNodoIndices[v[i]] = j;
+    mapaNodoIndices[v[j]] = i;
     tipo1 aux = v[j];
     v[j] = v[i];
     v[i] = aux;
 }
 
 template<class tipo1>
-void Heap<tipo1>::agregarElemento(const tipo1 &elem) {
-    heap.push_back(elem);
-    longi = longi + 1;
-    int posicion = longi-1;
+void Heap<tipo1>::subir(vector<tipo1> &v, int i) {
+    int posicion = i;
     if(posicion==0){
         return;
     }
@@ -157,6 +184,14 @@ void Heap<tipo1>::agregarElemento(const tipo1 &elem) {
 }
 
 template<class tipo1>
+void Heap<tipo1>::agregarElemento(const tipo1 &elem) {
+    heap.push_back(elem);
+    longi = longi + 1;
+    mapaNodoIndices[elem] = longi-1;
+    subir(heap, longi-1);
+}
+
+template<class tipo1>
 vector<tipo1> Heap<tipo1>::verHeap() {
     for(int i=0;i<heap.size();i++){
         std :: cout << " "<<heap[i] ;
@@ -165,14 +200,28 @@ vector<tipo1> Heap<tipo1>::verHeap() {
     return (heap);
 }
 
-
-
-void inicializarFuenteUnica(map<pair<int, int>, int> &grafo, int tamanioGrafo, vector<pair<int, int>> &s, int nodoInicial){
-    for (int i = 0; i < tamanioGrafo; ++i) {
-        s[i] = make_pair(1147483647, -1); // todos los nodos al empezar tienen dis infinita al inicial y no tienen padre
-    }
-    s[nodoInicial] = make_pair(0, -1); // mienteas que el inicial tiene distancia 0, y tampoco tiene padre
+template<class tipo1>
+int Heap<tipo1>::dameIndiceDeElemento(tipo1 elem) {
+    return mapaNodoIndices[elem];
 }
+
+template<class tipo1>
+void Heap<tipo1>::modificarElemento(tipo1 viejoElem, tipo1 nuevoElem) {
+    if(mapaNodoIndices.count(viejoElem)==0){
+        return;
+    }
+    int ind = dameIndiceDeElemento(viejoElem);
+    heap[ind] = nuevoElem;
+    mapaNodoIndices.erase(viejoElem);
+    mapaNodoIndices[nuevoElem] = ind;
+    if(nuevoElem>viejoElem){
+        bajar(heap, ind);
+    }
+    else{
+        subir(heap, ind);
+    }
+}
+
 
 void inicializarFuenteUnicaGrafoListaAdyacencia(vector<vector<vector<int>>> &grafo, vector<pair<int, int>> &s, int nodoInicial){
     for (int i = 0; i < grafo.size(); ++i) {
@@ -181,13 +230,7 @@ void inicializarFuenteUnicaGrafoListaAdyacencia(vector<vector<vector<int>>> &gra
     s[nodoInicial] = make_pair(0, -1); // mienteas que el inicial tiene distancia 0, y tampoco tiene padre
 }
 
-void relajarArista(int u, int v, map<pair<int, int>, int> &grafo, vector<pair<int, int>> &s){
-    if(grafo.count(make_pair(u,v))>0){
-        if(s[v].first>s[u].first+grafo[make_pair(u,v)]){ // si el costo en disancia de llegar a v es MAYOR que el de ir a u mas el de la arista UV.
-            s[v]= make_pair(s[u].first +grafo[make_pair(u,v)], u); // actualizo nuevo camino para ir a V
-        }
-    }
-}
+
 
 void relajarAristaListaAdyacencia(int u, int v, int k, vector<vector<vector<int>>> &grafo, vector<pair<int, int>> &s){
     if(s[v].first>s[u].first+k){ // si el costo en disancia de llegar a v es MAYOR que el de ir a u mas el de la arista UV.
@@ -195,31 +238,11 @@ void relajarAristaListaAdyacencia(int u, int v, int k, vector<vector<vector<int>
     }
 }
 
-bool bellmanFord(map<pair<int, int>, int> &grafo, int tamanioGrafo, vector<pair<int, int>> &s, int nodoInicial){
-    inicializarFuenteUnica(grafo,  tamanioGrafo, s,  nodoInicial);
-    for (int i = 0; i < tamanioGrafo; ++i) {
-        for( auto k : grafo){
-            int u = k.first.first;
-            int v = k.first.second;
-            relajarArista(u,v, grafo, s);
-        }
-    }
-    // fijarme si tiene ciclos negativos:
-    for( auto k : grafo){
-        int u = k.first.first;
-        int v = k.first.second;
-        if(s[v].first > s[u].first + k.second){
-            return false;
-        }
-    }
-    return true;
-
-}
 bool bellmanFordListaAdyacencia(vector<vector<vector<int>>> &grafo, vector<pair<int, int>> &s, int nodoInicial) {
     inicializarFuenteUnicaGrafoListaAdyacencia(grafo, s, nodoInicial);
     for (int veces = 0; veces < grafo.size(); ++veces) {
         for (int i = 0; i < grafo.size(); ++i) {
-            for (int j = 0; j < grafo[j].size(); ++j) {
+            for (int j = 0; j < grafo[i].size(); ++j) {
                 int u = grafo[i][j][0];
                 int v = grafo[i][j][1];
                 int k = grafo[i][j][2];
@@ -227,13 +250,15 @@ bool bellmanFordListaAdyacencia(vector<vector<vector<int>>> &grafo, vector<pair<
             }
         }
     }
+
     // fijarme si tiene ciclos negativos:
     for (int i = 0; i < grafo.size(); ++i) {
-        for (int j = 0; j < grafo[j].size(); ++j) {
+        for (int j = 0; j < grafo[i].size(); ++j) {
             int u = grafo[i][j][0];
             int v = grafo[i][j][1];
             int k = grafo[i][j][2];
             if (s[v].first > s[u].first + k) {
+                visualizarVectorAristasMalas(s, u, v);
                 return false;
             }
         }
@@ -248,13 +273,17 @@ void dijkstra(vector<vector<vector<int>>> &grafo, vector<pair<int, int>> &s, int
     for (int i = 0; i <s.size() ; ++i) {
         priorityQnodos.agregarElemento(make_pair(s[i].first, i));
     }
-    vector<int> definitivos(0);
+    //vector<int> definitivos(0);
     while (priorityQnodos.longitud()>0){
-        pair<int,int> v = priorityQnodos.desencolar();
-        int nodo = v.second;
+        pair<int,int> vmin = priorityQnodos.desencolar();
+        int nodo = vmin.second;
         for(int i=0; i<grafo[nodo].size(); i++){
             vector<int> arista = grafo[nodo][i];
-            relajarAristaListaAdyacencia(arista[0],arista[1], arista[2], grafo, s);
+            int u = arista[0];
+            int v = arista[1];
+            int disVieja = s[v].first;
+            relajarAristaListaAdyacencia(u,v,arista[2], grafo, s);
+            priorityQnodos.modificarElemento(make_pair(disVieja, v), make_pair(s[v].first, v));
         }
     }
 }
@@ -292,24 +321,50 @@ bool johnson(vector<vector<vector<int>>> &grafo, vector<vector<pair<int, int>>> 
     return true;
 }
     int main() {
-    vector<int> v = {1,2,34};
+        vector<vector<vector<int>>> grafoEjtp = {
+                {{0, 1, 3}},
+                {{1, 2, 2}, {1, 3, -1}},
+                { {2, 3, 6}},
+                {{3, 0, -1}},
+
+        };
+        vector<vector<vector<int>>> grafoEjtp2 = {
+                {{0, 1, -3}},
+                {{1, 2, -2}, {1, 0, 5}},
+                { {2, 3, 0}, {2,0,2}},
+                {{3, 0, 5}},
+
+        };
         vector<vector<vector<int>>> grafoListaAdyacencia = {
-                {{0, 1, 4},  {0, 2, 3}},
-                {{1, 0, 1}, {1, 2, 1}},
-                {{2, 1, 2},  {2, 0, 5}}
+                {{0, 1, 1},  {0, 4, 1}},
+                {{1, 2, 1}, {1, 5, 1}},
+                { {2, 3, 1}},
+                {{3, 0, 1}, {3, 5, 1}},
+                {{4, 2, 1},  {4, 3, 1}},
+                {{5, 0, 1},  {5, 4, 1}}
+        };
+        vector<vector<vector<int>>> falloDijkstra = {
+                {{0, 1, 0}},
+                {{1, 2, 0}, {1, 0, 2}},
+                { {2, 3, 0}, {2, 1, 1}},
+                {{3, 0, 0}},
+
         };
 
+        vector<vector<pair<int, int>>> M(grafoEjtp2.size());
+        if(johnson(grafoEjtp2, M)){
+            cout << "1" << endl;
+            visualizarMatrizPares(M);
+        }
+
         /*
-        vector<pair<int, int>> s(grafoListaAdyacencia.size());
-        int nodoInicial = 2;
-        bellmanFordListaAdyacencia(grafoListaAdyacencia, s, nodoInicial);
+        vector<pair<int, int>> s(falloDijkstra.size());
+        bellmanFordListaAdyacencia(falloDijkstra, s, 0);
         visualizarVector(s);
-        dijkstra(grafoListaAdyacencia, s, nodoInicial);
+        dijkstra(falloDijkstra, s, 0);
         visualizarVector(s);
-        std::cout << "Hello, World!" << std::endl;
-        return 0;
+        /*
+        bellmanFordListaAdyacencia(grafoListaAdyacencia, s, 4);
+        visualizarVector(s);
         */
-        vector<vector<pair<int, int>>> M(grafoListaAdyacencia.size());
-        johnson(grafoListaAdyacencia, M);
-        visualizarMatrizPares(M);
     }
