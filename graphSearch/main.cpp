@@ -321,21 +321,6 @@ bool johnson(vector<vector<vector<int>>> &grafo, vector<vector<pair<int, int>>> 
     return true;
 }
     int main() {
-        string archivo;
-        cout << "Entrar archivo: ";
-        cin >> archivo;
-        ifstream entradaActividades(archivo.c_str());
-        if(entradaActividades.fail()){
-            cout << "Error en archivo " << archivo << endl;
-            exit(0);
-        }
-        string nada;
-        int cantVertices;
-        int cantAristas;
-        entradaActividades >> cantVertices >> cantAristas  ;
-// /home/clinux01/programas-algoritmos/graphSearch/hola.txt
-
-
         vector<vector<vector<int>>> grafoEjtp = {
                 {{0, 1, 3}},
                 {{1, 2, 2}, {1, 3, -1}},
