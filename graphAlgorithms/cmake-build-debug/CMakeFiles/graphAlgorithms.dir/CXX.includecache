@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/imac/Documents/GitHub2/programas-algoritmos/graphAlgorithms/main.cpp
+iostream
+-
+fstream
+-
+vector
+-
+algorithm
+-
+set
+-
+map
+-
+
