@@ -1,3 +1,7 @@
+//
+// Created by Axel on 27/05/2022.
+//
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -44,18 +48,7 @@ void visualizarVector(const vector<tipo> v){ // Da una manera facil de ver las d
     }
     std :: cout << " "<< endl ;
 }
-template<typename tipo>
-void visualizarVector2(const vector<tipo> v){ // No se usa en algoritmo de johnson pero puede ser util si tenes un vector normal (no de pares)
-    for(int i=0;i<v.size();i++){ // Es basicamente lo mismo que el anterior
-        if(v[i]<114748364) {
-            std::cout << v[i] << " ";
-        }
-        else{
-            std::cout << "INF " ;
-        }
-    }
-    std :: cout << " "<< endl ;
-}
+
 template<typename tipo>
 void visualizarMatrizPares(const vector<vector<tipo>> m){ // Dada una matriz de pares distancia, padre. Te la imprime las distancias al llamar N veces al visualizar fila.
     for(int i=0;i<m.size();i++){
@@ -345,10 +338,8 @@ bool johnson(vector<vector<vector<int>>> &grafo, vector<vector<pair<int, int>>> 
     return true; // Devuelvo que no tiene ciclos negativos
 }
 vector<vector<vector<int>>> leerArchivoGrafoListaAdyacencia(string nombre){
-    string archivo = "/Users/imac/Documents/GitHub2/programas-algoritmos/graphAlgorithms/";
-    archivo.append(nombre);
-    //cout << "Entrar archivo: ";
-    //cin >> archivo;
+    string archivo = nombre;//"/Users/imac/Documents/GitHub2/programas-algoritmos/graphAlgorithms/";
+    //archivo.append(nombre);
     ifstream entradaArchivo(archivo.c_str());
     if(entradaArchivo.fail()){
         cout << "Error en archivo " << archivo << endl;
@@ -374,180 +365,12 @@ vector<vector<vector<int>>> leerArchivoGrafoListaAdyacencia(string nombre){
     }
     return grafoEntrada;
 }
-
-vector<vector<int>> pasarAMatrizDeAdyacenciaDesdeLista(vector<vector<vector<int>>> &grafoListaAdyacencia){
-    vector<int> v(grafoListaAdyacencia.size());
-    for (int i = 0; i < grafoListaAdyacencia.size(); ++i) {
-        v[i] = 1147483647;
-    }
-    vector<vector<int>> MatGrafo(grafoListaAdyacencia.size());
-    for (int i = 0; i < grafoListaAdyacencia.size(); ++i) {
-        MatGrafo[i] = v;
-    }
-    for (int i = 0; i < grafoListaAdyacencia.size(); ++i) {
-        for (int j = 0; j < grafoListaAdyacencia[i].size(); ++j) {
-            MatGrafo[grafoListaAdyacencia[i][j][0]][grafoListaAdyacencia[i][j][1]] = grafoListaAdyacencia[i][j][2];
-        }
-    }
-    return MatGrafo;
+int main(){
+    vector<vector<vector<int>>> grafo = leerArchivoGrafoListaAdyacencia("/Users/imac/Documents/GitHub2/programas-algoritmos/graphAlgorithms/NOMBRE.TXT"); //Debo pasar nombre de archivo y ubicacion
+    vector<vector<pair<int, int>>> M(grafo.size()); // Debo antes de llamar a johnson crear la matriz donde guardare distancias y caminos.
+    if(johnson(grafo, M)){
+        cout << "1" << endl; // Formato en caso positivo
+        visualizarMatrizPares(M); // Formato en caso positivo
+    }    // formato en caso negativo se hace en otra funcion de manera automatica, despreocuparse.
+    return 0;
 }
-
-void inicializarFuenteGrafoMatAdy(vector<vector<pair<int, int>>> &grafomat, vector<vector<int>> grafoMatAdy){
-    for (int i = 0; i < grafoMatAdy.size(); ++i) {
-        vector<pair<int, int>> v;
-        for (int j = 0; j < grafoMatAdy[i].size(); ++j) {
-            if(i !=j and grafoMatAdy[i][j]<114748364){
-                v.push_back(make_pair(grafoMatAdy[i][j],j));
-            }
-            else{
-                v.push_back(make_pair(grafoMatAdy[i][j],-1)); // todos los nodos al empezar tienen dis infinita al inicial y no tienen padre
-            }
-        }
-        grafomat[i]=v;
-    }
-    for (int i = 0; i < grafomat.size(); ++i) {
-        grafomat[i][i] = make_pair(0,-1);
-    }
-}
-
-void relajarAristaMatAdyacencia(int u, int v, int w, vector<vector<pair<int,int>>> &MatFloyd){
-    if(MatFloyd[u][w].first>MatFloyd[u][v].first+MatFloyd[v][w].first and MatFloyd[v][w].first<114748364 and MatFloyd[u][v].first<114748364){ // si el costo en disancia de llegar a v es MAYOR que el de ir a u mas el de la arista UV.
-        MatFloyd[u][w].first = MatFloyd[u][v].first+MatFloyd[v][w].first; // actualizo nuevo camino para ir a V
-        MatFloyd[u][w].second = v;
-    }
-}
-vector<vector<pair<int, int>>> floydWarshall(vector<vector<int>> grafoMatAdy){
-    vector<vector<pair<int, int>>> M(grafoMatAdy.size());
-    inicializarFuenteGrafoMatAdy(M, grafoMatAdy);
-    for (int u = 0; u < grafoMatAdy.size(); ++u) {
-        for (int v = 0; v < grafoMatAdy.size(); ++v) {
-            for (int w = 0; w < grafoMatAdy.size(); ++w) {
-                relajarAristaMatAdyacencia(w,u,v, M);
-            }
-        }
-    }
-    return M;
-}
-vector<int> gradoDeCadaNodo(vector<vector<vector<int>>> &grafoListaAdyacencia){
-    vector<int> gradosEntrada(grafoListaAdyacencia.size(),0);
-    for (int i = 0; i < grafoListaAdyacencia.size(); ++i) {
-        for (int j = 0; j < grafoListaAdyacencia[i].size(); ++j) {
-            vector<int> arista = grafoListaAdyacencia[i][j];
-            gradosEntrada[arista[1]] =  gradosEntrada[arista[1]] + 1;
-        }
-    }
-    return gradosEntrada;
-}
-vector<int> topologicalSort(vector<vector<vector<int>>> grafoListaAdyacencia){
-    vector<int> topoSort = {};
-    vector<int> gradosEntrada = gradoDeCadaNodo(grafoListaAdyacencia);
-    for (int i = 0; i < gradosEntrada.size(); ++i) {
-        int min = 0;
-        for (int j = 0; j < gradosEntrada.size(); ++j) {
-            if(gradosEntrada[j]<gradosEntrada[min]){
-                min = j;
-            }
-        }
-        topoSort.push_back(min);
-        gradosEntrada[min] = 114748364;
-
-        for(int j=0; j<grafoListaAdyacencia[min].size(); j++){
-            gradosEntrada[grafoListaAdyacencia[min][j][1]] = gradosEntrada[grafoListaAdyacencia[min][j][1]] -1 ;
-        }
-
-    }
-    return topoSort;
-}
-bool mismasDistancias(vector<vector<pair<int,int>>> m1, vector<vector<pair<int,int>>> m2){
-    for (int i = 0; i < m1.size(); ++i) {
-        if(m1[i].size()!=m2[i].size()){
-            return false;
-        }
-        for (int j = 0; j < m1[i].size(); ++j) {
-            if(m1[i][j].first!=m2[i][j].first and (m1[i][j].first<114748364 or m2[i][j].first<114748364)){
-                return false;
-            }
-        }
-    }
-    return true;
-}
-void hacer1test(string nombre){
-    vector<vector<vector<int>>> grafoListaAdy = leerArchivoGrafoListaAdyacencia(nombre);
-    vector<vector<int>> grafoMat = pasarAMatrizDeAdyacenciaDesdeLista(grafoListaAdy);
-    vector<vector<pair<int, int>>> M(grafoListaAdy.size());
-    vector<vector<pair<int, int>>> M2(grafoListaAdy.size());
-    M2 = floydWarshall(pasarAMatrizDeAdyacenciaDesdeLista(grafoListaAdy));
-    if(johnson(grafoListaAdy, M)){
-        cout << "No se detecto ciclo negativo" << endl;
-        if(mismasDistancias(M,M2)){
-            cout << "Johnson igual a floydwarshall" << endl;
-        }
-        else{
-            cout << "Johnson DISTINTO a floydwarshall" << endl;
-            visualizarMatrizPares(M);
-            visualizarMatrizPares(M2);
-        }
-
-    }
-}
-int main() {
-
-// /Users/imac/Documents/GitHub2/programas-algoritmos/graphAlgorithms/hola.txt
-        //vector<vector<vector<int>>> listaAdy = leerArchivoGrafoListaAdyacencia();
-
-
-        vector<vector<vector<int>>> grafoEjtp = {
-                {{0, 1, 3}},
-                {{1, 2, 2}, {1, 3, -1}},
-                { {2, 3, 6}},
-                {{3, 0, -1}},
-
-        };
-        vector<vector<vector<int>>> grafoEjtp2 = {
-                {{0, 1, -3}},
-                {{1, 2, -2}, {1, 0, -5000}},
-                { {2, 3, 0}, {2,0,2}},
-                {{3, 0, 5}},
-
-        };
-        vector<vector<vector<int>>> grafoListaAdyacencia = {
-                {{0, 1, 1},  {0, 4, 1}},
-                {{1, 2, 1}, {1, 5, 1}},
-                { {2, 3, 1}},
-                {{3, 0, 1}, {3, 5, 1}},
-                {{4, 2, 1},  {4, 3, 1}},
-                {{5, 0, 1},  {5, 4, 1}}
-        };
-        vector<vector<vector<int>>> testTopo = {
-                {{0, 1, 1},{0, 2, 1}},
-                { {1, 3, 1}},
-                { {2, 1, 1}},
-                {{3, 5, 1}},
-                {{4, 3, 1},{4, 5, 1}},
-                {}
-        };
-        string nom = "grafoTest4.txt";
-        hacer1test(nom);
-
-/*
-    vector<vector<pair<int, int>>> M(grafoEjtp2.size());
-    vector<vector<pair<int, int>>> M2(grafoEjtp2.size());
-    if(johnson(grafoEjtp2, M)){
-        cout << "1" << endl;
-        visualizarMatrizPares(M);
-    }
-    M2 = floydWarshall(pasarAMatrizDeAdyacenciaDesdeLista(grafoEjtp2));
-    visualizarMatrizPares(M2);
-    */
-
-        /*
-        vector<pair<int, int>> s(falloDijkstra.size());
-        bellmanFordListaAdyacencia(falloDijkstra, s, 0);
-        visualizarVector(s);
-        dijkstra(falloDijkstra, s, 0);
-        visualizarVector(s);
-        /*
-        bellmanFordListaAdyacencia(grafoListaAdyacencia, s, 4);
-        visualizarVector(s);
-        */
-    }

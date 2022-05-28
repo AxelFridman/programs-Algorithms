@@ -81,12 +81,12 @@ clean: CMakeFiles/graphAlgorithms.dir/clean
 CMakeFiles/graphAlgorithms.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/graphAlgorithms.dir/build.make CMakeFiles/graphAlgorithms.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/graphAlgorithms.dir/build.make CMakeFiles/graphAlgorithms.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/imac/Documents/GitHub2/programas-algoritmos/graphAlgorithms/cmake-build-debug/CMakeFiles --progress-num=1,2 "Built target graphAlgorithms"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/imac/Documents/GitHub2/programas-algoritmos/graphAlgorithms/cmake-build-debug/CMakeFiles --progress-num=1,2,3 "Built target graphAlgorithms"
 .PHONY : CMakeFiles/graphAlgorithms.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/graphAlgorithms.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/imac/Documents/GitHub2/programas-algoritmos/graphAlgorithms/cmake-build-debug/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/imac/Documents/GitHub2/programas-algoritmos/graphAlgorithms/cmake-build-debug/CMakeFiles 3
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/graphAlgorithms.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/imac/Documents/GitHub2/programas-algoritmos/graphAlgorithms/cmake-build-debug/CMakeFiles 0
 .PHONY : CMakeFiles/graphAlgorithms.dir/rule

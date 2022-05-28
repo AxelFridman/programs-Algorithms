@@ -83,6 +83,9 @@
 		<Unit filename="/Users/imac/Documents/GitHub2/programas-algoritmos/graphAlgorithms/main.cpp">
 			<Option target="graphAlgorithms"/>
 		</Unit>
+		<Unit filename="/Users/imac/Documents/GitHub2/programas-algoritmos/graphAlgorithms/tp2ej3Esencial.cpp">
+			<Option target="graphAlgorithms"/>
+		</Unit>
 		<Unit filename="/Users/imac/Documents/GitHub2/programas-algoritmos/graphAlgorithms/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>
