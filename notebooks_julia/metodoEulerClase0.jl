@@ -34,20 +34,23 @@ begin
 	end
 end
 
+# ╔═╡ 600a35ce-69ab-4d17-944f-c03f70d1f1b9
+md"""## Ejercicio 1"""
+
 # ╔═╡ 1c38b673-c122-487f-930d-1fb05262e6aa
-tspan = [0,10]
+tspan = [0,10] #Este es el intervalo del cual quiero inferir como es la funcion
 
 # ╔═╡ ddd41707-d80c-4f43-b737-b2b7ad9a43b5
-u0 = 1
+u0 = 1 #Este es el valor que se que tiene en tspan[0]
 
 # ╔═╡ a8d09198-f27f-4f0c-84a0-c0fca5a09beb
 h = 0.01
 
 # ╔═╡ 28fa216c-88c3-4bb4-b240-38a1cb26f07d
-@bind c Slider(0:0.1:20)
+@bind c Slider(0.1:0.1:5)
 
 # ╔═╡ a8a67413-2ad6-4dc6-b887-0781c7691135
-fun(u,t)=c*u
+fun(u,t)=c*u #esta es la derivada de u con respecto a t
 
 # ╔═╡ 7d18f4da-ffb2-4c62-9d3b-5f05c4219fed
 funReal(t)=exp(c*t)
@@ -59,6 +62,46 @@ tPuntual, uPuntual = euler(fun,tspan, u0, h)
 begin
 	plot(tPuntual,uPuntual, label="Estimacion")
 	plot!(tPuntual, funReal.(tPuntual),label="Funcion Real")
+	plot!(tPuntual, funReal.(tPuntual)-uPuntual,label="Diferencia") 
+	#La diferencia aumenta porque es STIFFNES crece tan rapido que a los metodos numericos les cuesta aproximar
+	
+end
+
+# ╔═╡ b04f60b1-ddd6-4ebe-858d-0b0f7e34b2c4
+md"""## Ejercicio 2"""
+
+# ╔═╡ 283cc0ba-0711-4708-85ce-35939b8965ce
+tspan2 = [0,120]
+
+# ╔═╡ 9c298f59-b488-49a6-8147-e8572af39618
+@bind r Slider(-0.1:0.01:0.1) #Tasa de crecimiento
+
+# ╔═╡ 2d2005fc-06a2-4d9d-b176-d17001cfa41f
+@bind K Slider(1:0.1:100) #Capacidad de carga del ambiente
+
+# ╔═╡ 2bee61e0-4a4e-4ba7-bd8a-4cbb5449f615
+begin
+	@bind uIni Slider(0.1:0.1:2) 
+	#Capacidad de carga del ambiente
+end
+
+# ╔═╡ 12cfd134-29a9-401d-9cb9-a61fcf810564
+@bind h2 Slider(0.1:0.01:2) #Capacidad de carga del ambiente
+
+# ╔═╡ e66b6cb8-69da-48e5-9978-048482cb7ec3
+ecuLog(p,t)=r*p*(1-p/K) #esta es la derivada de u con respecto a t
+
+# ╔═╡ 4e756eac-a3f5-4fdb-9dd3-d7fddace16e3
+t2, u2 = euler(ecuLog,tspan2, uIni, h2)
+
+# ╔═╡ 317d83de-681d-4e4e-90fd-951a79e73315
+funReal2(t)=K/(1+((K-uIni)/uIni)*exp(-r*t))
+
+# ╔═╡ ccfaa591-a08a-47a6-9636-fcfb18ab5168
+begin
+	
+plot(t2,u2, label="Estimacion")
+plot!(t2, funReal2.(t2),label="Funcion Real")
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1053,6 +1096,7 @@ version = "1.4.1+0"
 # ╠═ccab0f4a-1f07-11ed-3fc8-1990dc5b6c44
 # ╠═8a06106e-d71f-4c3d-9f3e-7b5da53bc016
 # ╠═a8565f65-1599-4882-8ce2-c20f4b7cee0f
+# ╠═600a35ce-69ab-4d17-944f-c03f70d1f1b9
 # ╠═1c38b673-c122-487f-930d-1fb05262e6aa
 # ╠═ddd41707-d80c-4f43-b737-b2b7ad9a43b5
 # ╠═a8d09198-f27f-4f0c-84a0-c0fca5a09beb
@@ -1061,5 +1105,15 @@ version = "1.4.1+0"
 # ╠═7d18f4da-ffb2-4c62-9d3b-5f05c4219fed
 # ╠═15de90ae-b0ba-47fa-bc8f-edbccaa359e9
 # ╠═292ef27c-b0c6-4546-a15e-be4f83011d52
+# ╠═b04f60b1-ddd6-4ebe-858d-0b0f7e34b2c4
+# ╠═283cc0ba-0711-4708-85ce-35939b8965ce
+# ╠═9c298f59-b488-49a6-8147-e8572af39618
+# ╠═2d2005fc-06a2-4d9d-b176-d17001cfa41f
+# ╠═2bee61e0-4a4e-4ba7-bd8a-4cbb5449f615
+# ╠═12cfd134-29a9-401d-9cb9-a61fcf810564
+# ╠═e66b6cb8-69da-48e5-9978-048482cb7ec3
+# ╠═4e756eac-a3f5-4fdb-9dd3-d7fddace16e3
+# ╠═317d83de-681d-4e4e-90fd-951a79e73315
+# ╠═ccfaa591-a08a-47a6-9636-fcfb18ab5168
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
