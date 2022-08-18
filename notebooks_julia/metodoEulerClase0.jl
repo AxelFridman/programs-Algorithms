@@ -14,29 +14,52 @@ macro bind(def, element)
     end
 end
 
-# ╔═╡ d120123c-1d90-11ed-1c38-6f6648c1fb17
+# ╔═╡ ccab0f4a-1f07-11ed-3fc8-1990dc5b6c44
+using Plots
+
+# ╔═╡ 8a06106e-d71f-4c3d-9f3e-7b5da53bc016
+using PlutoUI
+
+# ╔═╡ a8565f65-1599-4882-8ce2-c20f4b7cee0f
 begin
-	using Plots
-	using PlutoUI
+	function euler(f, tspan, u0, h)
+		t = tspan[1]:h:tspan[2]
+		n = length(t)
+		u = zeros(n)
+		u[1] = u0
+		for i in 1:(n-1)
+			u[i+1] = u[i] + h*f(u[i],t[i])
+		end
+		return t,u
+	end
 end
 
-# ╔═╡ 88324510-a27d-4197-bdaa-94f1220239bb
-n = 100
+# ╔═╡ 1c38b673-c122-487f-930d-1fb05262e6aa
+tspan = [0,10]
 
-# ╔═╡ 5b7a5e9b-b24c-4530-88a2-1c9a22246533
-@bind ns Slider(1:0.1:10)
+# ╔═╡ ddd41707-d80c-4f43-b737-b2b7ad9a43b5
+u0 = 1
 
-# ╔═╡ 8d0093dd-69cc-448f-b225-8b89bb6a2e78
-md"""## Ejemplos"""
+# ╔═╡ a8d09198-f27f-4f0c-84a0-c0fca5a09beb
+h = 0.01
 
-# ╔═╡ e0e8e043-1490-41e5-97e2-969d41ba4ee7
-f(x) = n*(x^2)
+# ╔═╡ 28fa216c-88c3-4bb4-b240-38a1cb26f07d
+@bind c Slider(0:0.1:20)
 
-# ╔═╡ e6c24079-626d-40db-8b4d-f8d6e712e38b
-t = 1:10:100
+# ╔═╡ a8a67413-2ad6-4dc6-b887-0781c7691135
+fun(u,t)=c*u
 
-# ╔═╡ f2a05155-13db-4de6-b08d-f5958d91f1fd
-@time plot(t,f.(t))
+# ╔═╡ 7d18f4da-ffb2-4c62-9d3b-5f05c4219fed
+funReal(t)=exp(c*t)
+
+# ╔═╡ 15de90ae-b0ba-47fa-bc8f-edbccaa359e9
+tPuntual, uPuntual = euler(fun,tspan, u0, h)
+
+# ╔═╡ 292ef27c-b0c6-4546-a15e-be4f83011d52
+begin
+	plot(tPuntual,uPuntual, label="Estimacion")
+	plot!(tPuntual, funReal.(tPuntual),label="Funcion Real")
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -247,15 +270,15 @@ version = "3.3.8+0"
 
 [[deps.GR]]
 deps = ["Base64", "DelimitedFiles", "GR_jll", "HTTP", "JSON", "Libdl", "LinearAlgebra", "Pkg", "Printf", "Random", "RelocatableFolders", "Serialization", "Sockets", "Test", "UUIDs"]
-git-tree-sha1 = "037a1ca47e8a5989cc07d19729567bb71bfabd0c"
+git-tree-sha1 = "cf0a9940f250dc3cb6cc6c6821b4bf8a4286cf9c"
 uuid = "28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71"
-version = "0.66.0"
+version = "0.66.2"
 
 [[deps.GR_jll]]
 deps = ["Artifacts", "Bzip2_jll", "Cairo_jll", "FFMPEG_jll", "Fontconfig_jll", "GLFW_jll", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Libtiff_jll", "Pixman_jll", "Pkg", "Qt5Base_jll", "Zlib_jll", "libpng_jll"]
-git-tree-sha1 = "c8ab731c9127cd931c93221f65d6a1008dad7256"
+git-tree-sha1 = "2d908286d120c584abbe7621756c341707096ba4"
 uuid = "d2c73de3-f751-5644-a686-071e5b155ba9"
-version = "0.66.0+0"
+version = "0.66.2+0"
 
 [[deps.GeoInterface]]
 deps = ["Extents"]
@@ -710,9 +733,9 @@ version = "2.1.7"
 
 [[deps.StaticArrays]]
 deps = ["LinearAlgebra", "Random", "StaticArraysCore", "Statistics"]
-git-tree-sha1 = "8803c6dea034ab8cd988abe4a91e5589d61c7416"
+git-tree-sha1 = "85bc4b051546db130aeb1e8a696f1da6d4497200"
 uuid = "90137ffa-7385-5640-81b9-e52037218182"
-version = "1.5.4"
+version = "1.5.5"
 
 [[deps.StaticArraysCore]]
 git-tree-sha1 = "5b413a57dd3cea38497d745ce088ac8592fbb5be"
@@ -736,10 +759,10 @@ uuid = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 version = "0.33.21"
 
 [[deps.StructArrays]]
-deps = ["Adapt", "DataAPI", "StaticArrays", "Tables"]
-git-tree-sha1 = "ec47fb6069c57f1cee2f67541bf8f23415146de7"
+deps = ["Adapt", "DataAPI", "StaticArraysCore", "Tables"]
+git-tree-sha1 = "8c6ac65ec9ab781af05b08ff305ddc727c25f680"
 uuid = "09ab397b-f2b6-538f-b94a-2f83cf4a842a"
-version = "0.6.11"
+version = "0.6.12"
 
 [[deps.TOML]]
 deps = ["Dates"]
@@ -773,9 +796,9 @@ uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[deps.TranscodingStreams]]
 deps = ["Random", "Test"]
-git-tree-sha1 = "216b95ea110b5972db65aa90f88d8d89dcb8851c"
+git-tree-sha1 = "4ad90ab2bbfdddcae329cba59dab4a8cdfac3832"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
-version = "0.9.6"
+version = "0.9.7"
 
 [[deps.Tricks]]
 git-tree-sha1 = "6bac775f2d42a611cdfcd1fb217ee719630c4175"
@@ -1027,12 +1050,16 @@ version = "1.4.1+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═d120123c-1d90-11ed-1c38-6f6648c1fb17
-# ╠═88324510-a27d-4197-bdaa-94f1220239bb
-# ╠═5b7a5e9b-b24c-4530-88a2-1c9a22246533
-# ╠═8d0093dd-69cc-448f-b225-8b89bb6a2e78
-# ╠═e0e8e043-1490-41e5-97e2-969d41ba4ee7
-# ╠═e6c24079-626d-40db-8b4d-f8d6e712e38b
-# ╠═f2a05155-13db-4de6-b08d-f5958d91f1fd
+# ╠═ccab0f4a-1f07-11ed-3fc8-1990dc5b6c44
+# ╠═8a06106e-d71f-4c3d-9f3e-7b5da53bc016
+# ╠═a8565f65-1599-4882-8ce2-c20f4b7cee0f
+# ╠═1c38b673-c122-487f-930d-1fb05262e6aa
+# ╠═ddd41707-d80c-4f43-b737-b2b7ad9a43b5
+# ╠═a8d09198-f27f-4f0c-84a0-c0fca5a09beb
+# ╠═28fa216c-88c3-4bb4-b240-38a1cb26f07d
+# ╠═a8a67413-2ad6-4dc6-b887-0781c7691135
+# ╠═7d18f4da-ffb2-4c62-9d3b-5f05c4219fed
+# ╠═15de90ae-b0ba-47fa-bc8f-edbccaa359e9
+# ╠═292ef27c-b0c6-4546-a15e-be4f83011d52
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
