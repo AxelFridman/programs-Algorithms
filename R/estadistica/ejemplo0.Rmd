@@ -5,6 +5,10 @@ output: html_notebook
 ```{r}
 library(ggplot2)
 ```
+```{r}
+df = read.csv("Debernardi.csv")
+View(df)
+```
 
 ```{r}
 s <- seq(from=10, to=20,by=0.01)
@@ -54,6 +58,53 @@ cars
 ```{r}
 ggplot(cars, aes(x=speed, y=dist, color=speed)) +
     geom_point(size=2)
+```
+```{r}
+i=0
+j = 1
+while(i<1000){
+  i = i + j
+  j = j+1
+  }
+  
+print(j)
+```
+```{r}
+dfautos = read.table("autos.txt", header=T)
+```
+```{r}
+s = apply(dfautos, 2, sum)
+s
+```
+
+
+```{r}
+hist(dfautos$calidad, breaks = 30)
+```
+
+
+```{r}
+dfautos2 = dfautos[order(dfautos$precio, decreasing = T),]
+```
+```{r}
+ggplot(dfautos, aes(x=calidad, y=precio, color=precio)) +
+    geom_point(size=2)
+```
+```{r}
+
+p <- ggplot(dfautos2, aes(x=calidad, fill=calidad)) + 
+  geom_histogram(binwidth = 0.5)
+p
+```
+```{r}
+p <- ggplot(dfautos2, aes(x=precio, y=precio, fill=precio)) + 
+  geom_violin()
+p
+```
+
+```{r}
+e = ggplot(data=dfautos, aes(calidad, precio))
+e + geom_smooth(method = lm) + geom_point()
 ```
 
 
