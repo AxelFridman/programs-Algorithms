@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.9
+# v0.19.11
 
 using Markdown
 using InteractiveUtils
@@ -104,6 +104,59 @@ plot(t2,u2, label="Estimacion")
 plot!(t2, funReal2.(t2),label="Funcion Real")
 end
 
+# ╔═╡ 32947483-6a2c-47bb-86de-438a1dae1416
+md"""## Ejercicio 3"""
+
+# ╔═╡ 2b2c120e-3412-476a-b504-2f404f94695d
+begin
+	q1 = 1
+	A=1
+end
+
+# ╔═╡ 46ae8641-f402-4689-8c1d-785852f6fbb0
+@bind h0 Slider(0.1:0.1:5)
+
+# ╔═╡ f7b3f322-73ad-4a22-a689-fd2ac0be1a07
+@bind R Slider(0.1:0.1:1)
+
+# ╔═╡ aa8e824a-7fd9-4995-9b86-0f5bd30bff63
+funAlturaTanque(h,t)=(1/A) * (q1- (sqrt(h))/R)
+
+# ╔═╡ 33dbd903-3b3f-424b-a19d-ba23a1fab8bd
+tspan3=[1,10]
+
+# ╔═╡ d55eb45f-c89a-4c72-876b-4cd4866092b3
+t3, u3 = euler(funAlturaTanque,tspan3, h0, h2)
+
+# ╔═╡ 1a9a9935-c86f-41d3-93ff-a811b7a69051
+begin
+	
+plot(t3,u3, label="Estimacion")
+#plot!(t2, funReal2.(t2),label="Funcion Real")
+end
+
+# ╔═╡ 767ea75b-ea06-4acd-9a9b-8051e502507b
+@bind α Slider(-1:0.1:2)
+
+# ╔═╡ a744dbde-d622-4817-8d39-1237876ca955
+@bind kt Slider(0.1:0.1:50)
+
+# ╔═╡ f8950c70-d423-41bb-9182-e0ab8cab5aa2
+@bind rr Slider(0.1:0.1:2)
+
+# ╔═╡ b2db0066-d214-4abb-a1ed-48b72d59b6e5
+funej5teo(m,t) = m*rr*(kt-m)/(kt+ α*m)
+
+# ╔═╡ fb1f68e5-caa7-462d-b546-a3fd1877fcb8
+tspanteo=[0,100]
+
+# ╔═╡ 124550c8-8896-4527-ba2c-966c3e2fa762
+t5, u5 = euler(funej5teo,tspanteo, h0, h2)
+
+# ╔═╡ 29015388-2cd4-4e84-87e1-f90718d836a2
+plot(t5,u5, label="Estimacion ej 5 teo")
+
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -119,7 +172,7 @@ PlutoUI = "~0.7.39"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.7.2"
+julia_version = "1.7.3"
 manifest_format = "2.0"
 
 [[deps.AbstractPlutoDingetjes]]
@@ -243,7 +296,7 @@ uuid = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 version = "0.9.1"
 
 [[deps.Downloads]]
-deps = ["ArgTools", "LibCURL", "NetworkOptions"]
+deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 
 [[deps.EarCut_jll]]
@@ -274,6 +327,9 @@ deps = ["Artifacts", "Bzip2_jll", "FreeType2_jll", "FriBidi_jll", "JLLWrappers",
 git-tree-sha1 = "ccd479984c7838684b3ac204b716c89955c76623"
 uuid = "b22a6f82-2f65-5046-a5b2-351ab43fb4e5"
 version = "4.4.2+0"
+
+[[deps.FileWatching]]
+uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[deps.FixedPointNumbers]]
 deps = ["Statistics"]
@@ -313,15 +369,15 @@ version = "3.3.8+0"
 
 [[deps.GR]]
 deps = ["Base64", "DelimitedFiles", "GR_jll", "HTTP", "JSON", "Libdl", "LinearAlgebra", "Pkg", "Printf", "Random", "RelocatableFolders", "Serialization", "Sockets", "Test", "UUIDs"]
-git-tree-sha1 = "cf0a9940f250dc3cb6cc6c6821b4bf8a4286cf9c"
+git-tree-sha1 = "037a1ca47e8a5989cc07d19729567bb71bfabd0c"
 uuid = "28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71"
-version = "0.66.2"
+version = "0.66.0"
 
 [[deps.GR_jll]]
 deps = ["Artifacts", "Bzip2_jll", "Cairo_jll", "FFMPEG_jll", "Fontconfig_jll", "GLFW_jll", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Libtiff_jll", "Pixman_jll", "Pkg", "Qt5Base_jll", "Zlib_jll", "libpng_jll"]
-git-tree-sha1 = "2d908286d120c584abbe7621756c341707096ba4"
+git-tree-sha1 = "c8ab731c9127cd931c93221f65d6a1008dad7256"
 uuid = "d2c73de3-f751-5644-a686-071e5b155ba9"
-version = "0.66.2+0"
+version = "0.66.0+0"
 
 [[deps.GeoInterface]]
 deps = ["Extents"]
@@ -776,9 +832,9 @@ version = "2.1.7"
 
 [[deps.StaticArrays]]
 deps = ["LinearAlgebra", "Random", "StaticArraysCore", "Statistics"]
-git-tree-sha1 = "85bc4b051546db130aeb1e8a696f1da6d4497200"
+git-tree-sha1 = "8803c6dea034ab8cd988abe4a91e5589d61c7416"
 uuid = "90137ffa-7385-5640-81b9-e52037218182"
-version = "1.5.5"
+version = "1.5.4"
 
 [[deps.StaticArraysCore]]
 git-tree-sha1 = "5b413a57dd3cea38497d745ce088ac8592fbb5be"
@@ -802,10 +858,10 @@ uuid = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 version = "0.33.21"
 
 [[deps.StructArrays]]
-deps = ["Adapt", "DataAPI", "StaticArraysCore", "Tables"]
-git-tree-sha1 = "8c6ac65ec9ab781af05b08ff305ddc727c25f680"
+deps = ["Adapt", "DataAPI", "StaticArrays", "Tables"]
+git-tree-sha1 = "ec47fb6069c57f1cee2f67541bf8f23415146de7"
 uuid = "09ab397b-f2b6-538f-b94a-2f83cf4a842a"
-version = "0.6.12"
+version = "0.6.11"
 
 [[deps.TOML]]
 deps = ["Dates"]
@@ -839,9 +895,9 @@ uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[deps.TranscodingStreams]]
 deps = ["Random", "Test"]
-git-tree-sha1 = "4ad90ab2bbfdddcae329cba59dab4a8cdfac3832"
+git-tree-sha1 = "216b95ea110b5972db65aa90f88d8d89dcb8851c"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
-version = "0.9.7"
+version = "0.9.6"
 
 [[deps.Tricks]]
 git-tree-sha1 = "6bac775f2d42a611cdfcd1fb217ee719630c4175"
@@ -1115,5 +1171,20 @@ version = "1.4.1+0"
 # ╠═4e756eac-a3f5-4fdb-9dd3-d7fddace16e3
 # ╠═317d83de-681d-4e4e-90fd-951a79e73315
 # ╠═ccfaa591-a08a-47a6-9636-fcfb18ab5168
+# ╠═32947483-6a2c-47bb-86de-438a1dae1416
+# ╠═aa8e824a-7fd9-4995-9b86-0f5bd30bff63
+# ╠═2b2c120e-3412-476a-b504-2f404f94695d
+# ╠═46ae8641-f402-4689-8c1d-785852f6fbb0
+# ╠═f7b3f322-73ad-4a22-a689-fd2ac0be1a07
+# ╠═33dbd903-3b3f-424b-a19d-ba23a1fab8bd
+# ╠═d55eb45f-c89a-4c72-876b-4cd4866092b3
+# ╠═1a9a9935-c86f-41d3-93ff-a811b7a69051
+# ╠═767ea75b-ea06-4acd-9a9b-8051e502507b
+# ╠═a744dbde-d622-4817-8d39-1237876ca955
+# ╠═f8950c70-d423-41bb-9182-e0ab8cab5aa2
+# ╠═b2db0066-d214-4abb-a1ed-48b72d59b6e5
+# ╠═fb1f68e5-caa7-462d-b546-a3fd1877fcb8
+# ╠═124550c8-8896-4527-ba2c-966c3e2fa762
+# ╠═29015388-2cd4-4e84-87e1-f90718d836a2
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
