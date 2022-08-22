@@ -1,0 +1,57 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(ggplot2)
+library(patchwork)
+library(aplpack)
+```
+
+```{r}
+dfNutricion = read.table(file = "ENNyS_menorA2.txt",sep = "", header = T)
+```
+```{r}
+tablasexo <- table(dfNutricion$Sexo, dfNutricion$Tipo_embarazo)
+#tablaTipo <- table(dfNutricion$Tipo_embarazo)
+tablasexo
+```
+
+
+```{r}
+g <- ggplot(dfNutricion, aes(x=Sexo, fill=Sexo))
+# Number of cars in each class:
+g = g + geom_bar(stat = "count")
+g + scale_fill_manual(values=c("chocolate","deepskyblue"))
+```
+
+```{r}
+g3 <- ggplot(dfNutricion, aes(Sexo, stat="Ddasd"))
+# Number of cars in each class:
+g3 = g3 + geom_bar(aes(fill = Tipo_embarazo), position = "fill")
+g4 <- ggplot(dfNutricion, aes(Tipo_embarazo, stat="Ddasd"))
+# Number of cars in each class:
+g4 = g4 + geom_bar(aes(fill = Sexo), position = "fill")
+g3 + g4
+```
+
+```{r}
+median(dfNutricion$Peso)
+mean(dfNutricion$Peso)
+mad(dfNutricion$Peso)
+grandes = quantile(dfNutricion$Peso,0.9)
+chicos = quantile(dfNutricion$Peso,0.1)
+
+dfPodadoPeso = dfNutricion[dfNutricion$Peso<grandes & 
+                             dfNutricion$Peso>chicos,]
+mean(dfPodadoPeso$Peso)
+mean(dfNutricion, trim = 0.1)
+```
+
+```{r}
+qqnorm(dfNutricion$Peso)
+```
+```{r}
+bagplot(dfNutricion$Perim_encef, dfNutricion$Peso, approx.limit = 1000)
+```
+

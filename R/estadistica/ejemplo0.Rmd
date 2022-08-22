@@ -115,8 +115,7 @@ row.names(mtcars[mtcars$gear==4,])
 ```
 
 ```{r}
-cant = 1000
-y2 = sort(x2, decreasing = F)
+cant = 100000
 dfnorm = data.frame(1:cant)
 
 dfnorm["norm"] = rnorm(cant)
@@ -126,7 +125,7 @@ dfnorm["tstud"] = rt(1000, df=Inf)
 dfnorm["chi"]  =rchisq(1000,50)
 dfnorm["shneid"]  =rf(1000,90,40)
 dfnorm["gamma"]  =rgamma(1000,0.7)
-p <- ggplot(dfnorm, aes(x=y2, y=y2, fill=y2)) + 
+p <- ggplot(dfnorm, aes(x=norm, y=norm, fill=norm)) + 
   geom_violin()
 p
 ```
@@ -140,21 +139,17 @@ p1 = ggplot(dfnorm, aes(x = norm)) +
 p2 = ggplot(dfnorm, aes(x = binom)) + 
   geom_area(stat = "bin", bins=100)
 p3 = ggplot(dfnorm, aes(x = unif)) + 
-  geom_area(stat = "bin", bins=30)
+  geom_area(stat = "bin", bins=300)
 p4 = ggplot(dfnorm, aes(x = tstud)) + 
   geom_area(stat = "bin", bins=100)
 p5 = ggplot(dfnorm, aes(x = chi)) + 
   geom_area(stat = "bin", bins=100)
-p5 = ggplot(dfnorm, aes(x = shneid)) + 
+p6 = ggplot(dfnorm, aes(x = shneid)) + 
   geom_area(stat = "bin", bins=100)
-p5 = ggplot(dfnorm, aes(x = gamma)) + 
+p7 = ggplot(dfnorm, aes(x = gamma)) + 
   geom_area(stat = "bin", bins=100)
-p1 + p2 + p3+p4+p5
+p1 + p2 + p3+p4+p5+p6+p7
 ```
 
 
-```{r}
-c = ggplot(data=dfnorm, aes(y2)) + geom_density(x=y2)
-c
-```
 
