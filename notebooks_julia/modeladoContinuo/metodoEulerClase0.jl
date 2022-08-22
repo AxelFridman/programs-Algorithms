@@ -228,6 +228,57 @@ t5a, u5a = eulerModificado(vprima,tspan5, v0, h55)
 plot(t5a,u5a, label="Estimacion ej 5 euler mod")
 
 
+# ╔═╡ 0ef2f04c-4540-4377-afb1-b4c197ab2331
+md"""## Ejercicio 6"""
+
+# ╔═╡ 6075db7a-9fa9-483d-a5d3-ca27c8e2430d
+function esquemaheun(f, tspan, u0, h)
+		t = tspan[1]:h:tspan[2]
+		n = length(t)
+		u = zeros(n)
+		u[1] = u0
+		for i in 1:(n-1)
+			u[i+1] = u[i] + h/4 * (f(u[i], t[i]) + 3*f(u[i]+(2/3)*h*f(u[i], t[i]), t[i]+(2/3)*h))
+		end
+		return t,u
+	end
+
+# ╔═╡ df91dd46-76d5-4dfd-8d84-f3b1e6bb16ca
+r6(t)=0.2+0.2*cos(2*π*t) #representa la reproductividad o replicacion de una especie por ej
+
+# ╔═╡ 7c0a85af-1aad-491f-8ac1-ebb7a278b061
+k6=1000 #capacidad maxima
+
+# ╔═╡ ecff5396-bd95-42c9-8b45-e9a91c5cfea2
+m6=0.1 #tasa de mortalidad
+
+# ╔═╡ 11dd7551-8e8f-43fb-b74e-fa77a45198dc
+f6(y,t)=r6(t)*y*(1-(y/k6)) - m6*y
+
+# ╔═╡ 8d3742a8-6924-4d24-a737-9af25078bb1a
+y0 = [100,500,1000]
+
+# ╔═╡ dfb3b3f3-a989-4913-803c-3e48aaed1f4d
+tspan6 = [0,50]
+
+# ╔═╡ fc1d0f4b-9fbc-4bbe-baf4-5e26a37fb2b6
+md"""### Esquema Heun"""
+
+# ╔═╡ 32568f07-d6b5-4fa4-b3a9-5156fc95cfb4
+begin
+t6, u6 = esquemaheun(f6,tspan6, y0[1], 1/365)
+t6a, u6a = esquemaheun(f6,tspan6, y0[2], 1/365)
+t6b, u6b = esquemaheun(f6,tspan6, y0[3], 1/365)
+end
+
+# ╔═╡ 54a1450c-0b44-49ae-afbe-44387adb7c12
+begin
+plot(t6,u6, label="Estimacion y0 = 100")
+plot!(t6a,u6a, label="Estimacion y0 = 500")
+plot!(t6b,u6b, label="Estimacion y0 = 1000")
+end
+
+
 # ╔═╡ Cell order:
 # ╠═60ccb3c4-8245-4b19-ab3d-246f93190008
 # ╠═26cc5030-0024-4ec5-955d-d9754857a7f2
@@ -286,3 +337,14 @@ plot(t5a,u5a, label="Estimacion ej 5 euler mod")
 # ╠═90768daf-58f9-44ce-9155-c3e10151caa8
 # ╠═1d5a0391-e018-4894-8a4d-aaf50f89f177
 # ╠═6a60c1fe-6d92-4fa6-956b-b2169abc2653
+# ╠═0ef2f04c-4540-4377-afb1-b4c197ab2331
+# ╠═6075db7a-9fa9-483d-a5d3-ca27c8e2430d
+# ╠═df91dd46-76d5-4dfd-8d84-f3b1e6bb16ca
+# ╠═7c0a85af-1aad-491f-8ac1-ebb7a278b061
+# ╠═ecff5396-bd95-42c9-8b45-e9a91c5cfea2
+# ╠═11dd7551-8e8f-43fb-b74e-fa77a45198dc
+# ╠═8d3742a8-6924-4d24-a737-9af25078bb1a
+# ╠═dfb3b3f3-a989-4913-803c-3e48aaed1f4d
+# ╠═fc1d0f4b-9fbc-4bbe-baf4-5e26a37fb2b6
+# ╠═32568f07-d6b5-4fa4-b3a9-5156fc95cfb4
+# ╠═54a1450c-0b44-49ae-afbe-44387adb7c12
