@@ -26,6 +26,9 @@ using Plots
 # ╔═╡ 8a06106e-d71f-4c3d-9f3e-7b5da53bc016
 using PlutoUI
 
+# ╔═╡ d690ef0b-a70f-412e-9a45-9fb9bc0c3412
+import DifferentialEquations.jl
+
 # ╔═╡ a8565f65-1599-4882-8ce2-c20f4b7cee0f
 begin
 	function euler(f, tspan, u0, h)
@@ -279,8 +282,87 @@ plot!(t6b,u6b, label="Estimacion y0 = 1000")
 end
 
 
+# ╔═╡ 47cfeda4-9ca5-4cb1-92cc-97c9153685ce
+md"""## Ejercicio 7"""
+
+# ╔═╡ e9aa5431-24ff-40d6-b96d-616a8990641c
+function eulerModificadoVectores(f, u0, h, limite)
+		coordenadaLim = limite[1]
+		momentoLimite = limite[2]
+	
+		#t = tspan[1]:h:tspan[2]
+		#n = length(t)
+		#u=zeros(n)
+		t = []
+		u = []
+		push!(u,u0)
+		push!(t,0)
+		i=1
+		while(u[end][coordenadaLim]>momentoLimite)
+			z = u[end] + h * f(u[end]+(h/2) *f(u[end],h*i) ,h*i+ h/2)
+			push!(u,z)
+			push!(t,h*i)
+			i = i + 1
+		end
+		return t,u
+	end
+
+# ╔═╡ c9b7a42d-afc3-44c9-8067-c708e36c0659
+gra = 9.87
+
+# ╔═╡ e8b75307-a868-4a11-b32b-4b9122336f00
+gamma1 = 0.0058
+
+# ╔═╡ ef2d9b8f-baff-4500-b934-34d4b1ec31b3
+masa1 = 16
+
+# ╔═╡ 52a868d2-f78f-48ba-894d-3a8d114a8004
+masa2 = 0.0082
+
+# ╔═╡ bf6e4f6e-6fe0-4d04-821d-280e38f386bb
+gamma2= 3.74 * 10^(−5) 
+
+# ╔═╡ 762ae9f8-9f5b-4567-86f4-05346c4bf937
+lim = [1,0]
+
+# ╔═╡ 55fe85db-6759-483d-a4c6-474ddda5fc6b
+u7 = [55.8,0]
+
+# ╔═╡ e6d97f46-f95a-45c5-bb82-353ab078dde6
+h7 = 0.01
+
+# ╔═╡ 12e67cbd-bd22-4cb5-8a6b-b3076e7f1392
+f71(z,t)= [z[2],  -gra+gamma1/masa1 * (z[2])^2]
+
+# ╔═╡ 65477865-d3ca-46cf-a45c-6e4ee14ac953
+f72(z,t)= [z[2],  -gra+gamma2/masa2 * (z[2])^2]
+
+# ╔═╡ f4352270-878e-4c27-80f5-0a71cd63bb1b
+z0 = [55.8, 0]
+
+# ╔═╡ 9b544ed0-38fe-4458-86ac-dbd299dd23be
+begin
+t71r, u71r = eulerModificadoVectores(f71, u7, h7, lim)
+t72r, u72r = eulerModificadoVectores(f72, u7, h7, lim)
+u71rm = hcat(u71r...)
+u72rm = hcat(u72r...)
+end
+
+# ╔═╡ 7f850f00-3c0f-4054-9322-9d4026960c95
+begin
+plot(t71r, u71rm[1,:],label="Estimacion bala cañon")
+plot!(t72r, u72rm[1,:],label="Estimacion bala mosquete")
+end
+
+# ╔═╡ bc89472a-2b12-4b43-9bdf-474a17845cf0
+md"""## Ejercicio 8"""
+
+# ╔═╡ 81bb5854-0b17-4708-8bbb-36946561052b
+
+
 # ╔═╡ Cell order:
 # ╠═60ccb3c4-8245-4b19-ab3d-246f93190008
+# ╠═d690ef0b-a70f-412e-9a45-9fb9bc0c3412
 # ╠═26cc5030-0024-4ec5-955d-d9754857a7f2
 # ╠═ccab0f4a-1f07-11ed-3fc8-1990dc5b6c44
 # ╠═8a06106e-d71f-4c3d-9f3e-7b5da53bc016
@@ -348,3 +430,20 @@ end
 # ╠═fc1d0f4b-9fbc-4bbe-baf4-5e26a37fb2b6
 # ╠═32568f07-d6b5-4fa4-b3a9-5156fc95cfb4
 # ╠═54a1450c-0b44-49ae-afbe-44387adb7c12
+# ╠═47cfeda4-9ca5-4cb1-92cc-97c9153685ce
+# ╠═e9aa5431-24ff-40d6-b96d-616a8990641c
+# ╠═c9b7a42d-afc3-44c9-8067-c708e36c0659
+# ╠═e8b75307-a868-4a11-b32b-4b9122336f00
+# ╠═ef2d9b8f-baff-4500-b934-34d4b1ec31b3
+# ╠═52a868d2-f78f-48ba-894d-3a8d114a8004
+# ╠═bf6e4f6e-6fe0-4d04-821d-280e38f386bb
+# ╠═762ae9f8-9f5b-4567-86f4-05346c4bf937
+# ╠═55fe85db-6759-483d-a4c6-474ddda5fc6b
+# ╠═e6d97f46-f95a-45c5-bb82-353ab078dde6
+# ╠═12e67cbd-bd22-4cb5-8a6b-b3076e7f1392
+# ╠═65477865-d3ca-46cf-a45c-6e4ee14ac953
+# ╠═f4352270-878e-4c27-80f5-0a71cd63bb1b
+# ╠═9b544ed0-38fe-4458-86ac-dbd299dd23be
+# ╠═7f850f00-3c0f-4054-9322-9d4026960c95
+# ╠═bc89472a-2b12-4b43-9bdf-474a17845cf0
+# ╠═81bb5854-0b17-4708-8bbb-36946561052b
