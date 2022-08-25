@@ -38,11 +38,56 @@ variableMasSignificativaTtest = function(df){
   return(c(max(apply(df, 2, mean)), max(apply(df, 2, sd))))
 }
 ```
+```{r}
+variablesSignificativas= function(df, dfdif, nivelConfianza){
+  i = 1
+  significativas = c()
+  cuanSignificativas = c()
+  for (var in 2:ncol(df)) {
+    testcito = t.test(
+    x           = df[,var],
+    y           = dfdif[,var],
+    alternative = "two.sided",
+    mu          = 0,
+    var.equal   = TRUE,
+    conf.level  = nivelConfianza
+  )
+  #¨print(testcito$p.value)
+  if(testcito$p.value<(1-nivelConfianza)){
+    significativas[i]=var
+    cuanSignificativas[i] = testcito$p.value
+    i = i+1
+    }
+  }
+  dfsig = data.frame(significativas)
+  dfsig["pvalor"] = cuanSignificativas
+  colnames(dfsig) = c("variablesSignificativas", "pValor")
+  return(dfsig)
+}
+```
 
 ```{r}
-df= crearDataset(10000, 12)
+cantVar = 100
+cantObs = 12
+nivelConfianza = 0.95
+
+df= crearDataset(cantVar, cantObs)
 dfdif = dfdiferencia(df)
+df1 = df[df$tipo==1,]
+df2 = df[df$tipo==2,]
 variableMasSignificativaTtest(dfdif)
 #s = maximaCorrelacion(df)
 ```
+```{r}
+s =variablesSignificativas(df1, df2, nivelConfianza)
+s
+```
+
+```{r}
+shapiro.test(dfdif$var1)
+```
+
+
+
+
 

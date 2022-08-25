@@ -55,3 +55,20 @@ qqnorm(dfNutricion$Peso)
 bagplot(dfNutricion$Perim_encef, dfNutricion$Peso, approx.limit = 1000)
 ```
 
+```{r}
+dfNubes = read.table(file = "nubes.txt",sep = "", header = T)
+qqplot(dfNubes$CONTROLES, dfNubes$TRATADAS, log='xy')
+```
+```{r}
+density(dfNubes$CONTROLES)
+plot(density.default(x = dfNubes$CONTROLES, bw=15))
+```
+```{r}
+dnube = density.default(x = dfNubes$CONTROLES, bw=15)
+```
+
+```{r}
+mm = (max(dfNubes$CONTROLES)+14)
+integrate(approxfun(dnube), lower=(min(dfNubes$CONTROLES)-17), upper=1)
+```
+
