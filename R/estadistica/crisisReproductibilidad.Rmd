@@ -65,12 +65,37 @@ variablesSignificativas= function(df, dfdif, nivelConfianza){
   return(dfsig)
 }
 ```
+```{r}
+realizar1exp = function(nVar, nObs, nivelConfianza){
+  df= crearDataset(cantVar, cantObs)
+  df1 = df[df$tipo==1,]
+  df2 = df[df$tipo==2,]
+  s =variablesSignificativas(df1, df2, nivelConfianza)
+  return(length(s$variablesSignificativas))
+  
+}
+```
+¨
+```{r}
+realizarKexperimentos = function(nVar, nObs, nivelConfianza, k){
+  cantVarSig = 0
+  for (i in 1:k) {
+    cantVarSig = cantVarSig + realizar1exp(nVar, nObs, nivelConfianza)
+  }
+  return(cantVarSig/k)
+  }
+```
+```{r}
+cantVar = 10000
+cantObs = 1200
+nivelConfianza = 0.99
+k = 50
+realizarKexperimentos(cantVar,cantObs, nivelConfianza, k)
+
+```
+
 
 ```{r}
-cantVar = 100
-cantObs = 12
-nivelConfianza = 0.95
-
 df= crearDataset(cantVar, cantObs)
 dfdif = dfdiferencia(df)
 df1 = df[df$tipo==1,]
@@ -78,6 +103,7 @@ df2 = df[df$tipo==2,]
 variableMasSignificativaTtest(dfdif)
 #s = maximaCorrelacion(df)
 ```
+
 ```{r}
 s =variablesSignificativas(df1, df2, nivelConfianza)
 s

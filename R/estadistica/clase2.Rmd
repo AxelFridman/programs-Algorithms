@@ -61,7 +61,7 @@ qqplot(dfNubes$CONTROLES, dfNubes$TRATADAS, log='xy')
 ```
 ```{r}
 density(dfNubes$CONTROLES)
-plot(density.default(x = dfNubes$CONTROLES, bw=15))
+plot(density.default(x = dfNubes$CONTROLES, bw=30))
 ```
 ```{r}
 dnube = density.default(x = dfNubes$CONTROLES, bw=15)
@@ -70,5 +70,16 @@ dnube = density.default(x = dfNubes$CONTROLES, bw=15)
 ```{r}
 mm = (max(dfNubes$CONTROLES)+14)
 integrate(approxfun(dnube), lower=(min(dfNubes$CONTROLES)-17), upper=1)
+```
+```{r}
+dfbuf = read.table(file = "buffalo.txt",sep = "", header = F)
+dfbuf = t(dfbuf)
+```
+```{r}
+den = density(dfbuf[,1], bw=5, kernel = "epanechnikov")
+den2 = density(dfbuf[,1], bw=5, kernel = "gaussian")
+plot(den$x,den$y, type='l', col='red')
+lines(den2$x,den2$y, col='blue')
+
 ```
 
