@@ -1,0 +1,48 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+crearDataset = function (cantVariables, cantObservaciones, parametro=1){
+  df = data.frame(1:cantObservaciones)
+  colnames(df)=c("tipo")
+  nom = c("tipo")
+  for (i in 1:cantVariables) {
+    df[i+1] = rnorm(cantObservaciones)
+    nom[i+1]=paste("var",i,sep = "")
+  }
+  colnames(df)=nom
+  df$tipo=rep(c(0,1,2),cantObservaciones/3)
+  return(df)
+}
+```
+```{r}
+maximaCorrelacion = function (cantVariables, cantObservaciones, parametro=1){
+  res <- cor(df)
+  diag(res) = 0
+  resMod = abs(res)
+  cuales = which.max(abs(res))
+  return(c(max(res), cuales) )
+}
+```
+```{r}
+dfdiferencia = function(df){
+  df3 = (df[df$tipo==2,] - df[df$tipo==1,])
+  df3$tipo = 0
+return(df3)
+}
+```
+
+```{r}
+variableMasSignificativaTtest = function(df){
+  return(c(max(apply(df, 2, mean)), max(apply(df, 2, sd))))
+}
+```
+
+```{r}
+df= crearDataset(10000, 12)
+dfdif = dfdiferencia(df)
+variableMasSignificativaTtest(dfdif)
+#s = maximaCorrelacion(df)
+```
+
