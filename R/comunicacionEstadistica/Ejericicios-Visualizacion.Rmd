@@ -1,0 +1,198 @@
+---
+title: "Visualización"
+author: "Guillermo Solovey"
+date: "8/27/2022"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+  html_notebook:
+    theme: lumen
+    toc: yes
+    toc_float: yes
+subtitle: "Taller de Comunicación Estadística"
+---
+```{r}
+install.packages("palmerpenguins")
+install.packages("tidyverse")
+```
+```{r}
+library(gridExtra)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Ejercicio 1
+A partir del siguiente gráfico, investigar cómo se usa y qué hace 
+el `geom_rug `. Agreguen una capa de geom_rug al plot existente
+pero que no use el mapeo de species en color.
+
+¿Qué hace `theme_minimal()`? ¿Hay otros themes que se pueden usar?
+
+```{r echo = T, eval = F}
+require(ggplot2)
+require(palmerpenguins)
+
+```
+```{r}
+ggplot(data = penguins, aes(x = bill_depth_mm, 
+                            y = bill_length_mm,
+                            color = species,
+                            size=body_mass_g) ) +
+  geom_point() +
+  geom_rug(mapping = aes(x=bill_depth_mm, y = bill_length_mm)) +
+  #theme_minimal()
+  #theme_classic()
+  theme_gray()
+```
+
+#### Ejercicio 2
+¿Los pinguinos que tienen picos más anchos tienen picos más cortos o
+más largos?
+```{r}
+ggplot(data = penguins, aes(x = bill_depth_mm, 
+                            y = bill_length_mm,
+                            color = species
+                            ) ) +
+  geom_point(alpha=0.3) +
+  #geom_line()+
+  geom_rug(mapping = aes(x=bill_depth_mm, y = bill_length_mm)) +
+  geom_smooth(method='lm', formula= y~x) + #penguins$bill_length_mm~penguins$bill_depth_mm x~y
+   #theme_minimal()
+  #theme_classic()
+  theme_gray()
+```
+
+#### Ejercicio 3
+Hacer un violin plot con `geom_violin` y sumen una capa de `geom_boxplot`
+y `geom_point` o `geom_jitter`
+
+```{r}
+ggplot(data = penguins, aes(x = species , 
+                            y = bill_depth_mm,
+                            color = species) ) +
+  geom_violin()+
+  geom_boxplot()+
+  geom_jitter()
+
+```
+
+
+
+#### Ejercicio 4
+Hacer un violin plot con `geom_violin` y sumen una capa de `geom_boxplot`
+y `geom_point` o `geom_jitter`
+
+
+#### Ejercicio 5
+Exploración libre del dataset del experimento de Stroop. 
+```{r}
+dfstroop = read.csv("stroop.csv")
+dfstroop = dfstroop[! is.na(dfstroop$response),]
+```
+
+```{r}
+dfstroop["facil"] = dfstroop$word==dfstroop$ink
+dfstroop["acerto"] = dfstroop$response==dfstroop$ink
+```
+
+```{r}
+ggplot(data = dfstroop, aes(x = facil, 
+                            y = rt,
+                            color = acerto
+                            ) ) +
+  #geom_point(alpha=0.3) +
+  geom_violin()+
+  #geom_smooth(method='lm', formula= y~x) + #penguins$bill_length_mm~penguins$bill_depth_mm x~y
+   #theme_minimal()
+  #theme_classic()
+  theme_gray()
+```
+Cuando las personas se equivocan tardan de manera similar en responder que cuando aciertan.
+Si la palabra es facil porque dice el mismo color que tiene puesto, nadie le erro. 
+
+```{r}
+plot_list = c()
+p = ggplot(data = dfstroop, aes(x = ink, 
+                            y = rt,
+                            color = ink
+                            ) ) +
+  geom_jitter(alpha=0.3) +
+  theme_classic()
+
+p2 = ggplot(data = dfstroop, aes(x = word, 
+                            y = rt,
+                            color = word
+                            ) ) +
+  geom_jitter(alpha=0.3) +
+  theme_classic()
+p3 = ggplot(data = dfstroop, aes(x = response, 
+                            y = rt,
+                            color = response
+                            ) ) +
+  geom_jitter(alpha=0.3) +
+  theme_classic()
+p
+p2
+p3
+```
+
+```{r}
+ggplot(data = dfstroop, aes(x = ink,
+                            y = rt,
+                            color = acerto
+                            ) ) +
+  #geom_point(alpha=0.3) +
+  geom_violin()+
+  #geom_smooth(method='lm', formula= y~x) + #penguins$bill_length_mm~penguins$bill_depth_mm x~y
+   #theme_minimal()
+  #theme_classic()
+  theme_gray()
+ggplot(data = dfstroop, aes(x = response,
+                            y = rt,
+                            color = acerto
+                            ) ) +
+  #geom_point(alpha=0.3) +
+  geom_violin()+
+  #geom_smooth(method='lm', formula= y~x) + #penguins$bill_length_mm~penguins$bill_depth_mm x~y
+   #theme_minimal()
+  #theme_classic()
+  theme_gray()
+ggplot(data = dfstroop, aes(x = word,
+                            y = rt,
+                            color = acerto
+                            ) ) +
+  #geom_point(alpha=0.3) +
+  geom_violin()+
+  #geom_smooth(method='lm', formula= y~x) + #penguins$bill_length_mm~penguins$bill_depth_mm x~y
+   #theme_minimal()
+  #theme_classic()
+  theme_gray()
+```
+```{r}
+dfrank = data.frame(unique(dfstroop$sub_id))
+```
+```{r}
+library(dplyr)
+```
+
+```{r}
+dfstroop <- dfstroop %>% group_by(sub_id) %>% mutate( puntaje = mean(acerto) )
+
+```
+
+
+```{r}
+ggplot(data = dfstroop, aes(x = sub_id,
+                            y = puntaje
+                          
+                            ) ) +
+geom_point()
+theme_gray()
+```
+
+```{r}
+```
+
