@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.9
+# v0.18.2
 
 using Markdown
 using InteractiveUtils
@@ -25,6 +25,11 @@ using Plots
 
 # ╔═╡ 8a06106e-d71f-4c3d-9f3e-7b5da53bc016
 using PlutoUI
+
+# ╔═╡ 81bb5854-0b17-4708-8bbb-36946561052b
+begin
+	using DifferentialEquations
+end
 
 # ╔═╡ d690ef0b-a70f-412e-9a45-9fb9bc0c3412
 import DifferentialEquations.jl
@@ -355,10 +360,178 @@ plot!(t72r, u72rm[1,:],label="Estimacion bala mosquete")
 end
 
 # ╔═╡ bc89472a-2b12-4b43-9bdf-474a17845cf0
+md"""## Uso solver"""
+
+# ╔═╡ 71bdb2d1-4c47-4676-8165-0c0d0512003b
+begin
+
+end
+
+# ╔═╡ a350811b-b7a1-4ca8-9a48-6186a1322e41
+function caida(u,p,t)
+	g,m,y = p
+	du = zeros(2)
+	du[1] = u[2]
+	du[2] = -g+y*u[2]^2/m
+	return du
+end
+
+# ╔═╡ bb562a0e-7069-4bba-8845-8d27c7ec8bd5
+begin
+	dato = [55.8,0]
+	tspanx = (0.0, 3.4)
+	p = (0.01,16, 0.0058)
+	prob_cañon = ODEProblem(caida, dato, tspanx,p)
+end
+
+# ╔═╡ 564c9963-d9f4-4b46-9c0b-064fc3b6ffc9
+sol_cañon = solve(prob_cañon)
+
+# ╔═╡ 59fe5867-8ebb-42a5-9562-22229b5bdbba
+sol_cañon.t
+
+# ╔═╡ 91db3da2-3372-4df1-a710-ebef49b3035d
+sol_cañon.u
+
+# ╔═╡ a9947d04-3173-4571-96b0-024fd98c2323
+sol_cañon[1,:]
+
+# ╔═╡ 1f59d395-6324-43b7-a507-b68cfb28c436
+begin
+	plot(sol_cañon)
+end
+
+# ╔═╡ dc989502-d213-4caa-9391-55026b2728db
+plot(sol_cañon,idxs=1, title="Altura")
+
+# ╔═╡ 09ec43bf-c6bb-4eb5-8f27-564ab533e9c3
+plot(sol_cañon,idxs=(1,2), title="Velocidad en funcion de la altura", legend=:topleft)
+
+# ╔═╡ 5660b715-eb41-412c-aa68-22f9f2dcd4aa
+begin
+	t_fino = tspanx[1]:0.01:tspanx[2]
+	plot(t_fino,sol_cañon(t_fino,idxs=1))
+end
+
+# ╔═╡ fd25731b-c285-4780-b8ca-077a83d8b902
+animate(sol_cañon, idxs=1,fps=10, arrow=true)
+
+# ╔═╡ 0f5846b8-a3ac-498c-95f7-02257d14af4d
 md"""## Ejercicio 8"""
 
-# ╔═╡ 81bb5854-0b17-4708-8bbb-36946561052b
+# ╔═╡ 97540eec-253d-4884-899c-f213a08081c5
+begin
+	αp = 0.5
+	βp = 0.5
+	γ = 0.5
+	δ = 0.5
+	pInfo = (αp, βp, γ, δ)
+	
+	tspanPredPresa = (0.0, 100)
+	datoPredPresa = [2.0,2.0]
+end
 
+# ╔═╡ 5c80aed1-6a7e-4cc3-8fc9-bb4f6ec5c940
+function predpresa(u,p,t)
+	(α, β, γ, δ) = p
+	du = zeros(2)
+	du[1] = −α*u[1] + γ*u[1]*u[2]
+	du[2] = β*u[2] − δ*u[1]*u[2]
+	return du
+end
+
+# ╔═╡ 228ae0c2-7302-4fc5-8a8b-2e6651881cb3
+prob_predPresa = ODEProblem(predpresa, datoPredPresa, tspanPredPresa,pInfo)
+
+# ╔═╡ c96fc5fe-dfd6-4ecc-aa34-2a4eddcd2c27
+solPredPresa = solve(prob_predPresa)
+
+# ╔═╡ d8535457-31cc-4faa-962b-d55059a4f6e3
+animate(solPredPresa)
+
+# ╔═╡ d3c0876f-7bbe-4f17-af6d-2b08a58ebbd2
+plot(solPredPresa, idxs=(1,2))
+
+# ╔═╡ 9091d35c-c319-400a-b5e7-c17c89b00628
+animate(solPredPresa, idxs=(1,2), arrow=true, fps=10)
+
+# ╔═╡ e10c43d9-64e7-4fb4-b908-535f93cc2d93
+begin
+	αp2 = 0.25
+	βp2 = 1
+	γ2 = 0.01
+	δ2 = 0.01
+	pInfo2 = (αp2, βp2, γ2, δ2)
+	
+	tspanPredPresa2 = (0.0, 50.0)
+	datoPredPresa2 = [80.0,30.0]
+end
+
+# ╔═╡ 6f28d73d-2d51-49b3-8e2a-e84c7df02a57
+begin
+	prob_predPresa2 = ODEProblem(predpresa, datoPredPresa2, tspanPredPresa2,pInfo2)
+	solPredPresa2 = solve(prob_predPresa2)
+end
+
+# ╔═╡ b1f0a882-c1c8-4246-8ea4-a595438fdefc
+plot(solPredPresa2, idxs=(1,2))
+
+# ╔═╡ f6394190-60de-48ad-b0e2-bd3a8cfffee7
+plot(solPredPresa2)
+
+# ╔═╡ 70415065-3942-4474-bd9c-82f78ea3d1b2
+animate(solPredPresa2)
+
+# ╔═╡ b94a8cac-0b57-4ff9-861c-f158e0383aa3
+animate(solPredPresa2, idxs=(1,2), arrow=true, fps=10)
+
+# ╔═╡ 29478b20-7240-4d41-bacc-ecb929351408
+md"""## Ejercicio 9"""
+
+# ╔═╡ bdae290d-a2c3-48f7-9eab-b1d4384ee8f7
+begin
+	k1 = 0.2
+	k2 = 0.1
+	k3 = 0.05
+	pquim = (k1,k2,k3)
+
+	x00 = 0.1
+	a00 = 0.8
+	y00 = 0.05
+	b00 = 0.05
+
+	datoQuim = [x00,a00,y00,b00]
+	tspanquim = [0.0,240.0]
+	
+end
+	
+
+# ╔═╡ adcae824-395f-4474-993d-baab86871d09
+function reaccionQuimica(u,p,t)
+	(k1,k2,k3) = p
+	du = zeros(4)
+	
+	du[1] = k1 * u[1]*u[2] - k2*u[1]*u[3] 
+	du[2] = -k1 * u[1]*u[2]
+	du[3] = k2*u[1]*u[3] - k3*u[3]
+	du[4] = k3 *u[3]
+	return du
+end
+
+# ╔═╡ d0cb5a9e-27a8-4a80-97b5-dbfdb1021241
+begin
+	prob_quimic = ODEProblem(reaccionQuimica, datoQuim, tspanquim,pquim)
+	sol_quimic = solve(prob_quimic)
+end
+
+# ╔═╡ e981a407-b2ab-45bb-aa0d-8e182ac82af2
+plot(sol_quimic, label=["x" "a" "y" "b"])
+
+# ╔═╡ 10a659ca-48fa-440b-bc99-6596fc7b1152
+animate(sol_quimic, fps=7)
+
+# ╔═╡ 9b377fdf-0aea-4c54-8204-cebb5e135f53
+0
 
 # ╔═╡ Cell order:
 # ╠═60ccb3c4-8245-4b19-ab3d-246f93190008
@@ -446,4 +619,37 @@ md"""## Ejercicio 8"""
 # ╠═9b544ed0-38fe-4458-86ac-dbd299dd23be
 # ╠═7f850f00-3c0f-4054-9322-9d4026960c95
 # ╠═bc89472a-2b12-4b43-9bdf-474a17845cf0
+# ╠═71bdb2d1-4c47-4676-8165-0c0d0512003b
 # ╠═81bb5854-0b17-4708-8bbb-36946561052b
+# ╠═a350811b-b7a1-4ca8-9a48-6186a1322e41
+# ╠═bb562a0e-7069-4bba-8845-8d27c7ec8bd5
+# ╠═564c9963-d9f4-4b46-9c0b-064fc3b6ffc9
+# ╠═59fe5867-8ebb-42a5-9562-22229b5bdbba
+# ╠═91db3da2-3372-4df1-a710-ebef49b3035d
+# ╠═a9947d04-3173-4571-96b0-024fd98c2323
+# ╠═1f59d395-6324-43b7-a507-b68cfb28c436
+# ╠═dc989502-d213-4caa-9391-55026b2728db
+# ╠═09ec43bf-c6bb-4eb5-8f27-564ab533e9c3
+# ╠═5660b715-eb41-412c-aa68-22f9f2dcd4aa
+# ╠═fd25731b-c285-4780-b8ca-077a83d8b902
+# ╠═0f5846b8-a3ac-498c-95f7-02257d14af4d
+# ╠═97540eec-253d-4884-899c-f213a08081c5
+# ╠═5c80aed1-6a7e-4cc3-8fc9-bb4f6ec5c940
+# ╠═228ae0c2-7302-4fc5-8a8b-2e6651881cb3
+# ╠═c96fc5fe-dfd6-4ecc-aa34-2a4eddcd2c27
+# ╠═d8535457-31cc-4faa-962b-d55059a4f6e3
+# ╠═d3c0876f-7bbe-4f17-af6d-2b08a58ebbd2
+# ╠═9091d35c-c319-400a-b5e7-c17c89b00628
+# ╠═e10c43d9-64e7-4fb4-b908-535f93cc2d93
+# ╠═6f28d73d-2d51-49b3-8e2a-e84c7df02a57
+# ╠═b1f0a882-c1c8-4246-8ea4-a595438fdefc
+# ╠═f6394190-60de-48ad-b0e2-bd3a8cfffee7
+# ╠═70415065-3942-4474-bd9c-82f78ea3d1b2
+# ╠═b94a8cac-0b57-4ff9-861c-f158e0383aa3
+# ╠═29478b20-7240-4d41-bacc-ecb929351408
+# ╠═bdae290d-a2c3-48f7-9eab-b1d4384ee8f7
+# ╠═adcae824-395f-4474-993d-baab86871d09
+# ╠═d0cb5a9e-27a8-4a80-97b5-dbfdb1021241
+# ╠═e981a407-b2ab-45bb-aa0d-8e182ac82af2
+# ╠═10a659ca-48fa-440b-bc99-6596fc7b1152
+# ╠═9b377fdf-0aea-4c54-8204-cebb5e135f53
