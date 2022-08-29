@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.18.2
+# v0.19.9
 
 using Markdown
 using InteractiveUtils
@@ -20,19 +20,22 @@ import Pkg
 # ╔═╡ 26cc5030-0024-4ec5-955d-d9754857a7f2
 Pkg.add("PlutoUI")
 
+# ╔═╡ 81bb5854-0b17-4708-8bbb-36946561052b
+begin
+	Pkg.add("DifferentialEquations")
+end
+
 # ╔═╡ ccab0f4a-1f07-11ed-3fc8-1990dc5b6c44
 using Plots
 
 # ╔═╡ 8a06106e-d71f-4c3d-9f3e-7b5da53bc016
 using PlutoUI
 
-# ╔═╡ 81bb5854-0b17-4708-8bbb-36946561052b
-begin
-	using DifferentialEquations
-end
+# ╔═╡ 408a8b70-0b5e-4352-a2c4-5a8cd7ae1f14
+using DifferentialEquations
 
 # ╔═╡ d690ef0b-a70f-412e-9a45-9fb9bc0c3412
-import DifferentialEquations.jl
+#import DifferentialEquations.jl
 
 # ╔═╡ a8565f65-1599-4882-8ce2-c20f4b7cee0f
 begin
@@ -362,11 +365,6 @@ end
 # ╔═╡ bc89472a-2b12-4b43-9bdf-474a17845cf0
 md"""## Uso solver"""
 
-# ╔═╡ 71bdb2d1-4c47-4676-8165-0c0d0512003b
-begin
-
-end
-
 # ╔═╡ a350811b-b7a1-4ca8-9a48-6186a1322e41
 function caida(u,p,t)
 	g,m,y = p
@@ -493,6 +491,7 @@ begin
 	k1 = 0.2
 	k2 = 0.1
 	k3 = 0.05
+	k4 = 0.1
 	pquim = (k1,k2,k3)
 
 	x00 = 0.1
@@ -508,13 +507,13 @@ end
 
 # ╔═╡ adcae824-395f-4474-993d-baab86871d09
 function reaccionQuimica(u,p,t)
-	(k1,k2,k3) = p
+	(k1,k2,k3,k4) = p
 	du = zeros(4)
 	
 	du[1] = k1 * u[1]*u[2] - k2*u[1]*u[3] 
-	du[2] = -k1 * u[1]*u[2]
+	du[2] = -k1 * u[1]*u[2] + k4
 	du[3] = k2*u[1]*u[3] - k3*u[3]
-	du[4] = k3 *u[3]
+	du[4] = k3 *u[3] - k4
 	return du
 end
 
@@ -619,8 +618,8 @@ animate(sol_quimic, fps=7)
 # ╠═9b544ed0-38fe-4458-86ac-dbd299dd23be
 # ╠═7f850f00-3c0f-4054-9322-9d4026960c95
 # ╠═bc89472a-2b12-4b43-9bdf-474a17845cf0
-# ╠═71bdb2d1-4c47-4676-8165-0c0d0512003b
 # ╠═81bb5854-0b17-4708-8bbb-36946561052b
+# ╠═408a8b70-0b5e-4352-a2c4-5a8cd7ae1f14
 # ╠═a350811b-b7a1-4ca8-9a48-6186a1322e41
 # ╠═bb562a0e-7069-4bba-8845-8d27c7ec8bd5
 # ╠═564c9963-d9f4-4b46-9c0b-064fc3b6ffc9
