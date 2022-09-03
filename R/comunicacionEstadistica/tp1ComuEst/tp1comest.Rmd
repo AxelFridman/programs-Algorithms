@@ -1,0 +1,192 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(ggplot2)
+library(gridExtra)
+
+```
+
+```{r}
+df = read.csv("stroke.csv")
+```
+
+```{r}
+df = df[df$bmi!="N/A",]
+df$age = as.numeric(df$age)
+df$bmi = as.numeric(df$bmi)
+```
+```{r}
+g = ggplot(data=df, mapping = aes(age, avg_glucose_level)) + geom_point()
+```
+
+```{r}
+ggplot(df, aes(x= stroke,  group=gender)) + 
+    geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") +
+    geom_text(aes( label = scales::percent(..prop..),
+                   y= ..prop.. ), stat= "count", vjust = -.5) +
+    labs(y = "Percent", fill="day") +
+    facet_grid(~gender) +
+    scale_y_continuous(labels = scales::percent)
+```
+```{r}
+g1 = ggplot(df, aes(x= stroke,  group=ever_married)) + 
+      geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") +
+    geom_text(aes( label = scales::percent(..prop..),
+                   y= ..prop.. ), stat= "count", vjust = -.5) +
+    labs(y = "Percent", fill="Tuvo ACV") +
+    facet_grid(~ever_married) +
+    scale_y_continuous(labels = scales::percent) +
+  ggtitle("Alguna vez casado")
+
+g2 = ggplot(df, aes(x= stroke,  group=heart_disease)) + 
+      geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") +
+    geom_text(aes( label = scales::percent(..prop..),
+                   y= ..prop.. ), stat= "count", vjust = -.5) +
+    labs(y = "Percent", fill="Tuvo ACV") +
+    facet_grid(~heart_disease) +
+    scale_y_continuous(labels = scales::percent) +
+  ggtitle("Alguna vez heart_disease")
+
+g3 = ggplot(df, aes(x= stroke,  group=hypertension)) + 
+      geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") +
+    geom_text(aes( label = scales::percent(..prop..),
+                   y= ..prop.. ), stat= "count", vjust = -.5) +
+    labs(y = "Percent", fill="Tuvo ACV") +
+    facet_grid(~hypertension) +
+    scale_y_continuous(labels = scales::percent) +
+  ggtitle("Alguna vez hypertension")
+
+g4 = ggplot(df, aes(x= stroke,  group=work_type)) + 
+      geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") +
+    geom_text(aes( label = scales::percent(..prop..),
+                   y= ..prop.. ), stat= "count", vjust = -.5) +
+    labs(y = "Percent", fill="Tuvo ACV") +
+    facet_grid(~work_type) +
+    scale_y_continuous(labels = scales::percent) +
+  ggtitle("Alguna vez work_type")
+
+g5 = ggplot(df, aes(x= stroke,  group=Residence_type)) + 
+      geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") +
+    geom_text(aes( label = scales::percent(..prop..),
+                   y= ..prop.. ), stat= "count", vjust = -.5) +
+    labs(y = "Percent", fill="Tuvo ACV") +
+    facet_grid(~Residence_type) +
+    scale_y_continuous(labels = scales::percent) +
+  ggtitle("Alguna vez Residence_type")
+
+g6 = ggplot(df, aes(x= stroke,  group=smoking_status)) + 
+      geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") +
+    geom_text(aes( label = scales::percent(..prop..),
+                   y= ..prop.. ), stat= "count", vjust = -.5) +
+    labs(y = "Percent", fill="Tuvo ACV") +
+    facet_grid(~smoking_status) +
+    scale_y_continuous(labels = scales::percent) +
+  ggtitle("Alguna vez smoking_status")
+
+#dev.new(width=30, height=50, unit="in")
+
+#grid.arrange(g1, g2, g3,g4,g5,g6,nrow = 3, ncol = 2)
+
+g1
+```
+```{r}
+g2
+```
+```{r}
+g3
+```
+```{r}
+g4
+```
+```{r}
+g5
+```
+```{r}
+g6
+```
+
+```{r}
+table(df$work_type)
+```
+
+```{r}
+categ = c("ever_married","heart_disease","hypertension", "Residence_type")
+dfCategoricas = data.frame(categ)
+```
+```{r}
+porc1[4] = nrow(subset(df, stroke == 1 & Residence_type == "Urban")) / nrow(subset(df, Residence_type == "Urban"))
+porc2[4] = nrow(subset(df, stroke == 1 & Residence_type != "Urban")) / nrow(subset(df, Residence_type != "Urban"))
+```
+```{r}
+dfCategoricas = cbind(dfCategoricas ,porc1)
+dfCategoricas = cbind(dfCategoricas, porc2)
+colnames(dfCategoricas) = c("categ", "SI", "NO")
+```
+
+```{r}
+g1 = ggplot(dfCategoricas, aes(x= categ,  group=SI)) + 
+      geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") +
+    geom_text(aes( label = scales::percent(..prop..),
+                   y= ..prop.. ), stat= "count", vjust = -.5) +
+    labs(y = "Percent", fill="Tuvo ACV") +
+    facet_grid(~SI) +
+    scale_y_continuous(labels = scales::percent) +
+  ggtitle("Alguna vez casado")
+g1
+```
+```{r}
+ggplot(data = df, aes(x = age, 
+                            y = avg_glucose_level,
+                            color = stroke
+                            ) ) +
+  geom_point(alpha=0.3) +
+  #geom_line()+
+  geom_rug(mapping = aes(x=age, y = avg_glucose_level)) +
+  geom_smooth(method='lm', formula= y~x) + #penguins$bill_length_mm~penguins$bill_depth_mm x~y
+   #theme_minimal()
+  #theme_classic()
+  theme_gray()
+```
+
+```{r}
+ggplot(data = df, aes(x = age, 
+                            y = bmi,
+                            color = stroke
+                            ) ) +
+  geom_jitter(alpha=0.8) +
+  #geom_line()+
+  #geom_rug(mapping = aes(x=age, y = bmi)) +
+  #geom_smooth(method='lm', formula= y~x) + 
+  
+  theme_minimal()
+  #theme_classic()
+```
+```{r}
+install.packages("DAAG")
+install.packages("party")
+install.packages("rpart")
+install.packages("rpart.plot")
+install.packages("mlbench")
+install.packages("caret")
+install.packages("pROC")
+install.packages("tree")
+library(DAAG)
+library(party)
+library(rpart)
+library(rpart.plot)
+library(mlbench)
+library(caret)
+library(pROC)
+library(tree)
+```
+```{r}
+tree <- rpart(stroke ~., data = df)
+rpart.plot(tree)
+```
+
+```{r}
+tree
+```
+
