@@ -7,7 +7,16 @@ library(ggplot2)
 library(gridExtra)
 
 ```
-
+```{r}
+library(DAAG)
+library(party)
+library(rpart)
+library(rpart.plot)
+library(mlbench)
+library(caret)
+library(pROC)
+library(tree)
+```
 ```{r}
 df = read.csv("stroke.csv")
 ```
@@ -116,14 +125,82 @@ categ = c("ever_married","heart_disease","hypertension", "Residence_type")
 dfCategoricas = data.frame(categ)
 ```
 ```{r}
+porc1 = c()
+porc2 = c()
+porc1[1] = nrow(subset(df, stroke == 1 & ever_married == "Yes")) / nrow(subset(df, ever_married == "Yes"))
+porc2[1] = nrow(subset(df, stroke == 1 & ever_married != "Yes")) / nrow(subset(df, ever_married != "Yes"))
+
+porc1[2] = nrow(subset(df, stroke == 1 & heart_disease == 1)) / nrow(subset(df, heart_disease == 1))
+porc2[2] = nrow(subset(df, stroke == 1 & heart_disease != 1)) / nrow(subset(df, heart_disease != 1))
+
+porc1[3] = nrow(subset(df, stroke == 1 & hypertension == 1)) / nrow(subset(df, hypertension == 1))
+porc2[3] = nrow(subset(df, stroke == 1 & hypertension != 1)) / nrow(subset(df, hypertension != 1))
+
 porc1[4] = nrow(subset(df, stroke == 1 & Residence_type == "Urban")) / nrow(subset(df, Residence_type == "Urban"))
 porc2[4] = nrow(subset(df, stroke == 1 & Residence_type != "Urban")) / nrow(subset(df, Residence_type != "Urban"))
-```
-```{r}
+
 dfCategoricas = cbind(dfCategoricas ,porc1)
 dfCategoricas = cbind(dfCategoricas, porc2)
 colnames(dfCategoricas) = c("categ", "SI", "NO")
 ```
+```{r}
+g7 = ggplot(dfCategoricas, aes(x= categ,  group=SI, group2=NO)) + 
+      geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") +
+    geom_text(aes( label = scales::percent(..prop..),
+                   y= ..prop.. ), stat= "count", vjust = -.5) +
+    labs(y = "Percent", fill="Tuvo ACV") +
+    facet_grid(~work_type) +
+    scale_y_continuous(labels = scales::percent) +
+  ggtitle("Alguna vez work_type")
+g7
+```
+
+```{r}
+nos = dfCategoricas$NO
+dfCategoricas$NO = 1
+colnames(dfCategoricas) = c("categ", "valor", "siono")
+dfCategoricas = rbind(dfCategoricas, c(categ[1], nos[1], 0))
+dfCategoricas = rbind(dfCategoricas, c(categ[2], nos[2], 0))
+dfCategoricas = rbind(dfCategoricas, c(categ[3], nos[3], 0))
+dfCategoricas = rbind(dfCategoricas, c(categ[4], nos[4], 0))
+dfCategoricas$valor = as.numeric(dfCategoricas$valor) * 100
+```
+
+
+```{r}
+casado = dfCategoricas[dfCategoricas$categ=="ever_married",]
+heart_disease = dfCategoricas[dfCategoricas$categ=="heart_disease",]
+hypertension = dfCategoricas[dfCategoricas$categ=="hypertension",]
+Residence_type = dfCategoricas[dfCategoricas$categ=="Residence_type",]
+
+p1<-ggplot(data=casado, aes(x=siono, y= valor, fill=siono)) +
+  geom_bar(stat="identity") +
+  xlab("Nunca se caso o Alguna vez casado") + 
+  ylab("Porcentaje de personas que tuvieron ACV") +
+  ylim(0,20)
+
+p2<-ggplot(data=heart_disease, aes(x=siono, y= valor,fill=siono)) +
+  geom_bar(stat="identity") +
+  xlab("Sin enfermedad corazon o Con enfermedad corazon") + 
+  ylab("Porcentaje de personas que tuvieron ACV")
+  ylim(0,20)
+  
+p1 
+p2
+
+```
+```{r}
+ggplot(data=dfCategoricas, aes(x=categ, y=valor, fill=siono)) +
+  geom_bar(stat="identity", position=position_dodge(), show.legend = FALSE) + 
+  xlab("Condicion") +
+  ylab("Porcentaje que tuvo un ACV") +
+  
+  geom_text(aes(label=c("Casadx","Si","Si","Urbana","No Casadx","No","No","Rural")), vjust=1.6, color="white",
+            position = position_dodge(0.9), size=3.5) 
+  #+ theme(legend.position="none")
+```
+
+
 
 ```{r}
 g1 = ggplot(dfCategoricas, aes(x= categ,  group=SI)) + 
@@ -163,30 +240,29 @@ ggplot(data = df, aes(x = age,
   theme_minimal()
   #theme_classic()
 ```
-```{r}
-install.packages("DAAG")
-install.packages("party")
-install.packages("rpart")
-install.packages("rpart.plot")
-install.packages("mlbench")
-install.packages("caret")
-install.packages("pROC")
-install.packages("tree")
-library(DAAG)
-library(party)
-library(rpart)
-library(rpart.plot)
-library(mlbench)
-library(caret)
-library(pROC)
-library(tree)
-```
+
 ```{r}
 tree <- rpart(stroke ~., data = df)
 rpart.plot(tree)
 ```
 
 ```{r}
-tree
+ggplot(data = df, aes(x = age, 
+                            y = bmi,
+                            color = stroke
+                            ) ) +
+  geom_jitter(alpha=1) 
+```
+```{r}
+ggplot(data = df[df$stroke==1,], aes(x = gender, y=age) ) +
+  geom_violin() 
+```
+```{r}
+ggplot(data = df[df$stroke==0,], aes(x = gender, y=age) ) +
+  geom_violin() 
+```
+```{r}
+ggplot(data = df, aes(x = gender, y=age) ) +
+  geom_violin() 
 ```
 
