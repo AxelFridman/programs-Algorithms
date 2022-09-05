@@ -1,5 +1,5 @@
 ---
-title: "R Notebook"
+title: "Tp 1 comunicacion estadistica"
 output: html_notebook
 ---
 ```{r}
@@ -7,16 +7,7 @@ library(ggplot2)
 library(gridExtra)
 
 ```
-```{r}
-library(DAAG)
-library(party)
-library(rpart)
-library(rpart.plot)
-library(mlbench)
-library(caret)
-library(pROC)
-library(tree)
-```
+
 ```{r}
 df = read.csv("stroke.csv")
 ```
@@ -26,105 +17,12 @@ df = df[df$bmi!="N/A",]
 df$age = as.numeric(df$age)
 df$bmi = as.numeric(df$bmi)
 ```
-```{r}
-g = ggplot(data=df, mapping = aes(age, avg_glucose_level)) + geom_point()
-```
 
-```{r}
-ggplot(df, aes(x= stroke,  group=gender)) + 
-    geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") +
-    geom_text(aes( label = scales::percent(..prop..),
-                   y= ..prop.. ), stat= "count", vjust = -.5) +
-    labs(y = "Percent", fill="day") +
-    facet_grid(~gender) +
-    scale_y_continuous(labels = scales::percent)
-```
-```{r}
-g1 = ggplot(df, aes(x= stroke,  group=ever_married)) + 
-      geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") +
-    geom_text(aes( label = scales::percent(..prop..),
-                   y= ..prop.. ), stat= "count", vjust = -.5) +
-    labs(y = "Percent", fill="Tuvo ACV") +
-    facet_grid(~ever_married) +
-    scale_y_continuous(labels = scales::percent) +
-  ggtitle("Alguna vez casado")
-
-g2 = ggplot(df, aes(x= stroke,  group=heart_disease)) + 
-      geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") +
-    geom_text(aes( label = scales::percent(..prop..),
-                   y= ..prop.. ), stat= "count", vjust = -.5) +
-    labs(y = "Percent", fill="Tuvo ACV") +
-    facet_grid(~heart_disease) +
-    scale_y_continuous(labels = scales::percent) +
-  ggtitle("Alguna vez heart_disease")
-
-g3 = ggplot(df, aes(x= stroke,  group=hypertension)) + 
-      geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") +
-    geom_text(aes( label = scales::percent(..prop..),
-                   y= ..prop.. ), stat= "count", vjust = -.5) +
-    labs(y = "Percent", fill="Tuvo ACV") +
-    facet_grid(~hypertension) +
-    scale_y_continuous(labels = scales::percent) +
-  ggtitle("Alguna vez hypertension")
-
-g4 = ggplot(df, aes(x= stroke,  group=work_type)) + 
-      geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") +
-    geom_text(aes( label = scales::percent(..prop..),
-                   y= ..prop.. ), stat= "count", vjust = -.5) +
-    labs(y = "Percent", fill="Tuvo ACV") +
-    facet_grid(~work_type) +
-    scale_y_continuous(labels = scales::percent) +
-  ggtitle("Alguna vez work_type")
-
-g5 = ggplot(df, aes(x= stroke,  group=Residence_type)) + 
-      geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") +
-    geom_text(aes( label = scales::percent(..prop..),
-                   y= ..prop.. ), stat= "count", vjust = -.5) +
-    labs(y = "Percent", fill="Tuvo ACV") +
-    facet_grid(~Residence_type) +
-    scale_y_continuous(labels = scales::percent) +
-  ggtitle("Alguna vez Residence_type")
-
-g6 = ggplot(df, aes(x= stroke,  group=smoking_status)) + 
-      geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") +
-    geom_text(aes( label = scales::percent(..prop..),
-                   y= ..prop.. ), stat= "count", vjust = -.5) +
-    labs(y = "Percent", fill="Tuvo ACV") +
-    facet_grid(~smoking_status) +
-    scale_y_continuous(labels = scales::percent) +
-  ggtitle("Alguna vez smoking_status")
-
-#dev.new(width=30, height=50, unit="in")
-
-#grid.arrange(g1, g2, g3,g4,g5,g6,nrow = 3, ncol = 2)
-
-g1
-```
-```{r}
-g2
-```
-```{r}
-g3
-```
-```{r}
-g4
-```
-```{r}
-g5
-```
-```{r}
-g6
-```
-
-```{r}
-table(df$work_type)
-```
 
 ```{r}
 categ = c("ever_married","heart_disease","hypertension", "Residence_type")
 dfCategoricas = data.frame(categ)
-```
-```{r}
+
 porc1 = c()
 porc2 = c()
 porc1[1] = nrow(subset(df, stroke == 1 & ever_married == "Yes")) / nrow(subset(df, ever_married == "Yes"))
@@ -142,20 +40,7 @@ porc2[4] = nrow(subset(df, stroke == 1 & Residence_type != "Urban")) / nrow(subs
 dfCategoricas = cbind(dfCategoricas ,porc1)
 dfCategoricas = cbind(dfCategoricas, porc2)
 colnames(dfCategoricas) = c("categ", "SI", "NO")
-```
-```{r}
-g7 = ggplot(dfCategoricas, aes(x= categ,  group=SI, group2=NO)) + 
-      geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") +
-    geom_text(aes( label = scales::percent(..prop..),
-                   y= ..prop.. ), stat= "count", vjust = -.5) +
-    labs(y = "Percent", fill="Tuvo ACV") +
-    facet_grid(~work_type) +
-    scale_y_continuous(labels = scales::percent) +
-  ggtitle("Alguna vez work_type")
-g7
-```
 
-```{r}
 nos = dfCategoricas$NO
 dfCategoricas$NO = 1
 colnames(dfCategoricas) = c("categ", "valor", "siono")
@@ -164,32 +49,7 @@ dfCategoricas = rbind(dfCategoricas, c(categ[2], nos[2], 0))
 dfCategoricas = rbind(dfCategoricas, c(categ[3], nos[3], 0))
 dfCategoricas = rbind(dfCategoricas, c(categ[4], nos[4], 0))
 dfCategoricas$valor = as.numeric(dfCategoricas$valor) * 100
-```
 
-
-```{r}
-casado = dfCategoricas[dfCategoricas$categ=="ever_married",]
-heart_disease = dfCategoricas[dfCategoricas$categ=="heart_disease",]
-hypertension = dfCategoricas[dfCategoricas$categ=="hypertension",]
-Residence_type = dfCategoricas[dfCategoricas$categ=="Residence_type",]
-
-p1<-ggplot(data=casado, aes(x=siono, y= valor, fill=siono)) +
-  geom_bar(stat="identity") +
-  xlab("Nunca se caso o Alguna vez casado") + 
-  ylab("Porcentaje de personas que tuvieron ACV") +
-  ylim(0,20)
-
-p2<-ggplot(data=heart_disease, aes(x=siono, y= valor,fill=siono)) +
-  geom_bar(stat="identity") +
-  xlab("Sin enfermedad corazon o Con enfermedad corazon") + 
-  ylab("Porcentaje de personas que tuvieron ACV")
-  ylim(0,20)
-  
-p1 
-p2
-
-```
-```{r}
 ggplot(data=dfCategoricas, aes(x=categ, y=valor, fill=siono)) +
   geom_bar(stat="identity", position=position_dodge(), show.legend = FALSE) + 
   xlab("Condicion") +
@@ -197,72 +57,33 @@ ggplot(data=dfCategoricas, aes(x=categ, y=valor, fill=siono)) +
   
   geom_text(aes(label=c("Casadx","Si","Si","Urbana","No Casadx","No","No","Rural")), vjust=1.6, color="white",
             position = position_dodge(0.9), size=3.5) 
-  #+ theme(legend.position="none")
-```
-
-
-
-```{r}
-g1 = ggplot(dfCategoricas, aes(x= categ,  group=SI)) + 
-      geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count") +
-    geom_text(aes( label = scales::percent(..prop..),
-                   y= ..prop.. ), stat= "count", vjust = -.5) +
-    labs(y = "Percent", fill="Tuvo ACV") +
-    facet_grid(~SI) +
-    scale_y_continuous(labels = scales::percent) +
-  ggtitle("Alguna vez casado")
-g1
-```
-```{r}
-ggplot(data = df, aes(x = age, 
-                            y = avg_glucose_level,
-                            color = stroke
-                            ) ) +
-  geom_point(alpha=0.3) +
-  #geom_line()+
-  geom_rug(mapping = aes(x=age, y = avg_glucose_level)) +
-  geom_smooth(method='lm', formula= y~x) + #penguins$bill_length_mm~penguins$bill_depth_mm x~y
-   #theme_minimal()
-  #theme_classic()
-  theme_gray()
-```
-
-```{r}
-ggplot(data = df, aes(x = age, 
-                            y = bmi,
-                            color = stroke
-                            ) ) +
-  geom_jitter(alpha=0.8) +
-  #geom_line()+
-  #geom_rug(mapping = aes(x=age, y = bmi)) +
-  #geom_smooth(method='lm', formula= y~x) + 
   
-  theme_minimal()
-  #theme_classic()
 ```
+Como el dataset cuenta con muchas variables categóricas y numéricas, decidí primero explorar algunas de las categorías. Lo que se ve es por cada categoría, Casado, no casado, sin enfermedad del corazón, con enfermedad del corazón etc, la proporción de gente en ese subgrupo que tuvo un ACV. 
+Es decir la barra de más de la derecha nos mide el total de gente que tuvo un acv y vive en zona urbana dividido la cantidad de gente que vive en una zona urbana.
+Si bien no podemos asignarle causalidad, algunas relaciones son más fuertes que otras, la residencia no parece afectar tanto, mientras que tener una enfermedad cardiaca tiene una correlación muy fuerte con tener acv.
+La condición que más me llamó la atención es la de si alguna vez estuvo casado, porque cambia tanto la proporción de gente que tuvo acv?
+Al analizar los datos vi que 2/3 alguna vez se había casado, pero como yo divido por el total (y me quedo con la proposición) no debería afectar el porcentaje. Lo que sí es interesante es ver la distribución de gente que estuvo casada en la edad, será posible que haber estado casado se relacione con otra variable que sí afecta tus probabilidad de tener acv? Volveré a esto más adelante.
+ 
 
 ```{r}
-tree <- rpart(stroke ~., data = df)
-rpart.plot(tree)
+df$stroke = as.factor(df$stroke)
+ggplot(data = df, aes(x = stroke, y=age, color=gender) ) +
+  
+  geom_violin() 
 ```
+Aca hay mucho para analizar, a la izquierda las distribuciones en edad de la gente que no tuvo acv, a la derecha quienes si.
+Lo primero que voy a marcar es que la gente que tiene acv es en su mayoría personas mayores, y que la edad ayuda determinantemente para analizar la probabilidad de tener acv. En cuanto a la posible bimodalidad de la distribución, no encontré ninguna fuente que hable del tema así que podría ser una particularidad de estos datos.
+Lo segundo es que las personas que tuvieron un acv joven son todas mujeres! Lamentablemente este es un fenómeno conocido y ya reportado por el "National Heart Lung and Blood institute".
+  
+https://www.nhlbi.nih.gov/news/2022/younger-women-may-be-greater-risk-stroke-according-large-review
+https://www.everydayhealth.com/stroke/younger-women-are-having-more-strokes/
+
 
 ```{r}
-ggplot(data = df, aes(x = age, 
-                            y = bmi,
-                            color = stroke
-                            ) ) +
-  geom_jitter(alpha=1) 
-```
-```{r}
-ggplot(data = df[df$stroke==1,], aes(x = gender, y=age) ) +
+df$stroke = as.factor(df$stroke)
+ggplot(data = df, aes(x = ever_married, y=age, color=gender) ) +
+  
   geom_violin() 
 ```
-```{r}
-ggplot(data = df[df$stroke==0,], aes(x = gender, y=age) ) +
-  geom_violin() 
-```
-```{r}
-ggplot(data = df, aes(x = gender, y=age) ) +
-  geom_violin() 
-```
-
+Y volviendo a lo mencionado en el primer gráfico, haber estado casado está completamente relacionado con la edad, y como vimos en el gráfico 2, la edad lo está a su vez con el riesgo de tener acv. Casarse NO causa necesariamente un accidente cardiovascular.
