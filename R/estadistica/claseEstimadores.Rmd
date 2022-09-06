@@ -1,0 +1,81 @@
+---
+title: "claseEstimadores"
+author: "Axel Fridman"
+date: "2022-09-05"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+estimar = function(){
+  vec = rgamma(10000,2,3)
+  vecCuadrado = vec ** 2
+  
+  xnsum = sum(vec)
+  xnCuadradosum = sum(vecCuadrado)
+  promedioDeSumaCuadrado = (1/length(vec)) * sum(vec)**2
+  
+  lamdaMomentos = xnsum / (xnCuadradosum - promedioDeSumaCuadrado)
+  alphaMomentos = xnsum * lamda / length(vec) 
+  return(c(alphaMomentos, lamdaMomentos))
+}
+```
+```{r}
+lamdas = c()
+alphas = c()
+for (i in 1:1000) {
+  valores = estimar()
+  lamdas[i] = valores[2]
+  alphas[i] = valores[1]
+}
+```
+```{r}
+plot(alphas, lamdas)
+points(median(alphas), median(lamdas), col='red')
+```
+
+```{r}
+newtonRaph = function (puntoInicial, stepMinimo, maxIteraciones, funcion, funcionDerivada, vec){
+  xViejo = puntoInicial + 5 + stepMinimo
+  xNuevo = puntoInicial 
+  iteracion = 0
+  diferencia = abs(xViejo-xNuevo)
+  while(iteracion<maxIteraciones ){ #& diferencia>stepMinimo
+    xViejo = xNuevo
+    xNuevo = xNuevo - funcion(vec, xNuevo)/funcionDerivada(vec, xNuevo)
+    diferencia = abs(xViejo-xNuevo)
+    iteracion = iteracion + 1
+  }
+  return(xNuevo)
+}
+```
+
+```{r}
+funcionLamda = function(vec, lamda){
+  suma = 0
+  xnBarra = mean(vec)
+  for (i in 1:length(vec)) {
+    suma = suma + log(vec[i]) - log(xnBarra/lamda) - digamma(lamda)
+  }
+  return(suma)
+}
+
+funcionPrimaLamda = function(vec, lamda){
+  n = length(vec)
+  suma = n / (mean(vec) * lamda) -  n * trigamma(lamda)
+  return(suma)
+}
+```
+```{r}
+vec = rgamma(10000,2,3)
+newtonRaph(3.1, 0.001, 1000, funcionLamda, funcionPrimaLamda, vec) # ?????????????????????????????????????
+```
+```{r}
+funcionLamda(vec, 3)
+funcionPrimaLamda(vec, 3) # ?????????????????
+```
+
+
