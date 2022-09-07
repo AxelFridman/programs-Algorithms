@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.9
+# v0.19.11
 
 using Markdown
 using InteractiveUtils
@@ -364,6 +364,151 @@ end
 # ╔═╡ b6d6451d-434c-4de7-b706-3bd815a39b57
 plot(solCaer)
 
+# ╔═╡ c41c2ca6-afc6-43eb-a94e-9003a7b6ae14
+function condición_choqueContinua(u,t,integrator)
+	u[1] < 0.0 
+end
+
+# ╔═╡ 010c2984-c0a1-4950-b97d-dd536bfdc640
+function respuestaChoqueContinua!(integrator)
+	integrator.u[1] = -integrator.u[1]
+	integrator.u[2] = -integrator.u[2]*0.75
+end
+
+# ╔═╡ 73195d3f-ad2f-4fc4-9644-166502feb8c3
+dcContinuaRebote  = ContinuousCallback(condición_choqueContinua,respuestaChoqueContinua!)
+
+# ╔═╡ 6531fde9-4f7d-4d7a-8a81-4c63e5ce601b
+begin
+	Pcon  = ODEProblem(caer,datoInicial,tspans,p)
+	solCaerCon = solve(Pcon,callback=dcContinuaRebote)
+	
+end
+
+# ╔═╡ 4742d1aa-fd37-48d2-a615-46fae17ac77e
+plot(solCaerCon)
+
+# ╔═╡ 50987ba2-9dcc-4ea0-b4a4-83d300a69747
+md"""## Ejercicio 15"""
+
+# ╔═╡ d903f5ee-9f58-44b3-bb73-893936f43da5
+begin
+	xIni,yIni,zIni = 2,3.5,5
+	xVelIni, yVelIni, zVelIni = 1.1,-2.07, 0
+	#Voy a asumir que la habitacion es un prisma rectangular, con una esquina siendo
+	# el 0,0,0 y hay un limite de x positivo > 0, un limite de y positivo > 0, y un techo (limite de z) > 0.
+	limiteX = 10
+	limiteY = 12
+	techo = 6
+
+	cteRozamiento = 0.1
+	
+	datoInicialEspacial = [xIni, yIni, zIni, xVelIni, yVelIni, zVelIni]
+	pInfo = [gravedad, limiteX, limiteY, techo,cteRozamiento]
+end
+
+# ╔═╡ 051d4387-e6c9-4e17-a848-1352bd5702b6
+function moverEnSala(du,u,pInfo,t)
+	gravedad, limiteX, limiteY, techo,cteRozamiento  = pInfo
+	
+	du[1] = u[4]
+	du[2] = u[5] 	
+	du[3] = u[6]
+	du[4] = -cteRozamiento * u[4]
+	du[5] = -cteRozamiento * u[5]
+	du[6] = -gravedad - cteRozamiento * u[6]
+
+end
+
+# ╔═╡ a6656fe7-72b3-4fe1-a7c5-19cf5f8c42a5
+function condicionChoqueIzq(u,t,integrator)
+	u[1] < 0.0 
+end
+
+# ╔═╡ bf302a0c-83c9-4879-bf8c-ab44c15899a5
+function condicionChoqueAbajo(u,t,integrator)
+	u[2] < 0.0 
+end
+
+# ╔═╡ a7a6c0cc-76c0-47ae-b929-f05271bc7911
+function condicionChoquePiso(u,t,integrator)
+	u[3] < 0.0 
+end
+
+# ╔═╡ 5875ebf9-eca6-43c0-bb0b-e94240d8abdd
+function condicionChoqueDer(u,t,integrator)
+	u[1] >  integrator.p[2]
+end
+
+# ╔═╡ dd84c655-7806-444d-8392-cfcfa1164dae
+function condicionChoqueArriba(u,t,integrator)
+	u[2] >  integrator.p[3]
+end
+
+# ╔═╡ 2a3e87e6-2f52-4f7c-9b9e-03735e8374e9
+function condicionChoqueTecho(u,t,integrator)
+	u[3] >  integrator.p[4]
+end
+
+# ╔═╡ a3f34489-7575-4b76-beb5-24274433d369
+function respuestaChoqueIzq!(integrator)
+	integrator.u[4] = -integrator.u[4]
+end
+
+# ╔═╡ 47f9f246-3517-4b8c-9aa3-b001226cadce
+function respuestaChoqueAbajo!(integrator)
+	integrator.u[5] = -integrator.u[5]
+end
+
+# ╔═╡ cabc1a59-1d82-43d5-8b71-c268649d8426
+function respuestaChoquePiso!(integrator)
+	integrator.u[6] = -integrator.u[6]
+end
+
+# ╔═╡ 1d230d6a-dbe3-4263-8cec-0a3b28145639
+function respuestaChoqueDer!(integrator)
+	integrator.u[4] = -integrator.u[4]
+end
+
+# ╔═╡ 866d4936-e01f-46cf-9356-8145350f9015
+function respuestaChoqueArriba!(integrator)
+	integrator.u[5] = -integrator.u[5]
+end
+
+# ╔═╡ d676269e-ccd6-486c-964c-55a75f49dcaa
+function respuestaChoquetecho!(integrator)
+	integrator.u[6] = -integrator.u[6]
+end
+
+# ╔═╡ 451b54d9-7ba6-48b1-b99a-86cb12d3e4c7
+begin
+	dc1 = DiscreteCallback(condicionChoqueIzq,respuestaChoqueIzq!)
+	dc2 = DiscreteCallback(condicionChoqueDer,respuestaChoqueDer!)
+	dc3 = DiscreteCallback(condicionChoqueArriba,respuestaChoqueArriba!)
+	
+	dc4 = DiscreteCallback(condicionChoqueAbajo,respuestaChoqueAbajo!)
+	dc5 = DiscreteCallback(condicionChoquePiso,respuestaChoquePiso!)
+	dc6 = DiscreteCallback(condicionChoqueTecho,respuestaChoquetecho!)
+	cbsetSala = CallbackSet(dc1,dc2,dc3,dc4,dc5,dc6)
+end
+
+# ╔═╡ 00f97f91-3d3d-46af-944c-182af6636895
+begin
+	tspanSala = [0,50]
+	Psala  = ODEProblem(moverEnSala,datoInicialEspacial,tspanSala,pInfo)
+	solSala = solve(Psala,callback=cbsetSala, dtmax=0.1)
+	
+end
+
+# ╔═╡ 18ca457e-6f9f-4ebd-9690-97557d11394c
+plot(solSala, idxs=(2,3))
+
+# ╔═╡ 1ae066ed-bcbd-4aee-8659-51f6f82d19b1
+animate(solSala, idxs=(1,2))
+
+# ╔═╡ 2c382714-3d7d-4f6e-8044-aec9692c7c8b
+
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -379,7 +524,7 @@ Plots = "~1.31.7"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.7.2"
+julia_version = "1.7.3"
 manifest_format = "2.0"
 
 [[deps.Adapt]]
@@ -673,7 +818,7 @@ uuid = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 version = "0.9.1"
 
 [[deps.Downloads]]
-deps = ["ArgTools", "LibCURL", "NetworkOptions"]
+deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 
 [[deps.DualNumbers]]
@@ -733,6 +878,9 @@ deps = ["LinearAlgebra"]
 git-tree-sha1 = "cfd9d0dbb947181644c00bd7e988b4bb30a5b2a5"
 uuid = "29a986be-02c6-4525-aec4-84b980013641"
 version = "1.2.6"
+
+[[deps.FileWatching]]
+uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[deps.FillArrays]]
 deps = ["LinearAlgebra", "Random", "SparseArrays", "Statistics"]
@@ -2007,5 +2155,30 @@ version = "1.4.1+0"
 # ╠═24cb6871-f461-4697-b14d-ab645c0a890a
 # ╠═60d18f30-3138-4ace-ab85-176b64501886
 # ╠═b6d6451d-434c-4de7-b706-3bd815a39b57
+# ╠═c41c2ca6-afc6-43eb-a94e-9003a7b6ae14
+# ╠═010c2984-c0a1-4950-b97d-dd536bfdc640
+# ╠═73195d3f-ad2f-4fc4-9644-166502feb8c3
+# ╠═6531fde9-4f7d-4d7a-8a81-4c63e5ce601b
+# ╠═4742d1aa-fd37-48d2-a615-46fae17ac77e
+# ╠═50987ba2-9dcc-4ea0-b4a4-83d300a69747
+# ╠═d903f5ee-9f58-44b3-bb73-893936f43da5
+# ╠═051d4387-e6c9-4e17-a848-1352bd5702b6
+# ╠═a6656fe7-72b3-4fe1-a7c5-19cf5f8c42a5
+# ╠═bf302a0c-83c9-4879-bf8c-ab44c15899a5
+# ╠═a7a6c0cc-76c0-47ae-b929-f05271bc7911
+# ╠═5875ebf9-eca6-43c0-bb0b-e94240d8abdd
+# ╠═dd84c655-7806-444d-8392-cfcfa1164dae
+# ╠═2a3e87e6-2f52-4f7c-9b9e-03735e8374e9
+# ╠═a3f34489-7575-4b76-beb5-24274433d369
+# ╠═47f9f246-3517-4b8c-9aa3-b001226cadce
+# ╠═cabc1a59-1d82-43d5-8b71-c268649d8426
+# ╠═1d230d6a-dbe3-4263-8cec-0a3b28145639
+# ╠═866d4936-e01f-46cf-9356-8145350f9015
+# ╠═d676269e-ccd6-486c-964c-55a75f49dcaa
+# ╠═451b54d9-7ba6-48b1-b99a-86cb12d3e4c7
+# ╠═00f97f91-3d3d-46af-944c-182af6636895
+# ╠═18ca457e-6f9f-4ebd-9690-97557d11394c
+# ╠═1ae066ed-bcbd-4aee-8659-51f6f82d19b1
+# ╠═2c382714-3d7d-4f6e-8044-aec9692c7c8b
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
