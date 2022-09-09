@@ -1,0 +1,13 @@
+solution status: optimal solution found
+objective value:                                  388
+x#1                                                 1 	(obj:10)
+x#2                                                 4 	(obj:5)
+x#3                                                 5 	(obj:3)
+x#4                                                 1 	(obj:1)
+x#5                                                10 	(obj:9)
+x#6                                                 5 	(obj:3)
+x#7                                                 5 	(obj:1)
+x#8                                                10 	(obj:9)
+x#9                                                 5 	(obj:3)
+x#10                                                1 	(obj:1)
+x#11                                               14 	(obj:9)

@@ -1,0 +1,13 @@
+set I := {1..11};
+set K := {1..8};
+param c[I] := <1> 10, <2> 5,  <3> 3,  <4> 1,  <5> 9,<6> 3,  <7> 1,  <8> 9,<9> 3,  <10> 1,  <11> 9; 
+var x[I] real;
+maximize profit: sum <i> in I : c[i] * x[i];
+subto r1: x[3] + x[4] <= 6;
+subto r2: x[1] + x[4] >= 2;
+subto r3: x[2] + x[1] <= 5;
+subto r4: (sum <i> in I with i mod 2 == 1: x[i]) <= 60;
+subto r5: x[4] <= x[1];
+subto r6: forall <k> in K:  x[k]<= 10;
+subto r7: (sum <i> in I with i mod 2 == 0: x[i]) <= 50;
+subto r8: forall <i> in I:  x[i] + x[((i) mod 11)+1] <= 15;
