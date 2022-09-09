@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.9
+# v0.19.11
 
 using Markdown
 using InteractiveUtils
@@ -15,31 +15,44 @@ end
 
 # ╔═╡ 644dc99d-fa82-45e1-8514-980f78417e69
 begin
-	
-	xIni1,yIni1,zIni1 = [100.0,2.00,3.0]
-	xIni2,yIni2,zIni2 = [4.0,500,6.0]
-	xIni3,yIni3,zIni3 = [7,8,900.0]
+	dist = 100000 # 100 km de distancia a la orbita del planeta centrico
+	xIni1,yIni1,zIni1 = [0.0,0.0,0.0]
+	xIni2,yIni2,zIni2 = [dist,0,0.0]
+	xIni3,yIni3,zIni3 = [0,dist,0.0]
+	xIni4,yIni4,zIni4 = [-dist,0,0]
+	xIni5,yIni5,zIni5 = [0,-dist,0]
 	
 	pos1 = xIni1,yIni1,zIni1
 	pos2 = xIni2,yIni2,zIni2
 	pos3 = xIni3,yIni3,zIni3
-	posiciones = pos1, pos2, pos3
+	pos4 = xIni4,yIni4,zIni4
+	pos5 = xIni5,yIni5,zIni5
+	posiciones = pos1, pos2, pos3, pos4, pos5
+
+	velocidadGiro = 300 # metros x seg
+	velocidadCaida = 0.001
 	
-	xVelIni1, yVelIni1, zVelIni1 = 0.09,0.08, 0.07
-	xVelIni2, yVelIni2, zVelIni2 = 0.06,0.05, 0.04
-	xVelIni3, yVelIni3, zVelIni3 = 0.03,0.02, 0.01
+	xVelIni1, yVelIni1, zVelIni1 = 0,-0., velocidadCaida
+	xVelIni2, yVelIni2, zVelIni2 = 0,velocidadGiro, velocidadCaida
+	xVelIni3, yVelIni3, zVelIni3 = -velocidadGiro,0,velocidadCaida
+	xVelIni4, yVelIni4, zVelIni4 = 0.0,-velocidadGiro, velocidadCaida
+	xVelIni5, yVelIni5, zVelIni5 = velocidadGiro,0., velocidadCaida
 	
 	vel1 = xVelIni1, yVelIni1, zVelIni1
 	vel2 = xVelIni2, yVelIni2, zVelIni2
 	vel3 = xVelIni3, yVelIni3, zVelIni3
-	velocidades = vel1, vel2, vel3
+	vel4 = xVelIni4, yVelIni4, zVelIni4
+	vel5 = xVelIni5, yVelIni5, zVelIni5
+	velocidades = vel1, vel2, vel3, vel4, vel5
 
-	masa1 = 40.
-	masa2 = 100.
-	masa3 = 70.
-	masas = masa1, masa2, masa3
-
-	constanteGravitacional = 0.4982
+	masa1 = 10000000000. #10 mil millones de kilos
+	masa2 = 10000000000.
+	masa3 = 10000000000.
+	masa4 = 10000000000
+	masa5 = 10000000000
+	masas = masa1, masa2, masa3, masa4, masa5
+	
+	constanteGravitacional = 0.4982 
 	
 	posVel = []
 	for i in 1:length(posiciones)
@@ -53,15 +66,13 @@ begin
 	end
 	
 	datoInicialEspacial = float.(posVel)
-	pInfo = [constanteGravitacional, masas]
+	minDis = 10
+	pInfo = [constanteGravitacional, masas, minDis]
 end
-
-# ╔═╡ 50091bcf-9e3a-4a24-8a1c-92b86c8fa195
-datoInicialEspacial
 
 # ╔═╡ 37d50a58-7e5a-4a27-b8e4-a664d0d80997
 function nCuerpos(du,u,pInfo,t)
-	G, masas = pInfo
+	G, masas, minDis = pInfo
 	
 	for planetaIesimo in 1:Int(length(u)/6)
 		Posx1 = u[(planetaIesimo-1)*6 + 1]
@@ -78,16 +89,16 @@ function nCuerpos(du,u,pInfo,t)
 		du[(planetaIesimo-1)*6 + 5] = 0.
 		du[(planetaIesimo-1)*6 + 6] = 0.
 		for planetaInteraccion in 1:Int(length(u)/6)
-			if(planetaInteraccion != planetaIesimo)
-				Posx2 = u[(planetaInteraccion-1)*6 + 1]
-				Posy2 = u[(planetaInteraccion-1)*6 + 2]
-				Posz2 = u[(planetaInteraccion-1)*6 + 3]
-				Velx2 = u[(planetaInteraccion-1)*6 + 4]
-				Vely2 = u[(planetaInteraccion-1)*6 + 5]
-				Velz2 = u[(planetaInteraccion-1)*6 + 6]
+			
+			Posx2 = u[(planetaInteraccion-1)*6 + 1]
+			Posy2 = u[(planetaInteraccion-1)*6 + 2]
+			Posz2 = u[(planetaInteraccion-1)*6 + 3]
+			Velx2 = u[(planetaInteraccion-1)*6 + 4]
+			Vely2 = u[(planetaInteraccion-1)*6 + 5]
+			Velz2 = u[(planetaInteraccion-1)*6 + 6]
 				
-				distEntrePlanetas = distEuclideana(Posx1, Posy1, Posz1, Posx2, Posy2, Posz2)
-
+			distEntrePlanetas = distEuclideana(Posx1, Posy1, Posz1, Posx2, Posy2, Posz2)
+			if(distEntrePlanetas > minDis)
 				du[(planetaIesimo-1)*6 + 4] = du[(planetaIesimo-1)*6 + 4] + G* masas[planetaInteraccion]*(Posx2-Posx1)/(distEntrePlanetas^3)
 				
 				du[(planetaIesimo-1)*6 + 5] = du[(planetaIesimo-1)*6 + 5] + G* masas[planetaInteraccion]*(Posy2-Posy1)/(distEntrePlanetas^3)
@@ -103,26 +114,26 @@ end
 
 # ╔═╡ ff334e98-372c-46a6-a81a-390b10b015fe
 begin
-	tspan = [0,10000]
+	tspan = [0,1550]
 	Pcuerpos  = ODEProblem(nCuerpos,datoInicialEspacial,tspan,pInfo)
 	solCuerpos = solve(Pcuerpos)
 	
 end
 
 # ╔═╡ 8a5ef6b2-670f-4bd0-9b1a-26a3b3748a07
-plot(solCuerpos,idxs=[(i,i+1,i+2) for i in 1:6:13])
+plot(solCuerpos,idxs=[(i,i+1,i+2) for i in 1:6:25])
 
 # ╔═╡ 1b893a00-e4b4-4b37-a5eb-6ba74bc3f72f
-animate(solCuerpos,idxs=[(i,i+1,i+2) for i in 1:6:13])
+animate(solCuerpos,idxs=[(i,i+1, i+2) for i in 1:6:25, fps=5])
 
 # ╔═╡ 0bcba7a9-4924-4147-afce-d669d38d78ae
 
 
 # ╔═╡ ea444b11-d7d6-4528-b5bf-74be3a232b59
-posVel
 
-# ╔═╡ f09f633f-34b7-4ac1-9944-714364e6cfd9
 
+# ╔═╡ 3f2ccd6a-b313-4eea-b659-fbb5ba1c4764
+500000^3
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -139,7 +150,7 @@ Plots = "~1.32.0"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.7.2"
+julia_version = "1.7.3"
 manifest_format = "2.0"
 
 [[deps.Adapt]]
@@ -236,9 +247,9 @@ version = "0.4.2"
 
 [[deps.CPUSummary]]
 deps = ["CpuId", "IfElse", "Static"]
-git-tree-sha1 = "9bdd5aceea9fa109073ace6b430a24839d79315e"
+git-tree-sha1 = "8a43595f7b3f7d6dd1e07ad9b94081e1975df4af"
 uuid = "2a0fbf3d-bb9c-48f3-b0a9-814d99fd7ab9"
-version = "0.1.27"
+version = "0.1.25"
 
 [[deps.Cairo_jll]]
 deps = ["Artifacts", "Bzip2_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "JLLWrappers", "LZO_jll", "Libdl", "Pixman_jll", "Pkg", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Zlib_jll", "libpng_jll"]
@@ -360,9 +371,9 @@ uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 
 [[deps.DelayDiffEq]]
 deps = ["ArrayInterface", "DataStructures", "DiffEqBase", "LinearAlgebra", "Logging", "NonlinearSolve", "OrdinaryDiffEq", "Printf", "RecursiveArrayTools", "Reexport", "SciMLBase", "UnPack"]
-git-tree-sha1 = "5acc7807b906d6a938dfeb965a6ea931260f054e"
+git-tree-sha1 = "65445e47be74d38ea9317995400f004bbbb1dd32"
 uuid = "bcd4f6db-9728-5f36-b5f7-82caef46ccdb"
-version = "5.38.0"
+version = "5.37.1"
 
 [[deps.DelimitedFiles]]
 deps = ["Mmap"]
@@ -376,9 +387,9 @@ version = "0.4.0"
 
 [[deps.DiffEqBase]]
 deps = ["ArrayInterfaceCore", "ChainRulesCore", "DataStructures", "Distributions", "DocStringExtensions", "FastBroadcast", "ForwardDiff", "FunctionWrappers", "FunctionWrappersWrappers", "LinearAlgebra", "Logging", "MuladdMacro", "NonlinearSolve", "Parameters", "Printf", "RecursiveArrayTools", "Reexport", "Requires", "SciMLBase", "Setfield", "SparseArrays", "Static", "StaticArrays", "Statistics", "Tricks", "ZygoteRules"]
-git-tree-sha1 = "6185b8b013c2ede33f656a8812534d10d290625f"
+git-tree-sha1 = "41ee5c6e6bee98a4166777db30ab6c7023366ccb"
 uuid = "2b5f629d-d688-5b77-993f-72d75c75574e"
-version = "6.100.2"
+version = "6.100.1"
 
 [[deps.DiffEqCallbacks]]
 deps = ["DataStructures", "DiffEqBase", "ForwardDiff", "LinearAlgebra", "Markdown", "NLsolve", "Parameters", "RecipesBase", "RecursiveArrayTools", "SciMLBase", "StaticArrays"]
@@ -433,7 +444,7 @@ uuid = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 version = "0.9.1"
 
 [[deps.Downloads]]
-deps = ["ArgTools", "LibCURL", "NetworkOptions"]
+deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 
 [[deps.DualNumbers]]
@@ -493,6 +504,9 @@ deps = ["LinearAlgebra"]
 git-tree-sha1 = "cfd9d0dbb947181644c00bd7e988b4bb30a5b2a5"
 uuid = "29a986be-02c6-4525-aec4-84b980013641"
 version = "1.2.6"
+
+[[deps.FileWatching]]
+uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[deps.FillArrays]]
 deps = ["LinearAlgebra", "Random", "SparseArrays", "Statistics"]
@@ -1010,9 +1024,9 @@ version = "1.4.1"
 
 [[deps.OrdinaryDiffEq]]
 deps = ["Adapt", "ArrayInterface", "ArrayInterfaceGPUArrays", "ArrayInterfaceStaticArrays", "DataStructures", "DiffEqBase", "DocStringExtensions", "ExponentialUtilities", "FastBroadcast", "FastClosures", "FiniteDiff", "ForwardDiff", "FunctionWrappersWrappers", "LinearAlgebra", "LinearSolve", "Logging", "LoopVectorization", "MacroTools", "MuladdMacro", "NLsolve", "NonlinearSolve", "Polyester", "PreallocationTools", "RecursiveArrayTools", "Reexport", "SciMLBase", "SnoopPrecompile", "SparseArrays", "SparseDiffTools", "StaticArrays", "UnPack"]
-git-tree-sha1 = "8d9f3f31478b899d052279aaa58169932aa0d2bb"
+git-tree-sha1 = "fce6fcee6b69bbeb9b6652b2b00adc7fbf9984bc"
 uuid = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
-version = "6.26.3"
+version = "6.26.2"
 
 [[deps.PCRE_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1055,10 +1069,10 @@ uuid = "ccf2f8ad-2431-5c83-bf29-c5338b663b6a"
 version = "3.0.0"
 
 [[deps.PlotUtils]]
-deps = ["ColorSchemes", "Colors", "Dates", "Printf", "Random", "Reexport", "SnoopPrecompile", "Statistics"]
-git-tree-sha1 = "21303256d239f6b484977314674aef4bb1fe4420"
+deps = ["ColorSchemes", "Colors", "Dates", "Printf", "Random", "Reexport", "Statistics"]
+git-tree-sha1 = "9888e59493658e476d3073f1ce24348bdc086660"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
-version = "1.3.1"
+version = "1.3.0"
 
 [[deps.Plots]]
 deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers", "GR", "GeometryBasics", "JSON", "LaTeXStrings", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "Requires", "Scratch", "Showoff", "SparseArrays", "Statistics", "StatsBase", "UUIDs", "UnicodeFun", "Unzip"]
@@ -1092,9 +1106,9 @@ version = "0.2.4"
 
 [[deps.PreallocationTools]]
 deps = ["Adapt", "ArrayInterfaceCore", "ForwardDiff", "ReverseDiff"]
-git-tree-sha1 = "ebe90ecfb31f1781a6da31a986036896e5847fb8"
+git-tree-sha1 = "5c076a409ec8d2a86d3685a7e4fed330cd489889"
 uuid = "d236fae5-4411-538c-8e31-a6e3d9e00b46"
-version = "0.4.3"
+version = "0.4.2"
 
 [[deps.Preferences]]
 deps = ["TOML"]
@@ -1224,9 +1238,9 @@ version = "0.6.35"
 
 [[deps.SciMLBase]]
 deps = ["ArrayInterfaceCore", "CommonSolve", "ConstructionBase", "Distributed", "DocStringExtensions", "FunctionWrappersWrappers", "IteratorInterfaceExtensions", "LinearAlgebra", "Logging", "Markdown", "RecipesBase", "RecursiveArrayTools", "StaticArraysCore", "Statistics", "Tables"]
-git-tree-sha1 = "0d8622edebac09e7bf93460cbad4602d5c9b3be9"
+git-tree-sha1 = "e30c2f8bd32b2d1ba73f1a0044827645d2439fdc"
 uuid = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
-version = "1.54.0"
+version = "1.53.2"
 
 [[deps.Scratch]]
 deps = ["Dates"]
@@ -1707,13 +1721,12 @@ version = "1.4.1+0"
 # ╠═1efd1ba2-2f8f-11ed-35be-21ee92b1d1ae
 # ╠═27c072bb-4b33-4fed-aa14-86a94a9de6c2
 # ╠═644dc99d-fa82-45e1-8514-980f78417e69
-# ╠═50091bcf-9e3a-4a24-8a1c-92b86c8fa195
 # ╠═37d50a58-7e5a-4a27-b8e4-a664d0d80997
 # ╠═ff334e98-372c-46a6-a81a-390b10b015fe
 # ╠═8a5ef6b2-670f-4bd0-9b1a-26a3b3748a07
 # ╠═1b893a00-e4b4-4b37-a5eb-6ba74bc3f72f
 # ╠═0bcba7a9-4924-4147-afce-d669d38d78ae
 # ╠═ea444b11-d7d6-4528-b5bf-74be3a232b59
-# ╠═f09f633f-34b7-4ac1-9944-714364e6cfd9
+# ╠═3f2ccd6a-b313-4eea-b659-fbb5ba1c4764
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
