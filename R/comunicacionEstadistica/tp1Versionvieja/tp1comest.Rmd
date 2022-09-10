@@ -5,7 +5,8 @@ output: html_notebook
 ```{r}
 library(ggplot2)
 library(gridExtra)
-
+require(ggridges)
+library(ggridges)
 ```
 
 ```{r}
@@ -72,6 +73,16 @@ ggplot(data = df, aes(x = stroke, y=age, color=gender) ) +
   
   geom_violin() 
 ```
+```{r}
+ggplot(df, aes(x = age, y = stroke, fill=gender)) +
+  #geom_density_ridges_gradient(scale = 2, rel_min_height = 0.001) +
+  geom_density_ridges(alpha = 0.5, scale = 2.2, rel_min_height = 0.01) + 
+  #scale_fill_viridis_c(name = "Edad", option = "C") +
+  labs(title = 'Distribuiciones de edad de personas con y sin acv')
+
+
+```
+
 Aca hay mucho para analizar, a la izquierda las distribuciones en edad de la gente que no tuvo acv, a la derecha quienes si.
 Lo primero que voy a marcar es que la gente que tiene acv es en su mayoría personas mayores, y que la edad ayuda determinantemente para analizar la probabilidad de tener acv. En cuanto a la posible bimodalidad de la distribución, no encontré ninguna fuente que hable del tema así que podría ser una particularidad de estos datos.
 Lo segundo es que las personas que tuvieron un acv joven son todas mujeres! Lamentablemente este es un fenómeno conocido y ya reportado por el "National Heart Lung and Blood institute".

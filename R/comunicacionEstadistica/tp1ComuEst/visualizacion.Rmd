@@ -1,0 +1,198 @@
+---
+title: "Análisis de accidentes cardiovasculares"
+subtitle: "Trabajo practico 1 - Taller de Comunicación Estadística"
+author: "Axel Fridman"
+date: "10 de Septiembre 2022"
+output:
+  html_document:
+    df_print: paged
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{=html}
+<style type="text/css">
+body{ /* Normal  */
+font-size: 12px;
+}
+td {  /* Table  */
+font-size: 10px;
+}
+h1.title {
+font-size: 38px;
+color: DarkRed;
+}
+h1 { /* Header 1 */
+font-size: 28px;
+color: DarkBlue;
+}
+h2 { /* Header 2 */
+font-size: 22px;
+color: DarkBlue;
+}
+h3 { /* Header 3 */
+font-size: 18px;
+color: DarkRed;
+}
+code.r{ /* Code block */
+font-size: 8px;
+}
+pre { /* Code block - determines code spacing between lines */
+font-size: 10px;
+}
+blockquote {
+font-size: 12px;
+border-left: 5px solid #eee;
+}
+</style>
+```
+```{r setup2, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require(klippy)
+```
+
+```{r klippy, echo=FALSE, include=TRUE}
+klippy::klippy()
+
+# Me fijo si estos paquetes están instalados y si no, los instalo
+packages <- c("cowplot", "readr", "ggplot2", "dplyr", "lavaan", "Hmisc",
+              "tidyverse", "lubridate", "ggbeeswarm", "ggridges", "patchwork")
+if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
+  install.packages(setdiff(packages, rownames(installed.packages())))
+}
+
+```
+## Descripción del Dataset
+
+Este trabajo esta pensado para poder realizar un analisis exploratorio y visualizacion de datos de accidentes cardiovasculares. Descargué el dataset de la página de Kaggle Datasets (más precisamente, en [este link](https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset)). El dataset se encuentra descargado como `stroke.csv` que ahora está en la carpeta `datos` de este proyecto. La fuente de los datos segun el autor del dataset en Kaggle es "confidencial".
+
+El dataset cuenta con 5000 observaciones y diversas variables, algunas muy relacionadas a la salud y fisiología, como por ejemplo: si es hipertenso, edad, sexo, si tuvo alguna enfermedad del corazón, nivel de glucosa, e índice de masa corporal. Mientras que otras variables son más relacionadas a cuestiones sociales o de hábitos: estado civil, tipo de trabajo, tipo de residencia y si es fumadora o no lo es/ lo dejó. 
+
+No escapa mi atención, que si bien es posible encontrar que la residencia o el tipo de trabajo pueden correlacionarse bien con si tuvo o no un ACV, podría deberse a otro factor en común como pobreza o falta de acceso al sistema de salud. Es por eso que si bien puede que exploremos su relación con las otras variables, tengo cautela en su valor explicativo. 
+
+Este dataset fue descargado 87.535 veces con lo cual ya fue sumamente estudiado y se lo considera de alta calidad para explorarlo o el desarrollo de un modelo simple.
+
+
+
+## Importo los datos
+
+Importo a los datos y remuevo a la unica observacion con genero "other" para simplificar el analisis. 
+```{r message=FALSE, warning=FALSE}
+require(tidyverse)
+require(lubridate)
+library(ggplot2)
+library(gridExtra)
+require(ggridges)
+df = read.csv("datos/stroke.csv")
+df = df[df$bmi!="N/A",]
+df = df[df$gender!="Other",]
+df$age = as.numeric(df$age)
+df$bmi = as.numeric(df$bmi)
+df
+```
+## Proporciones ACV  {.tabset .tabset-fade}
+Visualizo por cada grupo (de las categoricas binarias) cuanta gente tuvo un ACV proporcionalmente al tamaño de ese grupo. 
+
+### Código
+
+```{r eval=TRUE, message=FALSE, warning=FALSE, include=TRUE}
+categ = c("ever_married","heart_disease","hypertension", "Residence_type")
+dfCategoricas = data.frame(categ)
+
+porc1 = c()
+porc2 = c()
+porc1[1] = nrow(subset(df, stroke == 1 & ever_married == "Yes")) / nrow(subset(df, ever_married == "Yes"))
+porc2[1] = nrow(subset(df, stroke == 1 & ever_married != "Yes")) / nrow(subset(df, ever_married != "Yes"))
+
+porc1[2] = nrow(subset(df, stroke == 1 & heart_disease == 1)) / nrow(subset(df, heart_disease == 1))
+porc2[2] = nrow(subset(df, stroke == 1 & heart_disease != 1)) / nrow(subset(df, heart_disease != 1))
+
+porc1[3] = nrow(subset(df, stroke == 1 & hypertension == 1)) / nrow(subset(df, hypertension == 1))
+porc2[3] = nrow(subset(df, stroke == 1 & hypertension != 1)) / nrow(subset(df, hypertension != 1))
+
+porc1[4] = nrow(subset(df, stroke == 1 & Residence_type == "Urban")) / nrow(subset(df, Residence_type == "Urban"))
+porc2[4] = nrow(subset(df, stroke == 1 & Residence_type != "Urban")) / nrow(subset(df, Residence_type != "Urban"))
+
+dfCategoricas = cbind(dfCategoricas ,porc1)
+dfCategoricas = cbind(dfCategoricas, porc2)
+colnames(dfCategoricas) = c("categ", "SI", "NO")
+
+nos = dfCategoricas$NO
+dfCategoricas$NO = 1
+colnames(dfCategoricas) = c("categ", "valor", "siono")
+dfCategoricas = rbind(dfCategoricas, c(categ[1], nos[1], 0))
+dfCategoricas = rbind(dfCategoricas, c(categ[2], nos[2], 0))
+dfCategoricas = rbind(dfCategoricas, c(categ[3], nos[3], 0))
+dfCategoricas = rbind(dfCategoricas, c(categ[4], nos[4], 0))
+dfCategoricas$valor = as.numeric(dfCategoricas$valor) * 100
+
+g = ggplot(data=dfCategoricas, aes(x=categ, y=valor, fill=siono)) +
+  geom_bar(stat="identity", position=position_dodge(), show.legend = FALSE) + 
+  xlab("Condicion") +
+  ylab("Porcentaje que tuvo un ACV") +
+  
+  geom_text(aes(label=c("Casadx","Si","Si","Urbana","No Casadx","No","No","Rural")), vjust=1.6, color="white",
+            position = position_dodge(0.9), size=3.5) 
+```
+
+### Output {.active}
+
+```{r echo=FALSE, fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
+g
+```
+Como el dataset cuenta con muchas variables categóricas y numéricas, decidí primero explorar algunas de las categorías. Lo que se ve es por cada categoría, Casado, no casado, sin enfermedad del corazón, con enfermedad del corazón etc, la proporción de gente en ese subgrupo que tuvo un ACV. 
+Es decir la barra de más de la derecha nos mide el total de gente que tuvo un acv y vive en zona urbana dividido la cantidad de gente que vive en una zona urbana.
+Si bien no podemos asignarle causalidad, algunas relaciones son más fuertes que otras, la residencia no parece afectar tanto, mientras que tener una enfermedad cardiaca tiene una correlación muy fuerte con tener acv.
+La condición que más me llamó la atención es la de si alguna vez estuvo casado, ¿porque cambia tanto la proporción de gente que tuvo acv?
+Al analizar los datos vi que 2/3 alguna vez se había casado, pero como yo divido por el total (y me quedo con la proposición) no debería afectar el porcentaje. Lo que sí es interesante es ver la distribución de gente que estuvo casada en la edad, ¿será posible que haber estado casado se relacione con otra variable que sí afecta tus probabilidad de tener acv? Volveré a esto más adelante.
+
+## Analisis de la distribuicion en edad ACV {.tabset .tabset-fade}
+
+### Código
+```{r message=FALSE, warning=FALSE}
+df$stroke = as.factor(df$stroke)
+
+g2 = ggplot(df, aes(x = age, y = stroke, fill = gender)) +
+  geom_density_ridges(alpha=0.5,rel_min_height = 0.001) +
+  xlab("Edad en años") +
+  ylab("ACV (0 = no, 1 = si)") +
+
+  labs(title = 'Distribuciones en edad')
+```
+### Output {.active}
+```{r message=FALSE, warning=FALSE}
+g2
+```
+Aca hay mucho para analizar, a la izquierda las distribuciones en edad de la gente que no tuvo acv, a la derecha quienes si.
+Lo primero que voy a marcar es que la gente que tiene acv es en su mayoría personas mayores, y que la edad ayuda determinantemente para analizar la probabilidad de tener acv. En cuanto a la posible bimodalidad de la distribución, no encontré ninguna fuente que hable del tema así que podría ser una particularidad de estos datos.
+Lo segundo es que las personas que tuvieron un acv joven son todas mujeres! Lamentablemente este es un fenómeno conocido y ya reportado por el "National Heart Lung and Blood institute".
+  
+https://www.nhlbi.nih.gov/news/2022/younger-women-may-be-greater-risk-stroke-according-large-review
+https://www.everydayhealth.com/stroke/younger-women-are-having-more-strokes/
+
+## Distribuicion en edad de personas alguna vez casadas {.tabset .tabset-fade}
+
+### Código
+```{r message=FALSE, warning=FALSE}
+df$stroke = as.factor(df$stroke)
+
+g3 = ggplot(df, aes(x = age, y = ever_married, fill = gender)) +
+  geom_density_ridges(scale=0.95, alpha=0.5,rel_min_height = 0.001) +
+  xlab("Edad en años") +
+  ylab("Alguna vez casados") +
+
+  labs(title = 'Distribuciones en edad')
+```
+### Output {.active}
+```{r message=FALSE, warning=FALSE}
+g3
+```
+
+Y volviendo a lo mencionado en el primer gráfico, haber estado casado está completamente relacionado con la edad, y como vimos en el gráfico 2, la edad lo está a su vez con el riesgo de tener acv. Casarse NO causa necesariamente un accidente cardiovascular.
+
+Muchas gracias por leer. 
+
