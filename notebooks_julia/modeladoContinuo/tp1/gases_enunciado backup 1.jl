@@ -128,10 +128,10 @@ Implementar la función que define el sistema de ecuaciones. Asumir que el vecto
 			distEntrePlanetas = distEuclideana(Posx1, Posy1, Posx2, Posy2)
 			
 			if(distEntrePlanetas > minDis)
-				du[(gasIesimo-1)*4 + 3] = du[(gasIesimo-1)*4 + 3] -
+				du[(gasIesimo-1)*4 + 3] = du[(gasIesimo-1)*4 + 3] +
 				4*k1*masas[gasOtro]*masas[gasIesimo]*(Posx2-Posx1)/(distEntrePlanetas^6)
 					
-				du[(gasIesimo-1)*4 + 4] = du[(gasIesimo-1)*4 + 4] -
+				du[(gasIesimo-1)*4 + 4] = du[(gasIesimo-1)*4 + 4] +
 				4*k1*masas[gasOtro]*masas[gasIesimo]*(Posy2-Posy1)/(distEntrePlanetas^6)
 				
 					
@@ -178,7 +178,6 @@ end
 function condicionChoqueDer(u,t,integrator)
 	for gas in 1:Int(length(u)/4)
 			Posx = u[(gas-1)*4 + 1]
-			print(integrator.p[3])
 			if(Posx > integrator.p[3]) #ACA HAY QUE PONER LA L !!!!!!!!!
 				return true
 			end
@@ -206,8 +205,8 @@ function respuestaChoqueIzq!(integrator)
 	for gas in 1:Int(length(integrator.u)/4)
 			Posx = integrator.u[(gas-1)*4 + 1]
 			if(Posx<0)
-				integrator.u[(gas-1)*4 + 3] = -integrator.u[(gas-1)*4 + 3]
-				integrator.u[(gas-1)*4 + 1]  = 0 - (integrator.u[(gas-1)*4 + 1]  - 0)
+				integrator.u[3] = -integrator.u[3]
+				integrator.u[1] = 0 - (integrator.u[1] - 0)
 			end
 	end
 end
@@ -215,8 +214,8 @@ function respuestaChoquePiso!(integrator)
 	for gas in 1:Int(length(integrator.u)/4)
 			Posy = integrator.u[(gas-1)*4 + 2]
 			if(Posy<0)
-				integrator.u[(gas-1)*4 + 4] = -integrator.u[(gas-1)*4 + 4]
-				integrator.u[(gas-1)*4 + 2] = 0 - (integrator.u[(gas-1)*4 + 2] - 0)
+				integrator.u[4] = -integrator.u[4]
+				integrator.u[2] = 0 - (integrator.u[2] - 0)
 			end
 	end
 end
@@ -224,8 +223,8 @@ function respuestaChoqueDer!(integrator)
 	for gas in 1:Int(length(integrator.u)/4)
 			Posx = integrator.u[(gas-1)*4 + 1]
 			if(Posx>integrator.p[3])
-				integrator.u[(gas-1)*4 + 3] = -integrator.u[(gas-1)*4 + 3]
-				integrator.u[(gas-1)*4 + 1] = integrator.p[3] - (integrator.u[(gas-1)*4 + 1] -integrator.p[3])
+				integrator.u[3] = -integrator.u[3]
+				integrator.u[1] = integrator.p[3] - (integrator.u[1] -integrator.p[3])
 			end
 	end
 end
@@ -233,8 +232,8 @@ function respuestaChoqueTecho!(integrator)
 	for gas in 1:Int(length(integrator.u)/4)
 			Posy = integrator.u[(gas-1)*4 + 2]
 			if(Posy>integrator.p[3])
-				integrator.u[(gas-1)*4 + 4] = -integrator.u[(gas-1)*4 + 4]
-				integrator.u[(gas-1)*4 + 2] = integrator.p[3] - (integrator.u[(gas-1)*4 + 2] -integrator.p[3])
+				integrator.u[4] = -integrator.u[4]
+				integrator.u[2] = integrator.p[3] - (integrator.u[2] -integrator.p[3])
 			end
 	end
 end
@@ -260,26 +259,22 @@ Implementar una función que reciba un conjunto de parámetros adecuados y ejecu
 # ╔═╡ 9da98062-6c3b-49e3-8b96-92dcc89769c7
 # simulación
 begin
-	k1 = float.(1.0e-5)
-	masas = float.([1.0,1.0,1.0,1.0,1.0])
-	n = 5
-	tspan = [0,20]
-	datoInicialEspacial = float.(generarPosicionesVelocidadesAlAzar(n, L, 3))
-	#datoInicialEspacial = float.([1,1,0,0,0.1,0.1,0,0,1,0,0,0])
+	k1 = float.(1.0)
+	masas = float.([1.0,1.0])
+	n = 2
+	tspan = [0,40]
+	datoInicialEspacial = float.(generarPosicionesVelocidadesAlAzar(n, L, 1))
 	pInfo = float.([k1, masas, L, 0.01])
 	Pgas  = ODEProblem(gases,datoInicialEspacial,tspan,pInfo)
-	solCuerpos = solve(Pgas, callback=cbsetSala,dtmax=0.1) #callback=cbsetSala
+	solCuerpos = solve(Pgas, callback=cbsetSala, dtmax=0.01)
 
 end
 
 # ╔═╡ 316fd5e6-f050-46db-8239-a39ee7a2a593
-begin
-	plot(solCuerpos,idxs=[(i,i+1) for i in 1:4:n*4])
-	plot!([0,0,L,L,0],[0,L,L,0,0], label="pared")
-end
+plot(solCuerpos,idxs=[(i,i+1) for i in 1:4:n*4])
 
 # ╔═╡ e3687e0a-450a-4bce-8520-7e613d526490
-animate(solCuerpos,idxs=[(i,i+1) for i in 1:4:n*4])
+#animate(solCuerpos,idxs=[(i,i+1) for i in 1:4:n*4])
 
 # ╔═╡ a5fa4f83-3169-4268-b816-7b8fe2c5333a
 md"""###### Ejercicio 5:
@@ -292,7 +287,6 @@ Es interesante también estudiar el caso en que las masas son variables. Simular
 
 # ╔═╡ 35f58720-56f4-4cce-adab-95414062f3d0
 # animación
-
 
 # ╔═╡ e606d381-d37e-414d-9c68-c65205e61873
 # prueba con 2

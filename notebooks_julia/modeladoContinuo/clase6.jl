@@ -59,6 +59,7 @@ end
 begin
 	s₁ = ejercicio10()
 	plot(s₁,label=["S" "I" "R"])
+	plot!([20,80],[2000, 1000])
 end
 
 # ╔═╡ 619e5b65-8b49-4351-ab30-5cd327fe2fca
