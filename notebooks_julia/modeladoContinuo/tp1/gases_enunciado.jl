@@ -4,106 +4,136 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 1efd1ba2-2f8f-11ed-35be-21ee92b1d1ae
-begin
-	using Plots,DifferentialEquations
-	theme(:dracula)
+# ╔═╡ 5699b85e-0f55-11ed-0865-9fbd5aa9097c
+begin 
+	using Plots, DifferentialEquations
 end
 
-# ╔═╡ 27c072bb-4b33-4fed-aa14-86a94a9de6c2
- distEuclideana(x1,y1,z1,x2,y2,z2) = sqrt((x1-x2)^2+(y1-y2)^2+(z1-z2)^2)
-
-# ╔═╡ 644dc99d-fa82-45e1-8514-980f78417e69
+# ╔═╡ a1ce46ff-f4e1-4a84-b1d0-31c67cc7523a
 begin
-	dist = 100000 # 100 km de distancia a la orbita del planeta centrico
-	xIni1,yIni1,zIni1 = [0.0,0.0,0.0]
-	xIni2,yIni2,zIni2 = [dist,0,0.0]
-	xIni3,yIni3,zIni3 = [0,dist,0.0]
-	xIni4,yIni4,zIni4 = [-dist,0,0]
-	xIni5,yIni5,zIni5 = [0,-dist,0]
-	
-	pos1 = xIni1,yIni1,zIni1
-	pos2 = xIni2,yIni2,zIni2
-	pos3 = xIni3,yIni3,zIni3
-	pos4 = xIni4,yIni4,zIni4
-	pos5 = xIni5,yIni5,zIni5
-	posiciones = pos1, pos2, pos3, pos4, pos5
+	using Random
+	using Distributions
+end
 
-	velocidadGiro = 300 # metros x seg
-	velocidadCaida = 0.001
-	
-	xVelIni1, yVelIni1, zVelIni1 = 0,-0., velocidadCaida
-	xVelIni2, yVelIni2, zVelIni2 = 0,velocidadGiro, velocidadCaida
-	xVelIni3, yVelIni3, zVelIni3 = -velocidadGiro,0,velocidadCaida
-	xVelIni4, yVelIni4, zVelIni4 = 0.0,-velocidadGiro, velocidadCaida
-	xVelIni5, yVelIni5, zVelIni5 = velocidadGiro,0., velocidadCaida
-	
-	vel1 = xVelIni1, yVelIni1, zVelIni1
-	vel2 = xVelIni2, yVelIni2, zVelIni2
-	vel3 = xVelIni3, yVelIni3, zVelIni3
-	vel4 = xVelIni4, yVelIni4, zVelIni4
-	vel5 = xVelIni5, yVelIni5, zVelIni5
-	velocidades = vel1, vel2, vel3, vel4, vel5
+# ╔═╡ 5ba9125c-262e-4a31-9515-109463527031
+md"""
+# IMC
 
-	masa1 = 10000000000. #10 mil millones de kilos
-	masa2 = 10000000000.
-	masa3 = 10000000000.
-	masa4 = 10000000000
-	masa5 = 10000000000
-	masas = masa1, masa2, masa3, masa4, masa5
-	
-	constanteGravitacional = 0.4982 
-	
+## Trabajo Práctico $n^\circ 1$: Dinámica de gases.
+"""
+
+# ╔═╡ d7d2e805-781f-4b07-9adc-9c75acc66bc9
+md"""##### Criterio de corrección
+
+El TP consta de dos partes. La primera corresponde a la implementación básica del sistema y su simulación. La impecable resolución de esta primera parte equivale a un 8. Una resolución correcta, a un 7. Para aumentar la nota, hay al final del TP algunos _**Adicionales**_. La resolución de cualquiera de los ellos alcanza para llegar al 10, si se lo resuelve de manera correcta y completa. """
+
+# ╔═╡ 68a95dca-e8ce-4253-a068-1cd2cfac893a
+md"""Queremos estudiar un sistema de muchas partículas moviéndose en una caja. Pensemos, por ejemplo, en un gas, cuyas moléculas se repelen entre sí y chocan contra las paredes. Para simplificar, trabajaremos con una caja en el plano.
+
+#### Fuerzas
+
+Dadas dos masas $m_i$ y $m_j$ ubicadas en los puntos de coordenadas $(x_i,y_i)$ y $(x_j,y_j)$ respectivamente, podemos modelar los choques entre ellas a través de un potencial repulsivo. Este potencial debe ser grande cuando las partículas están cerca y prácticamente nulo cuando están lejos. Proponemos, por lo tanto, un potencial de la forma:
+
+$E^P_{ij} = k_1\frac{m_i m_j}{d_{ij}^4},$
+
+donde $k_1$ es una constante de la interación y $d_{ij}$ es la distancia entre las partículas, es decir: 
+
+$d_{ij}^2 = (x_i-x_j)^2+(y_i-y_j)^2.$
+
+Con este potencial, la fuerza $F_i^j$ que la masa $j$ ejerce sobre la masa $i$ es: 
+
+$F_i^j = -\nabla_i E^P_{ij} = 4k_1 m_i m_j \frac{(x_i,y_i)-(x_j,y_j)}{d_{ij}^6},$
+
+mientras que $F_j^i = -F_i^j$. La fuerza total sobre la partícula $i$ será la suma de las fuerzas que todas las otras partículas ejercen sobre ella. 
+
+#### Rebotes
+
+Asumiremos que los choques contra las paredes conservan la energía. Los modelaremos simplemente detectando cuando una masa se sale de la caja, reflejándola hacia adentro e invirtiendo su velocidad. 
+
+"""
+
+
+# ╔═╡ 9ec881e2-3a6f-47c6-a900-40376f929f3f
+md"""### Primera Parte:
+
+Comenzaremos realizando la simulación general de este fenómeno. Asumimos que la caja es cuadrada y para reducir el número de variables definimos el lado como una variable global:"""
+
+# ╔═╡ dbe0b543-3c51-4732-88ec-364064088380
+const L = 10.00
+
+# ╔═╡ 373f650b-86d1-45ca-aad8-613940e2f788
+md"""###### Ejercicio 1:
+Implementar una función que genere un dato inicial aleatorio. Es decir: que reciba un parámetro $n$ (la cantidad de partículas a generar) y devuelva alguna estructura de datos adecuada que contenga las posiciones iniciales, tomadas al azar en el cuadrado $[0,L]\times[0,L]$ y las velocidades iniciales, también tomadas al azar. 
+
+Las velocidades pueden influir en la dinámica de las simulaciones. Por lo tanto, la recomendación es que la función reciba un parámetro de escala `V` y genere para cada partícula un ángulo al azar `α∈[0,2π)` y un valor al azar `v∈[0,V]` y defina las coordenadas de la velocidad con estos datos. De esta manera se obtienen vectores de velocidad distribuidos uniformemente en el círculo de radio `V`, y es posible modificar el valor de `V` de una simulación a otra. """
+
+# ╔═╡ 73d3bf5e-8626-4a7f-9404-a953c59d5989
+rand(Uniform(0, L))
+
+# ╔═╡ ff6ebf08-69b3-4d3c-82b4-af70f12ddd30
+# dato inicial
+function generarPosicionesVelocidadesAlAzar(cantidad, pared, maxVelocidad)
 	posVel = []
-	for i in 1:length(posiciones)
-		for j in 1:3
-			push!(posVel, posiciones[i][j])
+	for i in 1:cantidad
+		posicion = [rand(Uniform(0, pared)), rand(Uniform(0, pared))]
+		angulo = rand(Uniform(0, 2*π))
+		modVel = rand(Uniform(0, maxVelocidad))
+		velocidad = [modVel * cos(angulo), modVel * sin(angulo)]
+		for j in 1:2
+			push!(posVel, posicion[j])
 		end
-		for j in 1:3
-			push!(posVel, velocidades[i][j])
+		for j in 1:2
+			push!(posVel, velocidad[j])
 		end
 		
 	end
-	
-	datoInicialEspacial = float.(posVel)
-	minDis = 10
-	pInfo = [constanteGravitacional, masas, minDis]
+	return posVel
 end
 
-# ╔═╡ 37d50a58-7e5a-4a27-b8e4-a664d0d80997
-function nCuerpos(du,u,pInfo,t)
-	G, masas, minDis = pInfo
-	
-	for planetaIesimo in 1:Int(length(u)/6)
-		Posx1 = u[(planetaIesimo-1)*6 + 1]
-		Posy1 = u[(planetaIesimo-1)*6 + 2]
-		Posz1 = u[(planetaIesimo-1)*6 + 3]
-		Velx1 = u[(planetaIesimo-1)*6 + 4]
-		Vely1 = u[(planetaIesimo-1)*6 + 5]
-		Velz1 = u[(planetaIesimo-1)*6 + 6]
+# ╔═╡ cd6203d6-dd50-4d03-9ac1-0400e124b1e0
+generarPosicionesVelocidadesAlAzar(3, L, 1)
 
-		du[(planetaIesimo-1)*6 + 1] = Velx1
-		du[(planetaIesimo-1)*6 + 2] = Vely1
-		du[(planetaIesimo-1)*6 + 3] = Velz1
-		du[(planetaIesimo-1)*6 + 4] = 0.
-		du[(planetaIesimo-1)*6 + 5] = 0.
-		du[(planetaIesimo-1)*6 + 6] = 0.
-		for planetaInteraccion in 1:Int(length(u)/6)
+# ╔═╡ ea76cc50-1005-4902-87f2-85ba43525134
+md"""###### Ejercicio 2:
+
+Implementar la función que define el sistema de ecuaciones. Asumir que el vector de parámetros `p` toma la forma `p=[k₁,m]`, donde `m=[m₁,m₂,…,mₙ]` es el vector de masas.
+ """
+
+# ╔═╡ caba579c-5cce-42c0-8293-19b3bbe8a1fa
+ distEuclideana(x1,y1,x2,y2) = sqrt((x1-x2)^2+(y1-y2)^2)
+
+# ╔═╡ 8a05aeea-be56-4b46-a42c-6356c2de73ed
+ # ecuaciones del modelo
+ function gases(du,u,pInfo,t)
+	k1, masas, L, minDis = pInfo
+	
+	for gasIesimo in 1:Int(length(u)/4)
+		Posx1 = u[(gasIesimo-1)*4 + 1]
+		Posy1 = u[(gasIesimo-1)*4 + 2]
+		Velx1 = u[(gasIesimo-1)*4 + 3]
+		Vely1 = u[(gasIesimo-1)*4 + 4]
+
+		du[(gasIesimo-1)*4 + 1] = Velx1
+		du[(gasIesimo-1)*4 + 2] = Vely1
+		du[(gasIesimo-1)*4 + 3] = 0.
+		du[(gasIesimo-1)*4 + 4] = 0.
+	
+		for gasOtro in 1:Int(length(u)/4)
 			
-			Posx2 = u[(planetaInteraccion-1)*6 + 1]
-			Posy2 = u[(planetaInteraccion-1)*6 + 2]
-			Posz2 = u[(planetaInteraccion-1)*6 + 3]
-			Velx2 = u[(planetaInteraccion-1)*6 + 4]
-			Vely2 = u[(planetaInteraccion-1)*6 + 5]
-			Velz2 = u[(planetaInteraccion-1)*6 + 6]
+			Posx2 = u[(gasOtro-1)*4 + 1]
+			Posy2 = u[(gasOtro-1)*4 + 2]
+			Velx2 = u[(gasOtro-1)*4 + 3]
+			Vely2 = u[(gasOtro-1)*4 + 4]
 				
-			distEntrePlanetas = distEuclideana(Posx1, Posy1, Posz1, Posx2, Posy2, Posz2)
+			distEntrePlanetas = distEuclideana(Posx1, Posy1, Posx2, Posy2)
+			
 			if(distEntrePlanetas > minDis)
-				du[(planetaIesimo-1)*6 + 4] = du[(planetaIesimo-1)*6 + 4] + G* masas[planetaInteraccion]*(Posx2-Posx1)/(distEntrePlanetas^3)
+				du[(gasIesimo-1)*4 + 3] = du[(gasIesimo-1)*4 + 3] +
+				4*k1*masas[gasOtro]*masas[gasIesimo]*(Posx2-Posx1)/(distEntrePlanetas^6)
+					
+				du[(gasIesimo-1)*4 + 4] = du[(gasIesimo-1)*4 + 4] +
+				4*k1*masas[gasOtro]*masas[gasIesimo]*(Posy2-Posy1)/(distEntrePlanetas^6)
 				
-				du[(planetaIesimo-1)*6 + 5] = du[(planetaIesimo-1)*6 + 5] + G* masas[planetaInteraccion]*(Posy2-Posy1)/(distEntrePlanetas^3)
-				
-				du[(planetaIesimo-1)*6 + 6] = du[(planetaIesimo-1)*6 + 6] + G* masas[planetaInteraccion]*(Posz2-Posz1)/(distEntrePlanetas^3)
 					
 			end
 			
@@ -112,37 +142,252 @@ function nCuerpos(du,u,pInfo,t)
 	end
 end
 
-# ╔═╡ ff334e98-372c-46a6-a81a-390b10b015fe
+# ╔═╡ 239075d6-fde1-4794-825c-1bd4e9380681
+md"""###### Ejercicio 3:
+
+Para reconocer los choques contra las paredes utilizaremos un `DiscreteCallback`. Implementar:
+1. La condición, que debe devolver `true` cuando cualquiera de las particulas está fuera de la caja.
+2. La función de rebote, que debe reconocer todas las partículas fuera de la caja y corregir sus posiciones y velocidades.
+
+Esto puede hacerse implementando una única condición, implementando dos (una para choques en $x$ y otra para choques en $y$), o implementando cuatro (una por cada borde). Lo importante es que, en cualquier caso, cada condición debe revisar _todas_ las partículas. Para esto puede resultar útil el comando `any`, que recibe un vector de variables booleanas y devuelve `true` si alguna de sus coordenadas es `true`. """
+
+# ╔═╡ c21a9f39-518c-4fbc-af2f-db27e33a2d1d
+# condición
 begin
-	tspan = [0,1550]
-	Pcuerpos  = ODEProblem(nCuerpos,datoInicialEspacial,tspan,pInfo)
-	solCuerpos = solve(Pcuerpos)
+	
+function condicionChoqueIzq(u,t,integrator)
+	for gas in 1:Int(length(u)/4)
+			Posx = u[(gas-1)*4 + 1]
+			if(Posx<0)
+				return true
+			end
+	end
+	return false
+end
+
+function condicionChoquePiso(u,t,integrator)
+	for gas in 1:Int(length(u)/4)
+			Posy = u[(gas-1)*4 + 2]
+			if(Posy<0)
+				return true
+			end
+	end
+	return false
+end
+
+function condicionChoqueDer(u,t,integrator)
+	for gas in 1:Int(length(u)/4)
+			Posx = u[(gas-1)*4 + 1]
+			if(Posx > integrator.p[3]) #ACA HAY QUE PONER LA L !!!!!!!!!
+				return true
+			end
+	end
+	return false
+end
+
+function condicionChoqueTecho(u,t,integrator)
+	for gas in 1:Int(length(u)/4)
+			Posy = u[(gas-1)*4 + 2]
+			if(Posy > integrator.p[3]) #ACA HAY QUE PONER LA L !!!!!!!!!
+				return true
+			end
+	end
+	return false
+end
 	
 end
 
-# ╔═╡ 8a5ef6b2-670f-4bd0-9b1a-26a3b3748a07
-plot(solCuerpos,idxs=[(i,i+1,i+2) for i in 1:6:25])
+# ╔═╡ cb7222c4-4530-4c25-9123-894a0ae7a184
+# rebotes
+begin
 
-# ╔═╡ 1b893a00-e4b4-4b37-a5eb-6ba74bc3f72f
-animate(solCuerpos,idxs=[(i,i+1, i+2) for i in 1:6:25, fps=5])
+function respuestaChoqueIzq!(integrator)
+	for gas in 1:Int(length(integrator.u)/4)
+			Posx = integrator.u[(gas-1)*4 + 1]
+			if(Posx<0)
+				integrator.u[3] = -integrator.u[3]
+				integrator.u[1] = 0 - (integrator.u[1] - 0)
+			end
+	end
+end
+function respuestaChoquePiso!(integrator)
+	for gas in 1:Int(length(integrator.u)/4)
+			Posy = integrator.u[(gas-1)*4 + 2]
+			if(Posy<0)
+				integrator.u[4] = -integrator.u[4]
+				integrator.u[2] = 0 - (integrator.u[2] - 0)
+			end
+	end
+end
+function respuestaChoqueDer!(integrator)
+	for gas in 1:Int(length(integrator.u)/4)
+			Posx = integrator.u[(gas-1)*4 + 1]
+			if(Posx>integrator.p[3])
+				integrator.u[3] = -integrator.u[3]
+				integrator.u[1] = integrator.p[3] - (integrator.u[1] -integrator.p[3])
+			end
+	end
+end
+function respuestaChoqueTecho!(integrator)
+	for gas in 1:Int(length(integrator.u)/4)
+			Posy = integrator.u[(gas-1)*4 + 2]
+			if(Posy>integrator.p[3])
+				integrator.u[4] = -integrator.u[4]
+				integrator.u[2] = integrator.p[3] - (integrator.u[2] -integrator.p[3])
+			end
+	end
+end
 
-# ╔═╡ 0bcba7a9-4924-4147-afce-d669d38d78ae
+end
+
+# ╔═╡ 10cfbe02-510c-4d52-9133-d51adb26deb2
+begin
+	dc1 = DiscreteCallback(condicionChoqueIzq,respuestaChoqueIzq!)
+	dc2 = DiscreteCallback(condicionChoqueDer,respuestaChoqueDer!)
+	dc3 = DiscreteCallback(condicionChoquePiso,respuestaChoquePiso!)
+	dc4 = DiscreteCallback(condicionChoqueTecho,respuestaChoqueTecho!)
+	cbsetSala = CallbackSet(dc1,dc2,dc3,dc4)
+end
+
+# ╔═╡ 0515150e-6e13-4cc4-b68f-61708a3cf4f4
+md""" ###### Ejercicio 4:
+
+Implementar una función que reciba un conjunto de parámetros adecuados y ejecute una simulación. Verificar que se ejecuta sin errores simulando un sistema con dos partículas. """
 
 
-# ╔═╡ ea444b11-d7d6-4528-b5bf-74be3a232b59
+
+# ╔═╡ 9da98062-6c3b-49e3-8b96-92dcc89769c7
+# simulación
+begin
+	k1 = float.(1.0)
+	masas = float.([1.0,1.0])
+	n = 2
+	tspan = [0,40]
+	datoInicialEspacial = float.(generarPosicionesVelocidadesAlAzar(n, L, 1))
+	pInfo = float.([k1, masas, L, 0.01])
+	Pgas  = ODEProblem(gases,datoInicialEspacial,tspan,pInfo)
+	solCuerpos = solve(Pgas, callback=cbsetSala, dtmax=0.01)
+
+end
+
+# ╔═╡ 316fd5e6-f050-46db-8239-a39ee7a2a593
+plot(solCuerpos,idxs=[(i,i+1) for i in 1:4:n*4])
+
+# ╔═╡ e3687e0a-450a-4bce-8520-7e613d526490
+#animate(solCuerpos,idxs=[(i,i+1) for i in 1:4:n*4])
+
+# ╔═╡ a5fa4f83-3169-4268-b816-7b8fe2c5333a
+md"""###### Ejercicio 5:
+
+Para visualizar los resultados implementar una función que reciba la solución de una simulación y realice una animación. Cada cuadro de la animación debe contener las líneas que delimitan la caja y un scatter plot de las posiciones de las masas en un instante determinado. 
+
+Tomando $k_1 = 10^{-6}$ y masas iguales a 1 realizar simulaciones con 2, 5 y 10 partículas. Experimentar con distintas velocidades iniciales y comprobar que las interacciones entre partículas y los choques con las paredes se realicen correctamente. Para evitar problemas de precisión puede llegar a ser necesario fijar tolerancias menores a las estándar. Tener en cuenta que tolerancias muy chicas aumentan el tiempo de ejecución: es necesario hacer un balance. Realizar una simulación con 50 partículas y si es posible con 100. 
+
+Es interesante también estudiar el caso en que las masas son variables. Simular un ejemplo con masas aleatorias (digamos, entre $0.5$ y $2.5$). Para visualizar la simulación con mayor claridad es recomendable graficar los puntos con distintos tamaños, escalados de acuerdo a su masa. Para ello, utilizar el parámetro `markersize` de `scatter`."""
+
+# ╔═╡ 35f58720-56f4-4cce-adab-95414062f3d0
+# animación
+
+# ╔═╡ e606d381-d37e-414d-9c68-c65205e61873
+# prueba con 2
+
+# ╔═╡ ecd0f578-2614-4473-af25-0db650688a06
+# prueba con 50 o 100
+
+# ╔═╡ 29da6749-52fb-4881-88d8-556613629dac
+# prueba con 50 o 100 de masas distintas
+
+# ╔═╡ c0924df8-3a8f-4923-b341-e77e692fcb84
+md"""##### Adicionales:
+
+###### Fuerzas adicionales:
+
+Podemos agregar al sistema fuerzas de atracción que actúen a distancias intermedias. De este modo, si dos partículas están muy lejos una de otra prácticamente no interactúan, si están menos lejos se atraen y si están muy cerca se repelen. Por ejemplo, podemos considerar un potencial  de la forma: 
+
+$E^P_{ij} = k_1 \frac{m_1m_2}{d_{ij}^4} - k_2 \frac{m_1m_2}{d_{ij}^3},$
+
+donde el primer término es el mismo con el que trabajamos previamente y el segundo es atractivo. Experimentar con distintos valores de $k_2$ y de las velocidades iniciales, buscando que se formen cúmulos de partículas (pequeños o grandes). Para ello, resulta útil deducir la distancia de equilibrio entre dos partículas (que depende de $k_1$ y $k_2$). 
+
+También se puede agregar al sistema una fuerza gravitatoria (aunque dadas las magnitudes que estamos manejando, debería ser inferior a la gravitación usual).
+
+Realizar simulaciones con masas iguales y con masas variables."""
+
+# ╔═╡ 84d5d1f3-3592-470b-a75d-c210cbfd8171
 
 
-# ╔═╡ 3f2ccd6a-b313-4eea-b659-fbb5ba1c4764
-500000^3
+# ╔═╡ 70eb4406-cb25-4d69-abbb-ab2555b5ec1f
+md"""###### Energía:
+
+Dado que nuestras fuerzas son conservativas es interesante verificar si la energía del sistema se conserva. La energía total viene dada por:
+
+$E = \sum_{i,j} E_{ij}^P + \sum_i E_i^C,$
+
+donde $E_i^C$ es la energía cinética de la partícula $i$:
+
+$E_i^C = \frac{1}{2}m_i|v_i|^2.$
+
+Implementar funciones que calculen la energía potencial y la energía cinética para un instante de tiempo dado. Computar la energía total de una solución a lo largo del tiempo y graficarla. ¿Es constante? Si no lo es, ¿qué se puede hacer para lograr que sea constante? Graficar también cada energía por separado.
+
+"""
+
+# ╔═╡ 9bef5920-c2bd-47d1-a856-f6bcc46ae9f7
+
+
+# ╔═╡ 7a78309c-1a30-40fd-8750-813e617a1622
+md"""###### Modulación de energía cinética: 
+La temperatura del sistema es proporcional a su energía cinética, que viene dada por:
+
+$E^C = \sum_i E^C_i = \sum_i \frac{1}{2}m_i|v_i|^2,$
+
+donde $E^C_i$ es la energía cinética de la $i$-ésima partícula. Una simulación más realista de un gas encerrado en un recinto puede obtenerse manteniendo constante la temperatura (i.e.: la energía cinética). Esto se logra normalizando las velocidades de manera tal que la energía cinética se mantenga constante. El procedimiento es el siguiente:
+
+1. Calcular la energía cinética inicial total $\bar{E}^C$, sobre el dato inicial. 
+2. Implementar una DiscreteCallback cuya condición valga siempre `true` y cuya acción sea computar la energía cinética total en el paso actual $E^C_{tot}$ y corregir las velocidades de las partículas haciendo:
+
+$v_i = \sqrt\frac{\bar{E}^C}{E^C_{tot}}v_i$
+
+Con este reescale se consigue que la _nueva_ energía cinética total sea igual a $\bar{E}^C$. 
+
+Simular el sistema con esta corrección y comparar con las simulaciones anteriores. 
+
+Un agregado interesante consiste en introducir una modulación de la temperatura del sistema introduciendo en el reescale de velocidades un factor que dependa del tiempo. Por ejemplo, si nuestra simulación se realiza en el intervalo $[0,T]$ y queremos ir enfriando el sistema, podemos hacer: 
+
+$v_i = \frac{T-t_i}{T}\sqrt\frac{\bar{E}^C}{E^C_{tot}}v_i.$
+
+Realizar simulaciones en este sentido. ¿Qué se observa?
+"""
+
+# ╔═╡ a52a3642-fc32-4ffc-94e4-d054e54e7ea0
+
+
+# ╔═╡ 8d702baa-8fb4-4ef4-ad31-b10404243a2e
+md"""###### Presión:
+
+La presión a la que se encuentra el gas es proporcional a la cantidad de rebotes de partículas contra las paredes de la caja. Modificar los programas de manera que: 
+
+1. El parámetro p incluya una variable adicional que funcionará como contador.
+2. Cuando se realice una acción de rebote, se sume 1 al contador. 
+
+El parámetro `p` es modificado por el solver, de modo que luego de resolver puede recuperarse el número de choques. 
+
+Implementar funciones que resuelvan el sistema: 
+
+1. Con distinto número de partículas y cota de velocidad inicial fija. Hacer varias simulaciones para cada cantidad de partículas, para generar estadística. Graficar la cantidad de choques contra las paredes en función del número de partículas.
+2. Con un número fijo de partículas y cota de velocidad inicial variable. Hacer varias simulaciones para cada cota de velocidad. Graficar la cantidad de choques contra las paredes en función de la cota para la velocidad."""
+
+
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [compat]
 DifferentialEquations = "~7.3.0"
+Distributions = "~0.25.70"
 Plots = "~1.32.1"
 """
 
@@ -1715,15 +1960,39 @@ version = "1.4.1+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═1efd1ba2-2f8f-11ed-35be-21ee92b1d1ae
-# ╠═27c072bb-4b33-4fed-aa14-86a94a9de6c2
-# ╠═644dc99d-fa82-45e1-8514-980f78417e69
-# ╠═37d50a58-7e5a-4a27-b8e4-a664d0d80997
-# ╠═ff334e98-372c-46a6-a81a-390b10b015fe
-# ╠═8a5ef6b2-670f-4bd0-9b1a-26a3b3748a07
-# ╠═1b893a00-e4b4-4b37-a5eb-6ba74bc3f72f
-# ╠═0bcba7a9-4924-4147-afce-d669d38d78ae
-# ╠═ea444b11-d7d6-4528-b5bf-74be3a232b59
-# ╠═3f2ccd6a-b313-4eea-b659-fbb5ba1c4764
+# ╠═5699b85e-0f55-11ed-0865-9fbd5aa9097c
+# ╟─5ba9125c-262e-4a31-9515-109463527031
+# ╟─d7d2e805-781f-4b07-9adc-9c75acc66bc9
+# ╟─68a95dca-e8ce-4253-a068-1cd2cfac893a
+# ╟─9ec881e2-3a6f-47c6-a900-40376f929f3f
+# ╠═dbe0b543-3c51-4732-88ec-364064088380
+# ╟─373f650b-86d1-45ca-aad8-613940e2f788
+# ╠═a1ce46ff-f4e1-4a84-b1d0-31c67cc7523a
+# ╠═73d3bf5e-8626-4a7f-9404-a953c59d5989
+# ╠═ff6ebf08-69b3-4d3c-82b4-af70f12ddd30
+# ╠═cd6203d6-dd50-4d03-9ac1-0400e124b1e0
+# ╟─ea76cc50-1005-4902-87f2-85ba43525134
+# ╠═caba579c-5cce-42c0-8293-19b3bbe8a1fa
+# ╠═8a05aeea-be56-4b46-a42c-6356c2de73ed
+# ╟─239075d6-fde1-4794-825c-1bd4e9380681
+# ╠═c21a9f39-518c-4fbc-af2f-db27e33a2d1d
+# ╠═cb7222c4-4530-4c25-9123-894a0ae7a184
+# ╠═10cfbe02-510c-4d52-9133-d51adb26deb2
+# ╟─0515150e-6e13-4cc4-b68f-61708a3cf4f4
+# ╠═9da98062-6c3b-49e3-8b96-92dcc89769c7
+# ╠═316fd5e6-f050-46db-8239-a39ee7a2a593
+# ╠═e3687e0a-450a-4bce-8520-7e613d526490
+# ╟─a5fa4f83-3169-4268-b816-7b8fe2c5333a
+# ╠═35f58720-56f4-4cce-adab-95414062f3d0
+# ╠═e606d381-d37e-414d-9c68-c65205e61873
+# ╠═ecd0f578-2614-4473-af25-0db650688a06
+# ╠═29da6749-52fb-4881-88d8-556613629dac
+# ╟─c0924df8-3a8f-4923-b341-e77e692fcb84
+# ╠═84d5d1f3-3592-470b-a75d-c210cbfd8171
+# ╟─70eb4406-cb25-4d69-abbb-ab2555b5ec1f
+# ╠═9bef5920-c2bd-47d1-a856-f6bcc46ae9f7
+# ╟─7a78309c-1a30-40fd-8750-813e617a1622
+# ╠═a52a3642-fc32-4ffc-94e4-d054e54e7ea0
+# ╟─8d702baa-8fb4-4ef4-ad31-b10404243a2e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
