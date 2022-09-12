@@ -1,0 +1,50 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+ICmuvarconocida = function(datos,var,nivel){
+  z = qnorm((1-nivel)/2+nivel)
+  ic =c(mean(datos)-z*sqrt(var/length(datos)), mean(datos)+z*sqrt(var/length(datos)))
+  return(ic) 
+}
+
+```
+```{r}
+datos = rnorm(100,20, 4)
+ICmuvarconocida(datos, 4, 0.999)
+```
+```{r}
+esperanza = 4
+desvio = 3 
+nrep = 1000
+cantDatos = 5
+muchosDatos = data.frame(1:cantDatos)
+
+for (i in 1:nrep){
+  muchosDatos[i] =rnorm(cantDatos,esperanza, desvio)
+}
+```
+
+
+```{r}
+suma = 0
+for (i in 1:nrep){
+  ic = ICmuvarconocida(muchosDatos[,i], desvio**2, 0.999)
+  if(ic[1]<esperanza & ic[2]>esperanza){
+    suma = suma + 1
+  }
+}
+suma/nrep
+```
+```{r}
+nivel = 0.95
+Cantdatos = 16
+promedio = 202.38
+var = 439.75
+z = qt((1-nivel)/2+nivel, Cantdatos-1)
+ic =c(promedio-z*sqrt(var/Cantdatos), promedio+z*sqrt(var/Cantdatos))
+ic
+```
+
