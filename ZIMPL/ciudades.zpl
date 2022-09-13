@@ -1,0 +1,13 @@
+set V := {read "ciudades.txt" as "<1n,2n>" skip 1};
+set I := {1..5};
+param c[I*I] := read "ciudades.txt" as "<1n, 2n> 4n" skip 1;
+param d[I*I] := read "ciudades.txt" as "<1n, 2n> 3n" skip 1;
+var x[I*I] binary;
+var u[I] real;
+minimize cost: sum <i,j> in I*I: x[i,j]*c[i,j];
+subto r1: (sum <i,j> in I*I: x[i,j]*d[i,j]) >= 100;
+subto r2: forall <i> in I: (sum <j> in I: x[i,j]) >= 1;
+subto r3: forall <j> in I: (sum <i> in I: x[i,j]) >= 1;
+subto r4: forall <j> in I: x[j,j] <= 0;
+subto r5: forall <i> in I with i>1: forall <j> in I with j >1 : u[i] + x[i,j] <= u[j]+(5-1)*(1-x[i,j]);
+subto r6: u[1] == 1;
