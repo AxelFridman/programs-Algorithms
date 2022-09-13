@@ -4,552 +4,83 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 218eafa7-76dd-49f2-8b93-c3b88d7ea824
+# ╔═╡ f66b003a-3366-11ed-28ae-af21f07c5e4e
 begin
 	using Plots,DifferentialEquations
 	
 end
 
-# ╔═╡ 8ffab13a-2aac-11ed-1e4d-e30102dbfeba
-md"""## Eventos
-
-En muchas situaciones nos interesa resolver sistemas de ecuaciones en los que ocurren _eventos_ que alteran de alguna manera la dinámica. Un buen ejemplo es el que estudiamos en el Ejercicio 7 (Galileo), donde nos interesaba que la simulación se detuviera en el momento en que la bala tocaba el piso. Otro ejemplo sencillo es el ejercicio 10, en el que queremos estudiar la dinámica de una pelota que cae y pica en el piso: al llegar al piso debemos anterar los datos del problema para que el movimiento que venía siendo descendente se convierta en ascendente. 
-
-Cualquier solver de ODEs admite la detección de eventos. La lógica en general es la siguiente: 
-1. Se define una condición que el solver debe chequear (lo hace en cada paso).
-2. Se define una función en donde se especifica la acción a tomar en el caso en que se chequee la condición. 
-3. Se le pasan ambos elementeos (condición y acción) al solver.
-
-A la combinación condición-acción se la suele llamar `callback`. `DifferentialEquations.jl` admite esencialmente dos clases de `callbacks`: continuas y discretas. Veamos cómo funciona cada una."""
-
-# ╔═╡ 025deeae-9d83-42b5-b833-dfd8c098da65
-md"""##### Callbacks discretas
-
-Una `DiscreteCallback` está caracterizada por una condición de tipo booleana. Es decir: definimos una condición que puede valer `true` o `false`. Mientras valga `false`, no pasa nada y el solver continúa trabajando de la manera usual. Cuando la condición devuelve `true` se aplica la acción que definamos."""
-
-
-# ╔═╡ 91539041-18bf-475f-adc3-c1f66e14bd55
-md"""Supongamos que queremos modelar un sistema SIR como el del ejercicio 1, tomando como parámetros $\beta=0.4$ y $\gamma=0.1$, pero agregando la condición de que cuando se alcanza una cierta cantidad crítica de infectados (digamos, 1000) se decreta una cuarentena, cuyo efecto es una reducción inmediata de la tasa de contagios (digamos, a $\beta=0.2$).
-
-El modelo en sí es igual al que utilizamos para el Ejercicio 10:"""
-
-# ╔═╡ 65f865c9-3d6a-4347-9234-4c67d98044a4
-function sir!(du,u,p,t)
-	β = p[1]; γ = p[2]
-	N     = u[1]+u[2]+u[3]
-	du[1] = -β*u[1]*u[2]/N 
-	du[2] = β*u[1]*u[2]/N - γ*u[2]
-	du[3] = γ*u[2]
-end
-
-# ╔═╡ 04ab601c-0889-4893-9579-2426c0a89eb1
-md"""Podemos comenzar resolviendo el problema sin cuarentena, para tener como referencia:"""
-
-# ╔═╡ d32b5b63-06ce-4312-bbac-f64969fa2405
-function ejercicio10()
-	β  = 0.4; γ = 0.1
-	p  = [β,γ]
-	t  = (0.0,100.0)
-	u₀ = [9999,1,0]
-	P  = ODEProblem(sir!,u₀,t,p)
-	solve(P)
-end
-
-# ╔═╡ 3aebda09-7beb-43c5-a362-36b0f098b98d
+# ╔═╡ 064a5b20-b30e-4bde-89b4-98eb021d5a8a
 begin
-	s₁ = ejercicio10()
-	plot(s₁,label=["S" "I" "R"])
-	plot!([20,80],[2000, 1000])
-end
 
-# ╔═╡ 619e5b65-8b49-4351-ab30-5cd327fe2fca
-md"""Introduzcamos ahora la cuarentena, en el momento en que se alcanzan los 1000 casos. Primero tenemos que definir la condición. La sintaxis es: 
-
-	condition(u,t,integrator)
-
-`u` es la solución en el paso actual del solver y `t` es el tiempo. `integrator` es un objeto interno del solver que contiene campos `u`, `t` y `p`. Por ejemplo, en `integrator.p` están los valores actuales de los parámetros."""
-
-# ╔═╡ 342da8ac-b660-4386-b133-dfed87059f6e
-function condición_cuarentena_mil(u,t,integrator)
-	u[2] ≥ 1000 
-end
-
-# ╔═╡ 1e39922b-b102-43ac-af73-f249801cc9ca
-md"""La acción a tomar en caso de que la condición se cumpla tiene la sintaxis:
-
-	affect!(integrator)
-
-Es decir: opera sólo sobre `integrator` y lo modifica. Se puede modificar cualquiera de los campos (`u`, `t` ó `p`). A nosotros sólo nos interesa modificar `p`, en particular β."""
-
-# ╔═╡ ae5bd598-becb-41cf-85c3-fc5a03b32be6
-function cuarentena_mil!(integrator)
-	integrator.p[1] = 0.2
-end
-
-# ╔═╡ 9944d63b-d1a7-450a-b253-05da8fdd4f8c
-md"""Finalmente, debemos generar un `DiscreteCallback` que contenga la condición y la función a aplicar. La sintaxis es sencillamente: 
-
-	DiscreteCallback(condition,affect!)
-
-"""
-
-
-
-# ╔═╡ 744a6bc2-c9cb-4c7f-a371-4c7ee2127ac7
-dc = DiscreteCallback(condición_cuarentena_mil,cuarentena_mil!)
-
-# ╔═╡ b59cfedf-6fab-41b4-a364-86115bd1a4c4
-md"""Por último, resolvemos agregando nuestro `DiscreteCallback` en el solver, con la palabra clave `callback`:"""
-
-
-
-# ╔═╡ 0a7aeaef-ba4d-48b1-afdc-35e4a8c19202
-function sir_cuarentena_mil()
-	β  = 0.4; γ = 0.1
-	p  = [β,γ]
-	t  = (0.0,100.0)
-	u₀ = [9999,1,0]
-	P  = ODEProblem(sir!,u₀,t,p)
-	solve(P,callback=dc)
-end
-
-# ╔═╡ 3ccc0b08-fde9-45ee-b436-d8d7d0155924
-begin
-	s₂ = sir_cuarentena_mil()
-	plot(s₂,label=["S" "I" "R"])
-end
-
-# ╔═╡ 077c4118-78e9-48ab-a8a0-43a98c27f5fb
-md"""Es importante observar que se puede usar el vector de parámetros para definir información necesaria para el callback. Por ejemplo: podría interesarnos estudiar qué ocurre si la cuarentena se decreta a los 1500 casos y no a los 1000, o si sus efectos son más notorios y β desciende a 0.1 y no a 0.2. Si seguimos la lógica anterior, nos veríamos obligados a reescribir todos las funciones. Podemos hacer algo más general. En `p` vamos a poner `β` y `γ` pero también el punto de inicio de la cuarentena, `N` y la nueva tasa de contagio, β₁: """
-
-
-
-
-
-# ╔═╡ 8af2c6f1-32cd-4c88-9e11-f67e3e46b25c
-condición_cuarentena(u,t,integrator) = u[2]≥ integrator.p[3]
-
-# ╔═╡ 75c3748d-19f9-4bb4-b024-4d7e5d073f72
-cuarentena!(integrator) = integrator.p[1] = integrator.p[4]
-
-# ╔═╡ 4a71f6ab-442f-4051-8b82-c072593464cb
-function sir_cuarentena!(p) #acá p=[β,γ,N,β₁]
-	t  = (0.0,100.0)
-	u₀ = [9999,1,0]
-	P  = ODEProblem(sir!,u₀,t,p)
-	dc = DiscreteCallback(condición_cuarentena,cuarentena!)
-	solve(P,callback=dc)
-end
-
-# ╔═╡ d1f68d45-b0b1-474f-a21f-19bf16828db5
-begin
-	s₃ = sir_cuarentena!([0.4,0.1,1500,0.1]) 
-	plot(s₃,label=["S" "I" "R"],title="N = 1500, β₁ = 0.1")
-end
-
-# ╔═╡ 36eceb0d-31ee-4f0d-a69a-1845684b40f5
-md"""Es interesante observar que el gráfico no está suavizado como ocurriría naturalmente por culpa de la interpolación. Esto es así porque el solver identifica de manera especial el punto en que se ejecuta un callback, dado que es posible que la acción ejecutada introduzca un cambio de comportamiento en la solución."""
-
-
-# ╔═╡ 489024ac-845d-4beb-ac51-ae2aac01f4c9
-md"""Por último, podemos verificar en qué punto se alcanza el máximo de infecciones que vemos en el gráfico:"""
-
-
-
-# ╔═╡ b6159c45-473f-4335-bc93-cd3225825c3c
-maximum(s₃[2,:])
-
-# ╔═╡ a7022e55-4c10-4cf7-82a2-ef033abac584
-md"""Esto se debe a que el solver no hace nada para precisar el punto en que se realiza la condición. Simplemente resuelve y cuando se exceden los 1500 casos, introduce el cambio. En efecto, si miramos la solución observamos que la cantidad de infectados pasó de 336 a 794: recién entonces se redujo la tasa de contagio."""
-
-# ╔═╡ f712c79d-8b67-493d-b84a-3fb6fa8f50c0
-s₃
-
-# ╔═╡ 0e91c691-77e7-4f7e-8749-9afeafab01f1
-md"""##### Callbacks continuas
-
-En el caso de las callbacks continuas la condición no es booleana sino que es una función que devuelve valores reales. Se considera que la condición se realiza cuando la función vale $0$. Por ejemplo, una condición para el problema anterior puede tomar la forma:"""
-
-
-
-# ╔═╡ c15362f3-240c-4a56-bd20-b47aa566ad76
-function condición_cuarentena_cont(u,t,integrator)
-	u[2] - integrator.p[3]
-end
-
-# ╔═╡ 0429df5c-1b96-49fc-9f8e-649505606bcb
-md"""En lugar de devolver `true` cuando la cantidad de infectados supera el valor indicado en `p[3]`, esta condición devuelve un número negativo mientras la cantidad de infectados es menor que `p[3]` y se convierte en positivo cuando la supera. En este caso el solver identificará el cambio de signo e irá modificando el paso para acertar al momento en que la condición devuelve $0$ (con cierta tolerancia)."""
-
-# ╔═╡ d7bc0856-4899-4c8c-a52a-83fd5924dedc
-md"""La sintaxis básica para crear una callback continua es: 
-
-	ContinuousCallback(condition,affect![,affect_neg!])
-
-Existen dos posibles acciones: `affect!` y `affect_neg!` (opcional). Esto permite distinguir los casos en que la condición alcanza el valor $0$ pasando de positivo a negativo de los casos en que lo hace pasando de negativo a positivo. Si el argumento `affect_neg!` no se usa, se aplicará la acción definida en `affect!` cualquier sea el caso. En cambio, si uno define tanto `affect!` como `affect_neg!` el solver aplicará `affect!` cuando el cruce es hacia arriba (pasando de negativo a positivo) y `affect_neg!` cuando el cruce es hacia abajo (de positivo a negativo). 
-
-En caso de que se desee aplicar una acción sólo en el caso en que el cruce es de negativo a positivo y no hacer nada en caso contrario se puede definir `affect_neg!`
-como `nothing`:
-
-	ContinuousCallback(condition,affect!,nothing)
-
-Apliquemos estas ideas a nuestro ejemplo:"""
-
-# ╔═╡ adb53632-51c9-4b74-bc4e-1491beaeac05
-function cuarentena_cont!(integrator) 
-	integrator.p[1] = integrator.p[4]
-end
-
-# ╔═╡ 801e80f9-db50-4b4b-b659-f826cac54794
-begin
-	cc    = ContinuousCallback(condición_cuarentena_cont,cuarentena_cont!)
-	Pcont = ODEProblem(sir!,[9999,1,0],(0.0,100.0),[0.4,0.1,1500,0.1])
-	scont = solve(Pcont,callback=cc)
-	plot(scont,label=["S" "I" "R"])
-end
-
-# ╔═╡ b9db999f-8e2c-40ef-8d38-658be7fcad7b
-maximum(scont[2,:])
-
-# ╔═╡ 026eceee-75ee-4e5d-a66d-ab3c52a3d763
-md"""Observamos que ahora el máximo es 1500. Es decir: el solver ajustó el paso para encontrar el punto preciso en que la condición se hace 0 y tomó la acción correspondiente en ese punto."""
-
-# ╔═╡ d503de95-b2f2-4d1c-81f9-858c1b73ab81
-md"""Nuestra solución no usó `affect_neg!`, por lo tanto el cambio de parámetro se realizará si llega a 1500 infectados tanto por una subida de casos como por una caída en los casos. Por ejemplo: """
-
-
-
-# ╔═╡ 67d908ad-7da9-498a-a73c-09a63a9e3249
-begin
-	Pcontbobo = ODEProblem(sir!,[8499,1501,0],(0.0,100.0),[0.2,0.1,1500,0.01])
-	scontbobo = solve(Pcontbobo,callback=cc)
-	plot(scontbobo, label=["S" "I" "R"])
-end
-
-# ╔═╡ 09b97d7e-8d64-470e-b56a-9d041f35a041
-md"""En el gráfico anterior resolvimos la situación en la que se instala la cuarentena al alcanzar los 1500 casos pero se comienza la simulación con 1501 casos. El resultado es que la epidemia sigue su curso, los casos suben y bajan naturalmente y cuando caen hasta 1500, se produce una aceleración de caída (por el cambio en β). Por supuesto, esta situación no tiene mucho sentido práctico. Si volvemos a resolver el mismo problema pero definiendo `affect_neg!` como `nothing`, eliminaremos el comportamiento indeseado de la solución:"""
-
-# ╔═╡ 64174619-f688-411a-abf2-6122ba72eb21
-begin
-	cc2    = ContinuousCallback(condición_cuarentena_cont,cuarentena_cont!,nothing)
-	Pcont2 = ODEProblem(sir!,[8499,1501,0],(0.0,100.0),[0.2,0.1,1500,0.01])
-	scont2 = solve(Pcont2,callback=cc2)
-	plot(scont2, label=["S" "I" "R"])
-end
-
-# ╔═╡ 7ec6ec0d-2616-4a09-8e86-3df591680625
-md"""#### Combinando callbacks
-
-Muchos modelos requieren que al resolverlos tengamos en cuenta distintos eventos. Existen un par de formas de hacer esto. Nosotros mencionaremos solamente la siguiente:
-
-##### Conjuntos de callbacks
-
-Tenemos la posibilidad de agrupar varios callbacks (continuos y/o discretos) dentro de un CallbackSet. Simplemente hay que definir los callbacks necesarios (con DiscreteCallback o ContinuousCallback) y luego agruparlos haciendo:
-
-	cs = CallbackSet(cb1,cb2,cb3)
-
-Luego se le pasa el conjunto a la función `solve`, como si fuera un único callback. Si el conjunto contiene callbacks continuos y discretos, los continuos se aplican primero (porque implican hacer ajustes del paso). Si hay varios callbacks continuos, se aplicara sólo el primero que se realice. Si sólo hay callbacks discretos (o se realizan antes que los continuos) se aplicarán según el orden en el que se los haya puesto en el conjunto. """
-
-
-
-
-# ╔═╡ 567665ce-b2fd-4b22-8e56-2c6432737419
-md"""A modo de ejemplo podemos implementar un callback discreto para introducir la cuarentena a partir de los 1500 casos y un callback acontinuo para levantar la cuarentena cuando los casos descienden a los 1000 casos. Para eso asumiremos que `p` tiene 6 casilleros, `p = [β,γ,N,n,β₀,β₁]`. Inicialmente β₀ es lo mismo que β. Lo ponemos repetido porque el primero es el que se aplicará en el sistema y el segundo sirve de referencia para recuperarlo al levantar la cuarentena."""
-
-# ╔═╡ d2d79f72-c5ed-49be-ab54-8c665146e028
-function condición_close(u,t,integrator)
-	u[2] ≥ integrator.p[3]
-end
-
-# ╔═╡ ff5ff9c9-4a0b-464a-8bbc-59ae95f65cf9
-function close!(integrator)
-	integrator.p[1] = integrator.p[6]
-end
-
-# ╔═╡ 8b80dfb5-19da-40f4-bf3a-c711346451c8
-function condición_open(u,t,integrator)
-	integrator.p[4] - u[2]
-end
-
-# ╔═╡ 49842833-0b5d-45e8-833a-2abc671ce7d0
-function open!(integrator)
-	integrator.p[1] = integrator.p[5]
-end
-
-# ╔═╡ 9c6e8cb8-fbb1-4571-a8b2-5bf6fd448e8f
-cbclose = DiscreteCallback(condición_close,close!)
-
-# ╔═╡ f2c03c4d-b527-4346-bf5b-763bbad66bce
-cbopen  = ContinuousCallback(condición_open,open!,nothing)
-
-# ╔═╡ 23ad308f-18da-4ddf-b3b1-8599bfed3f88
-cbset   = CallbackSet(cbclose,cbopen)
-
-# ╔═╡ fc0bdb4c-bc60-4e8f-9100-0a27bede0fd6
-begin
-	Pdoble = ODEProblem(sir!,[9999,1,0],(0.0,100.0),[0.4,0.1,1500,1000,0.4,0.1])
-	sdoble = solve(Pdoble,callback=cbset)
-	plot(sdoble, label=["S" "I" "R"])
-end
-
-# ╔═╡ 099b6787-6111-4c9f-9efa-e78c311db4f0
-md"""Nuevamente, podemos observar que el cierre no se realiza en el momento exacto en que se tocan los 1500 casos (de hecho los picos son distintos), pero la apertura sí se realiza exactamente a los 1000 casos, pero sólo cuando se llega a ellos de manera descendente. Para eso, implementamos la condición de manera tal que fuera negativa mientras los casos son más de 1000 y pasara a positiva al descender por debajo de los 1000, y fijamos `affect_neg!` como `nothing`."""
-
-# ╔═╡ d33ec447-deb0-4fbf-8fa2-e901bf0a0a39
-sdoble
-
-# ╔═╡ c1eda9fa-a82c-4c56-ac28-02902df3e1a8
-md"""##### Terminar
-
-Por último, puede interesarnos concluir una simulación en el momento en que se cumple una cierta condición (eso es lo que nosotros hicimos en el problema de Galileo). Para eso, basta con definir la función `affect!` como `terminate!`. Por ejemplo:"""
-
-
-
-# ╔═╡ 75f77adb-a394-43d5-abd4-a953c1fdcd58
-cbfin = ContinuousCallback(condición_open,terminate!,nothing)
-
-# ╔═╡ b2177d98-c61e-4548-9819-3d8284635fd8
-cbset2 = CallbackSet(cbclose,cbfin)
-
-# ╔═╡ af69669f-b0b8-4621-841e-76b64dfc1a95
-begin
-	Pfin = ODEProblem(sir!,[9999,1,0],(0.0,100.0),[0.4,0.1,1500,1000,0.4,0.1])
-	sfin = solve(Pfin,callback=cbset2)
-	plot(sfin, label=["S" "I" "R"])
-end
-
-# ╔═╡ 320762fa-7010-472b-9add-b925c7b7d211
-md"""En este caso cambiamos la acción `open!` por la acción `terminate!`, por lo cual cuando los casos bajan y tocan los 1000, la simulación termina."""
-
-# ╔═╡ 8f638c31-0201-4a39-bcff-fa58d9772f20
-md"""## Ejercicio 15"""
-
-# ╔═╡ 44b851d2-29dc-49d3-b537-cbb527785547
-begin
-	gravedad = 9.8
-	masa = 3
-	posInicial = 100
-	velInicial = 10
+	c = 2
+	k = 4
+	g0 = 4
+	iInicial = 8
+	sInicial = 200
 	tspans = [0,100]
-	datoInicial = [posInicial, velInicial]
+	datoInicial = [iInicial, sInicial]
 	
-	p = [gravedad,masa]
+	p = [c,k, g0]
 end
 
-# ╔═╡ 199dbe53-23d9-4414-9d81-982ef5a29f6f
-function caer(du,u,p,t)
-	gravedad, masa  = p
-	du[1] = u[2]
-	du[2] = -gravedad
-end
-
-# ╔═╡ ab5ecc8a-451c-44b3-a854-004778710c17
-function condicionChoque(u,t,integrator)
-	u[1] < 0.0 
-end
-
-# ╔═╡ 24cb6871-f461-4697-b14d-ab645c0a890a
-function respuestaChoque!(integrator)
-	
-	integrator.u[1] = -integrator.u[1]
-	integrator.u[2] = -integrator.u[2]*0.75
-end
-
-# ╔═╡ 60d18f30-3138-4ace-ab85-176b64501886
-begin
-	P  = ODEProblem(caer,datoInicial,tspans,p)
-	dcrebote = DiscreteCallback(condicionChoque,respuestaChoque!)
-	solCaer = solve(P,callback=dcrebote, dtmax=0.01)
-	
-end
-
-# ╔═╡ b6d6451d-434c-4de7-b706-3bd815a39b57
-plot(solCaer)
-
-# ╔═╡ c41c2ca6-afc6-43eb-a94e-9003a7b6ae14
-function condición_choqueContinua(u,t,integrator)
-	u[1] < 0.0 
-end
-
-# ╔═╡ 010c2984-c0a1-4950-b97d-dd536bfdc640
-function respuestaChoqueContinua!(integrator)
-	integrator.u[1] = -integrator.u[1]
-	integrator.u[2] = -integrator.u[2]*0.75
-end
-
-# ╔═╡ 73195d3f-ad2f-4fc4-9644-166502feb8c3
-dcContinuaRebote  = ContinuousCallback(condición_choqueContinua,respuestaChoqueContinua!)
-
-# ╔═╡ 6531fde9-4f7d-4d7a-8a81-4c63e5ce601b
-begin
-	Pcon  = ODEProblem(caer,datoInicial,tspans,p)
-	solCaerCon = solve(Pcon,callback=dcContinuaRebote)
-	
-end
-
-# ╔═╡ 4742d1aa-fd37-48d2-a615-46fae17ac77e
-plot(solCaerCon)
-
-# ╔═╡ 50987ba2-9dcc-4ea0-b4a4-83d300a69747
-md"""## Ejercicio 15"""
-
-# ╔═╡ d903f5ee-9f58-44b3-bb73-893936f43da5
-begin
-	xIni,yIni,zIni = 2,3.5,5
-	xVelIni, yVelIni, zVelIni = 4.1,-5.07, 2
-	#Voy a asumir que la habitacion es un prisma rectangular, con una esquina siendo
-	# el 0,0,0 y hay un limite de x positivo > 0, un limite de y positivo > 0, y un techo (limite de z) > 0.
-	limiteX = 10
-	limiteY = 12
-	techo = 6
-
-	cteRozamiento = 0.1
-	
-	datoInicialEspacial = [xIni, yIni, zIni, xVelIni, yVelIni, zVelIni]
-	pInfo = [gravedad, limiteX, limiteY, techo,cteRozamiento]
-end
-
-# ╔═╡ 051d4387-e6c9-4e17-a848-1352bd5702b6
-function moverEnSala(du,u,pInfo,t)
-	gravedad, limiteX, limiteY, techo,cteRozamiento  = pInfo
-	
-	du[1] = u[4]
-	du[2] = u[5] 	
-	du[3] = u[6]
-	du[4] = -cteRozamiento * u[4]
-	du[5] = -cteRozamiento * u[5]
-	du[6] = -gravedad - cteRozamiento * u[6]
-
-end
-
-# ╔═╡ a6656fe7-72b3-4fe1-a7c5-19cf5f8c42a5
-function condicionChoqueIzq(u,t,integrator)
-	u[1] < 0.0 
-end
-
-# ╔═╡ bf302a0c-83c9-4879-bf8c-ab44c15899a5
-function condicionChoqueAbajo(u,t,integrator)
-	u[2] < 0.0 
-end
-
-# ╔═╡ a7a6c0cc-76c0-47ae-b929-f05271bc7911
-function condicionChoquePiso(u,t,integrator)
-	u[3] < 0.0 
-end
-
-# ╔═╡ 5875ebf9-eca6-43c0-bb0b-e94240d8abdd
-function condicionChoqueDer(u,t,integrator)
-	u[1] >  integrator.p[2]
-end
-
-# ╔═╡ dd84c655-7806-444d-8392-cfcfa1164dae
-function condicionChoqueArriba(u,t,integrator)
-	u[2] >  integrator.p[3]
-end
-
-# ╔═╡ 2a3e87e6-2f52-4f7c-9b9e-03735e8374e9
-function condicionChoqueTecho(u,t,integrator)
-	u[3] >  integrator.p[4]
-end
-
-# ╔═╡ a3f34489-7575-4b76-beb5-24274433d369
-function respuestaChoqueIzq!(integrator)
-	integrator.u[4] = -integrator.u[4]
-	integrator.u[1] = 0.001
-end
-
-# ╔═╡ 47f9f246-3517-4b8c-9aa3-b001226cadce
-function respuestaChoqueAbajo!(integrator)
-	integrator.u[5] = -integrator.u[5]
-	integrator.u[2] = 0.001
-end
-
-# ╔═╡ cabc1a59-1d82-43d5-8b71-c268649d8426
-function respuestaChoquePiso!(integrator)
-	integrator.u[6] = -integrator.u[6]
-	integrator.u[3] = 0.001
-end
-
-# ╔═╡ 1d230d6a-dbe3-4263-8cec-0a3b28145639
-function respuestaChoqueDer!(integrator)
-	integrator.u[4] = -integrator.u[4]
-	integrator.u[1] = integrator.p[2] - 0.001
-end
-
-# ╔═╡ 866d4936-e01f-46cf-9356-8145350f9015
-function respuestaChoqueArriba!(integrator)
-	integrator.u[5] = -integrator.u[5]
-	integrator.u[2] = integrator.p[3] - 0.001
-end
-
-# ╔═╡ d676269e-ccd6-486c-964c-55a75f49dcaa
-function respuestaChoquetecho!(integrator)
-	integrator.u[6] = -integrator.u[6]
-	integrator.u[3] = integrator.p[4] - 0.001
-end
-
-# ╔═╡ 451b54d9-7ba6-48b1-b99a-86cb12d3e4c7
-begin
-	dc1 = DiscreteCallback(condicionChoqueIzq,respuestaChoqueIzq!)
-	dc2 = DiscreteCallback(condicionChoqueDer,respuestaChoqueDer!)
-	dc3 = DiscreteCallback(condicionChoqueArriba,respuestaChoqueArriba!)
-	
-	dc4 = DiscreteCallback(condicionChoqueAbajo,respuestaChoqueAbajo!)
-	dc5 = DiscreteCallback(condicionChoquePiso,respuestaChoquePiso!)
-	dc6 = DiscreteCallback(condicionChoqueTecho,respuestaChoquetecho!)
-	cbsetSala = CallbackSet(dc1,dc2,dc3,dc4,dc5,dc6)
-end
-
-# ╔═╡ 00f97f91-3d3d-46af-944c-182af6636895
-begin
-	tspanSala = [0,25]
-	Psala  = ODEProblem(moverEnSala,datoInicialEspacial,tspanSala,pInfo)
-	solSala = solve(Psala,callback=cbsetSala, dtmax=0.1)
-	
-end
-
-# ╔═╡ 18ca457e-6f9f-4ebd-9690-97557d11394c
-plot(solSala, idxs=(2,3))
-
-# ╔═╡ 1ae066ed-bcbd-4aee-8659-51f6f82d19b1
-animate(solSala, idxs=(1,2), fps=5)
-
-# ╔═╡ 2c382714-3d7d-4f6e-8044-aec9692c7c8b
-plot(solSala, idxs=(1,2,3))
-
-# ╔═╡ fec1714d-5ccf-4892-af0a-eca05a9ad618
+# ╔═╡ eb91980e-b1ec-491d-8b1e-8b858061f3eb
 function economia(du,u,p,t)
-	c,k,g0  = p
+	c,k  = p
 	du[1] = u[1] - k*u[2]
 	du[2] = u[1] - u[2] - g0
 end
 
-# ╔═╡ 18ade196-9dc7-4c7e-8417-91d435d3b196
+# ╔═╡ 10dd0ae9-eb61-4f3e-b412-51b41d1b669f
 begin
-
-	c = 1
-	k = 2
-	g0 = 2
-	iInicial = 4
-	sInicial = 2.01
-	tspans2 = [0,210]
-	datoInicial2 = [iInicial, sInicial]
-	
-	p2 = [c,k, g0]
-end
-
-# ╔═╡ 168fa1b4-2601-486f-b3c9-0418d783762a
-begin
-	Pecon  = ODEProblem(economia,datoInicial2,tspans2,p2)
+	Pecon  = ODEProblem(economia,datoInicial,tspans,p)
 	solEcon = solve(Pecon)
 	
 end
 
-# ╔═╡ 30f1c233-acf8-4554-b24f-0f87af534ce5
+# ╔═╡ 8e1e2cd5-4f43-437b-9e33-13e99845b4e1
 begin
-	plot(solEcon,label=["Curva en funcion (I,S)"], idxs=(1,2), arrow=true)
-	plot!([4,4],[2,2], label="Perturbacion equilibrio")
-	plot!([4,4],[2,2], label="c=1, k=2, g0=2, i=4, s=2.01")
+	plot(solEcon,idxs=(1,2), arrow=true,label=["Curva"])
+	plot!([6,6],[2,2], label="Centro Perfecto")
 end
+
+# ╔═╡ 5c4df4b6-d3d2-407c-9f5d-24f159b0a96f
+#animate(solEcon, idxs=(1,2), arrow=true,label=["Curva"])
+
+# ╔═╡ 7d873c8e-4be9-459f-8a44-6a3af91f68a1
+H(x, y) = (y^2)/2 + (x^2)/2 - (x^4)/4
+
+# ╔═╡ 4b8c1c2d-a2f2-48e6-99cb-ec75cff5fe61
+begin
+	xInicial = 1*π
+	yInicial = 0
+	tspan = [0,100]
+	datoInicial20 = [xInicial, yInicial]
+	
+	p20 = []
+end
+
+# ╔═╡ a4df83d1-e97f-4def-b6db-91e83d847396
+function pendulo(du,u,p,t)
+	du[1] = u[2] 
+	du[2] = -0.15*u[2] - sin(u[1])
+end
+
+# ╔═╡ ec99185a-5303-486d-b7a6-7deeab3a09d7
+begin
+	Ppend = ODEProblem(pendulo,datoInicial20,tspan,p20)
+	solpend = solve(Ppend)
+	
+end
+
+# ╔═╡ 1062cb73-cda6-46ae-912b-ac38009366f1
+begin
+	plot(solpend,idxs=(1), arrow=true,label=["Curva"])
+	plot!([0,0],[0,0], label="Empezando desde pi angulo (arriba)")
+end
+
+# ╔═╡ 106729f8-c9c7-4ede-9d3c-7535c7abf86a
+
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -559,7 +90,7 @@ Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
 [compat]
 DifferentialEquations = "~7.3.0"
-Plots = "~1.31.7"
+Plots = "~1.33.0"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -586,15 +117,15 @@ version = "0.2.0"
 
 [[deps.ArrayInterface]]
 deps = ["ArrayInterfaceCore", "Compat", "IfElse", "LinearAlgebra", "Static"]
-git-tree-sha1 = "0582b5976fc76523f77056e888e454f0f7732596"
+git-tree-sha1 = "d6173480145eb632d6571c148d94b9d3d773820e"
 uuid = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
-version = "6.0.22"
+version = "6.0.23"
 
 [[deps.ArrayInterfaceCore]]
 deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse"]
-git-tree-sha1 = "40debc9f72d0511e12d817c7ca06a721b6423ba3"
+git-tree-sha1 = "5bb0f8292405a516880a3809954cb832ae7a31c5"
 uuid = "30b0a656-2188-435a-8636-2ec0e6a096e2"
-version = "0.1.17"
+version = "0.1.20"
 
 [[deps.ArrayInterfaceGPUArrays]]
 deps = ["Adapt", "ArrayInterfaceCore", "GPUArraysCore", "LinearAlgebra"]
@@ -663,9 +194,9 @@ version = "0.4.2"
 
 [[deps.CPUSummary]]
 deps = ["CpuId", "IfElse", "Static"]
-git-tree-sha1 = "8a43595f7b3f7d6dd1e07ad9b94081e1975df4af"
+git-tree-sha1 = "9bdd5aceea9fa109073ace6b430a24839d79315e"
 uuid = "2a0fbf3d-bb9c-48f3-b0a9-814d99fd7ab9"
-version = "0.1.25"
+version = "0.1.27"
 
 [[deps.Cairo_jll]]
 deps = ["Artifacts", "Bzip2_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "JLLWrappers", "LZO_jll", "Libdl", "Pixman_jll", "Pkg", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Zlib_jll", "libpng_jll"]
@@ -681,9 +212,9 @@ version = "0.5.1"
 
 [[deps.ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra", "SparseArrays"]
-git-tree-sha1 = "80ca332f6dcb2508adba68f22f551adb2d00a624"
+git-tree-sha1 = "dc4405cee4b2fe9e1108caec2d760b7ea758eca2"
 uuid = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
-version = "1.15.3"
+version = "1.15.5"
 
 [[deps.ChangesOfVariables]]
 deps = ["ChainRulesCore", "LinearAlgebra", "Test"]
@@ -787,9 +318,9 @@ uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 
 [[deps.DelayDiffEq]]
 deps = ["ArrayInterface", "DataStructures", "DiffEqBase", "LinearAlgebra", "Logging", "NonlinearSolve", "OrdinaryDiffEq", "Printf", "RecursiveArrayTools", "Reexport", "SciMLBase", "UnPack"]
-git-tree-sha1 = "65445e47be74d38ea9317995400f004bbbb1dd32"
+git-tree-sha1 = "5acc7807b906d6a938dfeb965a6ea931260f054e"
 uuid = "bcd4f6db-9728-5f36-b5f7-82caef46ccdb"
-version = "5.37.1"
+version = "5.38.0"
 
 [[deps.DelimitedFiles]]
 deps = ["Mmap"]
@@ -802,10 +333,10 @@ uuid = "b429d917-457f-4dbc-8f4c-0cc954292b1d"
 version = "0.4.0"
 
 [[deps.DiffEqBase]]
-deps = ["ArrayInterfaceCore", "ChainRulesCore", "DataStructures", "Distributions", "DocStringExtensions", "FastBroadcast", "ForwardDiff", "FunctionWrappers", "FunctionWrappersWrappers", "LinearAlgebra", "Logging", "MuladdMacro", "NonlinearSolve", "Parameters", "Printf", "RecursiveArrayTools", "Reexport", "Requires", "SciMLBase", "Setfield", "SparseArrays", "Static", "StaticArrays", "Statistics", "ZygoteRules"]
-git-tree-sha1 = "665832fd81cd961aad28fa7009d4aaa23a07db57"
+deps = ["ArrayInterfaceCore", "ChainRulesCore", "DataStructures", "Distributions", "DocStringExtensions", "FastBroadcast", "ForwardDiff", "FunctionWrappers", "FunctionWrappersWrappers", "LinearAlgebra", "Logging", "MuladdMacro", "NonlinearSolve", "Parameters", "Printf", "RecursiveArrayTools", "Reexport", "Requires", "SciMLBase", "Setfield", "SparseArrays", "Static", "StaticArrays", "Statistics", "Tricks", "ZygoteRules"]
+git-tree-sha1 = "c6ee0e2c5566e91a5aab0a36b65480849dd9bcb2"
 uuid = "2b5f629d-d688-5b77-993f-72d75c75574e"
-version = "6.98.2"
+version = "6.103.2"
 
 [[deps.DiffEqCallbacks]]
 deps = ["DataStructures", "DiffEqBase", "ForwardDiff", "LinearAlgebra", "Markdown", "NLsolve", "Parameters", "RecipesBase", "RecursiveArrayTools", "SciMLBase", "StaticArrays"]
@@ -815,9 +346,9 @@ version = "2.24.1"
 
 [[deps.DiffEqNoiseProcess]]
 deps = ["DiffEqBase", "Distributions", "GPUArraysCore", "LinearAlgebra", "Markdown", "Optim", "PoissonRandom", "QuadGK", "Random", "Random123", "RandomNumbers", "RecipesBase", "RecursiveArrayTools", "ResettableStacks", "SciMLBase", "StaticArrays", "Statistics"]
-git-tree-sha1 = "70590eb0a968cb0a801945c4c26dacca162bbbd3"
+git-tree-sha1 = "8ba7a8913dc57c087d3cdc9b67eb1c9d760125bc"
 uuid = "77a26b50-5914-5dd7-bc55-306e6241c503"
-version = "5.12.3"
+version = "5.13.0"
 
 [[deps.DiffResults]]
 deps = ["StaticArrays"]
@@ -849,9 +380,9 @@ uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[deps.Distributions]]
 deps = ["ChainRulesCore", "DensityInterface", "FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SparseArrays", "SpecialFunctions", "Statistics", "StatsBase", "StatsFuns", "Test"]
-git-tree-sha1 = "334a5896c1534bb1aa7aa2a642d30ba7707357ef"
+git-tree-sha1 = "8579b5cdae93e55c0cff50fbb0c2d1220efd5beb"
 uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
-version = "0.25.68"
+version = "0.25.70"
 
 [[deps.DocStringExtensions]]
 deps = ["LibGit2"]
@@ -869,12 +400,6 @@ git-tree-sha1 = "5837a837389fccf076445fce071c8ddaea35a566"
 uuid = "fa6b7ba4-c1ee-5f82-b5fc-ecf0adba8f74"
 version = "0.6.8"
 
-[[deps.EarCut_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "3f3a2501fa7236e9b911e0f7a588c657e822bb6d"
-uuid = "5ae413db-bbd1-5e63-b57d-d24a61df00f5"
-version = "2.2.3+0"
-
 [[deps.Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "bad72f730e9e91c08d9427d5e8db95478a3c323d"
@@ -886,11 +411,6 @@ deps = ["ArrayInterfaceCore", "GPUArraysCore", "GenericSchur", "LinearAlgebra", 
 git-tree-sha1 = "b40c9037e1a33990466bc5d224ced34b34eebdb0"
 uuid = "d4d017d3-3776-5f7e-afef-a10c40355c18"
 version = "1.18.0"
-
-[[deps.Extents]]
-git-tree-sha1 = "5e1e4c53fa39afe63a7d356e30452249365fba99"
-uuid = "411431e0-e8b7-467b-b5e0-f676ba4f2910"
-version = "0.1.1"
 
 [[deps.FFMPEG]]
 deps = ["FFMPEG_jll"]
@@ -926,9 +446,9 @@ uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[deps.FillArrays]]
 deps = ["LinearAlgebra", "Random", "SparseArrays", "Statistics"]
-git-tree-sha1 = "3399bbad4c9e9a2fd372a54d7b67b3c7121b6402"
+git-tree-sha1 = "87519eb762f85534445f5cda35be12e32759ee14"
 uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
-version = "0.13.3"
+version = "0.13.4"
 
 [[deps.FiniteDiff]]
 deps = ["ArrayInterfaceCore", "LinearAlgebra", "Requires", "Setfield", "SparseArrays", "StaticArrays"]
@@ -1017,18 +537,6 @@ git-tree-sha1 = "fb69b2a645fa69ba5f474af09221b9308b160ce6"
 uuid = "c145ed77-6b09-5dd9-b285-bf645a82121e"
 version = "0.5.3"
 
-[[deps.GeoInterface]]
-deps = ["Extents"]
-git-tree-sha1 = "fb28b5dc239d0174d7297310ef7b84a11804dfab"
-uuid = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
-version = "1.0.1"
-
-[[deps.GeometryBasics]]
-deps = ["EarCut_jll", "GeoInterface", "IterTools", "LinearAlgebra", "StaticArrays", "StructArrays", "Tables"]
-git-tree-sha1 = "a7a97895780dab1085a97769316aa348830dc991"
-uuid = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
-version = "0.4.3"
-
 [[deps.Gettext_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Libiconv_jll", "Pkg", "XML2_jll"]
 git-tree-sha1 = "9b02998aba7bf074d14de89f9d37ca24a1a0b046"
@@ -1112,11 +620,6 @@ git-tree-sha1 = "7fd44fd4ff43fc60815f8e764c0f352b83c49151"
 uuid = "92d709cd-6900-40b7-9082-c6be49f344b6"
 version = "0.1.1"
 
-[[deps.IterTools]]
-git-tree-sha1 = "fa6287a4469f5e048d763df38279ee729fbd44e5"
-uuid = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
-version = "1.4.0"
-
 [[deps.IterativeSolvers]]
 deps = ["LinearAlgebra", "Printf", "Random", "RecipesBase", "SparseArrays"]
 git-tree-sha1 = "1169632f425f79429f245113b775a0e3d121457c"
@@ -1194,10 +697,10 @@ uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 version = "1.3.0"
 
 [[deps.Latexify]]
-deps = ["Formatting", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "Printf", "Requires"]
-git-tree-sha1 = "1a43be956d433b5d0321197150c2f94e16c0aaa0"
+deps = ["Formatting", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "OrderedCollections", "Printf", "Requires"]
+git-tree-sha1 = "ab9aa169d2160129beb241cb2750ca499b4e90e9"
 uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
-version = "0.15.16"
+version = "0.15.17"
 
 [[deps.LayoutPointers]]
 deps = ["ArrayInterface", "ArrayInterfaceOffsetArrays", "ArrayInterfaceStaticArrays", "LinearAlgebra", "ManualMemory", "SIMDTypes", "Static"]
@@ -1311,9 +814,9 @@ version = "0.4.9"
 
 [[deps.LoopVectorization]]
 deps = ["ArrayInterface", "ArrayInterfaceCore", "ArrayInterfaceOffsetArrays", "ArrayInterfaceStaticArrays", "CPUSummary", "ChainRulesCore", "CloseOpenIntervals", "DocStringExtensions", "ForwardDiff", "HostCPUFeatures", "IfElse", "LayoutPointers", "LinearAlgebra", "OffsetArrays", "PolyesterWeave", "SIMDDualNumbers", "SIMDTypes", "SLEEFPirates", "SnoopPrecompile", "SpecialFunctions", "Static", "ThreadingUtilities", "UnPack", "VectorizationBase"]
-git-tree-sha1 = "6dd56fcc3bc7a4d01f9d66dcae76c4a0bc547c34"
+git-tree-sha1 = "2ebc4aab4d1463fb897e57f792ee9903c07ecdbd"
 uuid = "bdcacae8-1622-11e9-2a5c-532679323890"
-version = "0.12.125"
+version = "0.12.127"
 
 [[deps.MacroTools]]
 deps = ["Markdown", "Random"]
@@ -1423,9 +926,9 @@ version = "0.5.5+0"
 
 [[deps.Optim]]
 deps = ["Compat", "FillArrays", "ForwardDiff", "LineSearches", "LinearAlgebra", "NLSolversBase", "NaNMath", "Parameters", "PositiveFactorizations", "Printf", "SparseArrays", "StatsBase"]
-git-tree-sha1 = "ad8de074ed5dad13e87d76c467a82e5eff9c693a"
+git-tree-sha1 = "b9fe76d1a39807fdcf790b991981a922de0c3050"
 uuid = "429524aa-4258-5aef-a3af-852621145aeb"
-version = "1.7.2"
+version = "1.7.3"
 
 [[deps.Opus_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1440,9 +943,9 @@ version = "1.4.1"
 
 [[deps.OrdinaryDiffEq]]
 deps = ["Adapt", "ArrayInterface", "ArrayInterfaceGPUArrays", "ArrayInterfaceStaticArrays", "DataStructures", "DiffEqBase", "DocStringExtensions", "ExponentialUtilities", "FastBroadcast", "FastClosures", "FiniteDiff", "ForwardDiff", "FunctionWrappersWrappers", "LinearAlgebra", "LinearSolve", "Logging", "LoopVectorization", "MacroTools", "MuladdMacro", "NLsolve", "NonlinearSolve", "Polyester", "PreallocationTools", "RecursiveArrayTools", "Reexport", "SciMLBase", "SnoopPrecompile", "SparseArrays", "SparseDiffTools", "StaticArrays", "UnPack"]
-git-tree-sha1 = "1fad4b793276c7d9af0cee460a6761ca8cb632ac"
+git-tree-sha1 = "d20891e46072ad2826fab4b9c8fcb4e4654eb8c9"
 uuid = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
-version = "6.25.0"
+version = "6.26.4"
 
 [[deps.PCRE_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1485,16 +988,16 @@ uuid = "ccf2f8ad-2431-5c83-bf29-c5338b663b6a"
 version = "3.0.0"
 
 [[deps.PlotUtils]]
-deps = ["ColorSchemes", "Colors", "Dates", "Printf", "Random", "Reexport", "Statistics"]
-git-tree-sha1 = "9888e59493658e476d3073f1ce24348bdc086660"
+deps = ["ColorSchemes", "Colors", "Dates", "Printf", "Random", "Reexport", "SnoopPrecompile", "Statistics"]
+git-tree-sha1 = "21303256d239f6b484977314674aef4bb1fe4420"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
-version = "1.3.0"
+version = "1.3.1"
 
 [[deps.Plots]]
-deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers", "GR", "GeometryBasics", "JSON", "LaTeXStrings", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "Requires", "Scratch", "Showoff", "SparseArrays", "Statistics", "StatsBase", "UUIDs", "UnicodeFun", "Unzip"]
-git-tree-sha1 = "a19652399f43938413340b2068e11e55caa46b65"
+deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers", "GR", "JSON", "LaTeXStrings", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "RelocatableFolders", "Requires", "Scratch", "Showoff", "SparseArrays", "Statistics", "StatsBase", "UUIDs", "UnicodeFun", "Unzip"]
+git-tree-sha1 = "6062b3b25ad3c58e817df0747fc51518b9110e5f"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-version = "1.31.7"
+version = "1.33.0"
 
 [[deps.PoissonRandom]]
 deps = ["Random"]
@@ -1510,9 +1013,9 @@ version = "0.6.15"
 
 [[deps.PolyesterWeave]]
 deps = ["BitTwiddlingConvenienceFunctions", "CPUSummary", "IfElse", "Static", "ThreadingUtilities"]
-git-tree-sha1 = "233feae14c07cca6b95080f77a7d332612603f6a"
+git-tree-sha1 = "b42fb2292fbbaed36f25d33a15c8cc0b4f287fcf"
 uuid = "1d0040c9-8b98-4ee7-8388-3f51789ca0ad"
-version = "0.1.9"
+version = "0.1.10"
 
 [[deps.PositiveFactorizations]]
 deps = ["LinearAlgebra"]
@@ -1522,9 +1025,9 @@ version = "0.2.4"
 
 [[deps.PreallocationTools]]
 deps = ["Adapt", "ArrayInterfaceCore", "ForwardDiff", "ReverseDiff"]
-git-tree-sha1 = "5c076a409ec8d2a86d3685a7e4fed330cd489889"
+git-tree-sha1 = "ebe90ecfb31f1781a6da31a986036896e5847fb8"
 uuid = "d236fae5-4411-538c-8e31-a6e3d9e00b46"
-version = "0.4.2"
+version = "0.4.3"
 
 [[deps.Preferences]]
 deps = ["TOML"]
@@ -1654,9 +1157,9 @@ version = "0.6.35"
 
 [[deps.SciMLBase]]
 deps = ["ArrayInterfaceCore", "CommonSolve", "ConstructionBase", "Distributed", "DocStringExtensions", "FunctionWrappersWrappers", "IteratorInterfaceExtensions", "LinearAlgebra", "Logging", "Markdown", "RecipesBase", "RecursiveArrayTools", "StaticArraysCore", "Statistics", "Tables"]
-git-tree-sha1 = "adbb628d4116d9d87e41b6d678772c44877d442c"
+git-tree-sha1 = "92bd64f7d216d266103560f157744257c1caf9b7"
 uuid = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
-version = "1.52.0"
+version = "1.55.0"
 
 [[deps.Scratch]]
 deps = ["Dates"]
@@ -1781,12 +1284,6 @@ git-tree-sha1 = "ac730bd978bf35f9fe45daa0bd1f51e493e97eb4"
 uuid = "7792a7ef-975c-4747-a70f-980b88e8d1da"
 version = "0.3.15"
 
-[[deps.StructArrays]]
-deps = ["Adapt", "DataAPI", "StaticArraysCore", "Tables"]
-git-tree-sha1 = "8c6ac65ec9ab781af05b08ff305ddc727c25f680"
-uuid = "09ab397b-f2b6-538f-b94a-2f83cf4a842a"
-version = "0.6.12"
-
 [[deps.SuiteSparse]]
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
 uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
@@ -1797,9 +1294,9 @@ uuid = "bea87d4a-7f5b-5778-9afe-8cc45184846c"
 
 [[deps.Sundials]]
 deps = ["CEnum", "DataStructures", "DiffEqBase", "Libdl", "LinearAlgebra", "Logging", "Reexport", "SnoopPrecompile", "SparseArrays", "Sundials_jll"]
-git-tree-sha1 = "3903aaf1f4ee8628238a0e56d888c69ba2888444"
+git-tree-sha1 = "5717b2c13ddc167d7db931bfdd1a94133ee1d4f0"
 uuid = "c3572dad-4567-51f8-b174-8c6c989267f4"
-version = "4.10.0"
+version = "4.10.1"
 
 [[deps.Sundials_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "OpenBLAS_jll", "Pkg", "SuiteSparse_jll"]
@@ -1861,6 +1358,11 @@ git-tree-sha1 = "8987cf4a0f8d6c375e4ab1438a048e0a185151e4"
 uuid = "d5829a12-d9aa-46ab-831f-fb7c9ab06edf"
 version = "0.1.13"
 
+[[deps.Tricks]]
+git-tree-sha1 = "6bac775f2d42a611cdfcd1fb217ee719630c4175"
+uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
+version = "0.1.6"
+
 [[deps.URIs]]
 git-tree-sha1 = "e59ecc5a41b000fa94423a578d29290c7266fc10"
 uuid = "5c2747f8-b7ea-4ff2-ba2e-563bfd36b1d4"
@@ -1885,9 +1387,9 @@ uuid = "1cfade01-22cf-5700-b092-accc4b62d6e1"
 version = "0.4.1"
 
 [[deps.Unzip]]
-git-tree-sha1 = "34db80951901073501137bdbc3d5a8e7bbd06670"
+git-tree-sha1 = "ca0969166a028236229f63514992fc073799bb78"
 uuid = "41fe7b60-77ed-43a1-b4f0-825fd5a5650d"
-version = "0.1.2"
+version = "0.2.0"
 
 [[deps.VectorizationBase]]
 deps = ["ArrayInterface", "CPUSummary", "HostCPUFeatures", "IfElse", "LayoutPointers", "Libdl", "LinearAlgebra", "SIMDTypes", "Static"]
@@ -2129,97 +1631,17 @@ version = "1.4.1+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═218eafa7-76dd-49f2-8b93-c3b88d7ea824
-# ╟─8ffab13a-2aac-11ed-1e4d-e30102dbfeba
-# ╟─025deeae-9d83-42b5-b833-dfd8c098da65
-# ╟─91539041-18bf-475f-adc3-c1f66e14bd55
-# ╠═65f865c9-3d6a-4347-9234-4c67d98044a4
-# ╟─04ab601c-0889-4893-9579-2426c0a89eb1
-# ╠═d32b5b63-06ce-4312-bbac-f64969fa2405
-# ╠═3aebda09-7beb-43c5-a362-36b0f098b98d
-# ╟─619e5b65-8b49-4351-ab30-5cd327fe2fca
-# ╠═342da8ac-b660-4386-b133-dfed87059f6e
-# ╟─1e39922b-b102-43ac-af73-f249801cc9ca
-# ╠═ae5bd598-becb-41cf-85c3-fc5a03b32be6
-# ╟─9944d63b-d1a7-450a-b253-05da8fdd4f8c
-# ╠═744a6bc2-c9cb-4c7f-a371-4c7ee2127ac7
-# ╟─b59cfedf-6fab-41b4-a364-86115bd1a4c4
-# ╠═0a7aeaef-ba4d-48b1-afdc-35e4a8c19202
-# ╠═3ccc0b08-fde9-45ee-b436-d8d7d0155924
-# ╟─077c4118-78e9-48ab-a8a0-43a98c27f5fb
-# ╠═8af2c6f1-32cd-4c88-9e11-f67e3e46b25c
-# ╠═75c3748d-19f9-4bb4-b024-4d7e5d073f72
-# ╠═4a71f6ab-442f-4051-8b82-c072593464cb
-# ╠═d1f68d45-b0b1-474f-a21f-19bf16828db5
-# ╟─36eceb0d-31ee-4f0d-a69a-1845684b40f5
-# ╟─489024ac-845d-4beb-ac51-ae2aac01f4c9
-# ╠═b6159c45-473f-4335-bc93-cd3225825c3c
-# ╟─a7022e55-4c10-4cf7-82a2-ef033abac584
-# ╠═f712c79d-8b67-493d-b84a-3fb6fa8f50c0
-# ╟─0e91c691-77e7-4f7e-8749-9afeafab01f1
-# ╠═c15362f3-240c-4a56-bd20-b47aa566ad76
-# ╟─0429df5c-1b96-49fc-9f8e-649505606bcb
-# ╟─d7bc0856-4899-4c8c-a52a-83fd5924dedc
-# ╠═adb53632-51c9-4b74-bc4e-1491beaeac05
-# ╠═801e80f9-db50-4b4b-b659-f826cac54794
-# ╠═b9db999f-8e2c-40ef-8d38-658be7fcad7b
-# ╟─026eceee-75ee-4e5d-a66d-ab3c52a3d763
-# ╟─d503de95-b2f2-4d1c-81f9-858c1b73ab81
-# ╠═67d908ad-7da9-498a-a73c-09a63a9e3249
-# ╟─09b97d7e-8d64-470e-b56a-9d041f35a041
-# ╠═64174619-f688-411a-abf2-6122ba72eb21
-# ╟─7ec6ec0d-2616-4a09-8e86-3df591680625
-# ╟─567665ce-b2fd-4b22-8e56-2c6432737419
-# ╠═d2d79f72-c5ed-49be-ab54-8c665146e028
-# ╠═ff5ff9c9-4a0b-464a-8bbc-59ae95f65cf9
-# ╠═8b80dfb5-19da-40f4-bf3a-c711346451c8
-# ╠═49842833-0b5d-45e8-833a-2abc671ce7d0
-# ╠═9c6e8cb8-fbb1-4571-a8b2-5bf6fd448e8f
-# ╠═f2c03c4d-b527-4346-bf5b-763bbad66bce
-# ╠═23ad308f-18da-4ddf-b3b1-8599bfed3f88
-# ╠═fc0bdb4c-bc60-4e8f-9100-0a27bede0fd6
-# ╟─099b6787-6111-4c9f-9efa-e78c311db4f0
-# ╠═d33ec447-deb0-4fbf-8fa2-e901bf0a0a39
-# ╟─c1eda9fa-a82c-4c56-ac28-02902df3e1a8
-# ╠═75f77adb-a394-43d5-abd4-a953c1fdcd58
-# ╠═b2177d98-c61e-4548-9819-3d8284635fd8
-# ╠═af69669f-b0b8-4621-841e-76b64dfc1a95
-# ╟─320762fa-7010-472b-9add-b925c7b7d211
-# ╠═8f638c31-0201-4a39-bcff-fa58d9772f20
-# ╠═44b851d2-29dc-49d3-b537-cbb527785547
-# ╠═199dbe53-23d9-4414-9d81-982ef5a29f6f
-# ╠═ab5ecc8a-451c-44b3-a854-004778710c17
-# ╠═24cb6871-f461-4697-b14d-ab645c0a890a
-# ╠═60d18f30-3138-4ace-ab85-176b64501886
-# ╠═b6d6451d-434c-4de7-b706-3bd815a39b57
-# ╠═c41c2ca6-afc6-43eb-a94e-9003a7b6ae14
-# ╠═010c2984-c0a1-4950-b97d-dd536bfdc640
-# ╠═73195d3f-ad2f-4fc4-9644-166502feb8c3
-# ╠═6531fde9-4f7d-4d7a-8a81-4c63e5ce601b
-# ╠═4742d1aa-fd37-48d2-a615-46fae17ac77e
-# ╠═50987ba2-9dcc-4ea0-b4a4-83d300a69747
-# ╠═d903f5ee-9f58-44b3-bb73-893936f43da5
-# ╠═051d4387-e6c9-4e17-a848-1352bd5702b6
-# ╠═a6656fe7-72b3-4fe1-a7c5-19cf5f8c42a5
-# ╠═bf302a0c-83c9-4879-bf8c-ab44c15899a5
-# ╠═a7a6c0cc-76c0-47ae-b929-f05271bc7911
-# ╠═5875ebf9-eca6-43c0-bb0b-e94240d8abdd
-# ╠═dd84c655-7806-444d-8392-cfcfa1164dae
-# ╠═2a3e87e6-2f52-4f7c-9b9e-03735e8374e9
-# ╠═a3f34489-7575-4b76-beb5-24274433d369
-# ╠═47f9f246-3517-4b8c-9aa3-b001226cadce
-# ╠═cabc1a59-1d82-43d5-8b71-c268649d8426
-# ╠═1d230d6a-dbe3-4263-8cec-0a3b28145639
-# ╠═866d4936-e01f-46cf-9356-8145350f9015
-# ╠═d676269e-ccd6-486c-964c-55a75f49dcaa
-# ╠═451b54d9-7ba6-48b1-b99a-86cb12d3e4c7
-# ╠═00f97f91-3d3d-46af-944c-182af6636895
-# ╠═18ca457e-6f9f-4ebd-9690-97557d11394c
-# ╠═1ae066ed-bcbd-4aee-8659-51f6f82d19b1
-# ╠═2c382714-3d7d-4f6e-8044-aec9692c7c8b
-# ╠═fec1714d-5ccf-4892-af0a-eca05a9ad618
-# ╠═18ade196-9dc7-4c7e-8417-91d435d3b196
-# ╠═168fa1b4-2601-486f-b3c9-0418d783762a
-# ╠═30f1c233-acf8-4554-b24f-0f87af534ce5
+# ╠═f66b003a-3366-11ed-28ae-af21f07c5e4e
+# ╠═064a5b20-b30e-4bde-89b4-98eb021d5a8a
+# ╠═eb91980e-b1ec-491d-8b1e-8b858061f3eb
+# ╠═10dd0ae9-eb61-4f3e-b412-51b41d1b669f
+# ╠═8e1e2cd5-4f43-437b-9e33-13e99845b4e1
+# ╠═5c4df4b6-d3d2-407c-9f5d-24f159b0a96f
+# ╠═7d873c8e-4be9-459f-8a44-6a3af91f68a1
+# ╠═4b8c1c2d-a2f2-48e6-99cb-ec75cff5fe61
+# ╠═a4df83d1-e97f-4def-b6db-91e83d847396
+# ╠═ec99185a-5303-486d-b7a6-7deeab3a09d7
+# ╠═1062cb73-cda6-46ae-912b-ac38009366f1
+# ╠═106729f8-c9c7-4ede-9d3c-7535c7abf86a
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
