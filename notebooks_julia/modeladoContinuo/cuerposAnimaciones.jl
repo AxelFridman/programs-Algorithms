@@ -1,88 +1,37 @@
 ### A Pluto.jl notebook ###
-# v0.19.9
+# v0.19.11
 
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 5699b85e-0f55-11ed-0865-9fbd5aa9097c
-begin 
-	using Plots, DifferentialEquations
+# ╔═╡ 8742a142-351f-11ed-0ddf-73a85f33dcf8
+begin
+	using Plots,DifferentialEquations
+	theme(:dracula)
 end
 
-# ╔═╡ a1ce46ff-f4e1-4a84-b1d0-31c67cc7523a
+# ╔═╡ f9147cd8-96cd-4c2a-b697-a7a23f56cefc
 begin
 	using Random
 	using Distributions
 end
 
-# ╔═╡ 5ba9125c-262e-4a31-9515-109463527031
-md"""
-# IMC
+# ╔═╡ d25c5c7c-ecff-4977-a82a-9ee622185b06
+ distEuclideana(x1,y1,z1,x2,y2,z2) = sqrt((x1-x2)^2+(y1-y2)^2+(z1-z2)^2)
 
-## Trabajo Práctico $n^\circ 1$: Dinámica de gases.
-"""
-
-# ╔═╡ d7d2e805-781f-4b07-9adc-9c75acc66bc9
-md"""##### Criterio de corrección
-
-El TP consta de dos partes. La primera corresponde a la implementación básica del sistema y su simulación. La impecable resolución de esta primera parte equivale a un 8. Una resolución correcta, a un 7. Para aumentar la nota, hay al final del TP algunos _**Adicionales**_. La resolución de cualquiera de los ellos alcanza para llegar al 10, si se lo resuelve de manera correcta y completa. """
-
-# ╔═╡ 68a95dca-e8ce-4253-a068-1cd2cfac893a
-md"""Queremos estudiar un sistema de muchas partículas moviéndose en una caja. Pensemos, por ejemplo, en un gas, cuyas moléculas se repelen entre sí y chocan contra las paredes. Para simplificar, trabajaremos con una caja en el plano.
-
-#### Fuerzas
-
-Dadas dos masas $m_i$ y $m_j$ ubicadas en los puntos de coordenadas $(x_i,y_i)$ y $(x_j,y_j)$ respectivamente, podemos modelar los choques entre ellas a través de un potencial repulsivo. Este potencial debe ser grande cuando las partículas están cerca y prácticamente nulo cuando están lejos. Proponemos, por lo tanto, un potencial de la forma:
-
-$E^P_{ij} = k_1\frac{m_i m_j}{d_{ij}^4},$
-
-donde $k_1$ es una constante de la interación y $d_{ij}$ es la distancia entre las partículas, es decir: 
-
-$d_{ij}^2 = (x_i-x_j)^2+(y_i-y_j)^2.$
-
-Con este potencial, la fuerza $F_i^j$ que la masa $j$ ejerce sobre la masa $i$ es: 
-
-$F_i^j = -\nabla_i E^P_{ij} = 4k_1 m_i m_j \frac{(x_i,y_i)-(x_j,y_j)}{d_{ij}^6},$
-
-mientras que $F_j^i = -F_i^j$. La fuerza total sobre la partícula $i$ será la suma de las fuerzas que todas las otras partículas ejercen sobre ella. 
-
-#### Rebotes
-
-Asumiremos que los choques contra las paredes conservan la energía. Los modelaremos simplemente detectando cuando una masa se sale de la caja, reflejándola hacia adentro e invirtiendo su velocidad. 
-
-"""
-
-
-# ╔═╡ 9ec881e2-3a6f-47c6-a900-40376f929f3f
-md"""### Primera Parte:
-
-Comenzaremos realizando la simulación general de este fenómeno. Asumimos que la caja es cuadrada y para reducir el número de variables definimos el lado como una variable global:"""
-
-# ╔═╡ dbe0b543-3c51-4732-88ec-364064088380
-const L = 10.00
-
-# ╔═╡ 373f650b-86d1-45ca-aad8-613940e2f788
-md"""###### Ejercicio 1:
-Implementar una función que genere un dato inicial aleatorio. Es decir: que reciba un parámetro $n$ (la cantidad de partículas a generar) y devuelva alguna estructura de datos adecuada que contenga las posiciones iniciales, tomadas al azar en el cuadrado $[0,L]\times[0,L]$ y las velocidades iniciales, también tomadas al azar. 
-
-Las velocidades pueden influir en la dinámica de las simulaciones. Por lo tanto, la recomendación es que la función reciba un parámetro de escala `V` y genere para cada partícula un ángulo al azar `α∈[0,2π)` y un valor al azar `v∈[0,V]` y defina las coordenadas de la velocidad con estos datos. De esta manera se obtienen vectores de velocidad distribuidos uniformemente en el círculo de radio `V`, y es posible modificar el valor de `V` de una simulación a otra. """
-
-# ╔═╡ 73d3bf5e-8626-4a7f-9404-a953c59d5989
-rand(Uniform(0, L))
-
-# ╔═╡ ff6ebf08-69b3-4d3c-82b4-af70f12ddd30
-# dato inicial
+# ╔═╡ 7b23999e-3fb9-4843-82cf-751d760bc4d5
 function generarPosicionesVelocidadesAlAzar(cantidad, pared, maxVelocidad)
 	posVel = []
 	for i in 1:cantidad
-		posicion = [rand(Uniform(0, pared)), rand(Uniform(0, pared))]
-		angulo = rand(Uniform(0, 2*π))
+		posicion = [rand(Uniform(0, pared)), rand(Uniform(0, pared)), rand(Uniform(0, pared))]
+		anguloTheta = rand(Uniform(0, 2*π))
+		anguloPhi = rand(Uniform(0, π))
 		modVel = rand(Uniform(0, maxVelocidad))
-		velocidad = [modVel * cos(angulo), modVel * sin(angulo)]
-		for j in 1:2
+		velocidad = [modVel * cos(anguloTheta) * sin(anguloPhi), modVel * sin(anguloTheta)* sin(anguloPhi), modVel * cos(anguloPhi)]
+		for j in 1:3
 			push!(posVel, posicion[j])
 		end
-		for j in 1:2
+		for j in 1:3
 			push!(posVel, velocidad[j])
 		end
 		
@@ -90,50 +39,50 @@ function generarPosicionesVelocidadesAlAzar(cantidad, pared, maxVelocidad)
 	return posVel
 end
 
-# ╔═╡ cd6203d6-dd50-4d03-9ac1-0400e124b1e0
-generarPosicionesVelocidadesAlAzar(3, L, 1)
+# ╔═╡ 2839015a-1b64-47da-bf3d-448a8bf7ba98
+function generarMasasAlAzar(cantidad, minMasa, maxMasa)
+	masas = []
+	for i in 1:cantidad
+		masa = rand(Uniform(minMasa, maxMasa))
+		push!(masas, masa)
+	end
+	return masas
+end
 
-# ╔═╡ ea76cc50-1005-4902-87f2-85ba43525134
-md"""###### Ejercicio 2:
-
-Implementar la función que define el sistema de ecuaciones. Asumir que el vector de parámetros `p` toma la forma `p=[k₁,m]`, donde `m=[m₁,m₂,…,mₙ]` es el vector de masas.
- """
-
-# ╔═╡ caba579c-5cce-42c0-8293-19b3bbe8a1fa
- distEuclideana(x1,y1,x2,y2) = sqrt((x1-x2)^2+(y1-y2)^2)
-
-# ╔═╡ 8a05aeea-be56-4b46-a42c-6356c2de73ed
- # ecuaciones del modelo
- function gases(du,u,pInfo,t)
-	k1, masas, L, minDis = pInfo
+# ╔═╡ 71a07232-9a8e-48fc-be41-0702c45263e8
+function nCuerpos(du,u,pInfo,t)
+	G, masas, minDis = pInfo
 	
-	for gasIesimo in 1:Int(length(u)/4)
-		Posx1 = u[(gasIesimo-1)*4 + 1]
-		Posy1 = u[(gasIesimo-1)*4 + 2]
-		Velx1 = u[(gasIesimo-1)*4 + 3]
-		Vely1 = u[(gasIesimo-1)*4 + 4]
+	for planetaIesimo in 1:Int(length(u)/6)
+		Posx1 = u[(planetaIesimo-1)*6 + 1]
+		Posy1 = u[(planetaIesimo-1)*6 + 2]
+		Posz1 = u[(planetaIesimo-1)*6 + 3]
+		Velx1 = u[(planetaIesimo-1)*6 + 4]
+		Vely1 = u[(planetaIesimo-1)*6 + 5]
+		Velz1 = u[(planetaIesimo-1)*6 + 6]
 
-		du[(gasIesimo-1)*4 + 1] = Velx1
-		du[(gasIesimo-1)*4 + 2] = Vely1
-		du[(gasIesimo-1)*4 + 3] = 0.
-		du[(gasIesimo-1)*4 + 4] = 0.
-	
-		for gasOtro in 1:Int(length(u)/4)
+		du[(planetaIesimo-1)*6 + 1] = Velx1
+		du[(planetaIesimo-1)*6 + 2] = Vely1
+		du[(planetaIesimo-1)*6 + 3] = Velz1
+		du[(planetaIesimo-1)*6 + 4] = 0.
+		du[(planetaIesimo-1)*6 + 5] = 0.
+		du[(planetaIesimo-1)*6 + 6] = 0.
+		for planetaInteraccion in 1:Int(length(u)/6)
 			
-			Posx2 = u[(gasOtro-1)*4 + 1]
-			Posy2 = u[(gasOtro-1)*4 + 2]
-			Velx2 = u[(gasOtro-1)*4 + 3]
-			Vely2 = u[(gasOtro-1)*4 + 4]
+			Posx2 = u[(planetaInteraccion-1)*6 + 1]
+			Posy2 = u[(planetaInteraccion-1)*6 + 2]
+			Posz2 = u[(planetaInteraccion-1)*6 + 3]
+			Velx2 = u[(planetaInteraccion-1)*6 + 4]
+			Vely2 = u[(planetaInteraccion-1)*6 + 5]
+			Velz2 = u[(planetaInteraccion-1)*6 + 6]
 				
-			distEntrePlanetas = distEuclideana(Posx1, Posy1, Posx2, Posy2)
-			
+			distEntrePlanetas = distEuclideana(Posx1, Posy1, Posz1, Posx2, Posy2, Posz2)
 			if(distEntrePlanetas > minDis)
-				du[(gasIesimo-1)*4 + 3] = du[(gasIesimo-1)*4 + 3] -
-				4*k1*masas[gasOtro]*masas[gasIesimo]*(Posx2-Posx1)/(distEntrePlanetas^6)
-					
-				du[(gasIesimo-1)*4 + 4] = du[(gasIesimo-1)*4 + 4] -
-				4*k1*masas[gasOtro]*masas[gasIesimo]*(Posy2-Posy1)/(distEntrePlanetas^6)
+				du[(planetaIesimo-1)*6 + 4] = du[(planetaIesimo-1)*6 + 4] + G* masas[planetaInteraccion]*(Posx2-Posx1)/(distEntrePlanetas^3)
 				
+				du[(planetaIesimo-1)*6 + 5] = du[(planetaIesimo-1)*6 + 5] + G* masas[planetaInteraccion]*(Posy2-Posy1)/(distEntrePlanetas^3)
+				
+				du[(planetaIesimo-1)*6 + 6] = du[(planetaIesimo-1)*6 + 6] + G* masas[planetaInteraccion]*(Posz2-Posz1)/(distEntrePlanetas^3)
 					
 			end
 			
@@ -142,246 +91,66 @@ Implementar la función que define el sistema de ecuaciones. Asumir que el vecto
 	end
 end
 
-# ╔═╡ 239075d6-fde1-4794-825c-1bd4e9380681
-md"""###### Ejercicio 3:
-
-Para reconocer los choques contra las paredes utilizaremos un `DiscreteCallback`. Implementar:
-1. La condición, que debe devolver `true` cuando cualquiera de las particulas está fuera de la caja.
-2. La función de rebote, que debe reconocer todas las partículas fuera de la caja y corregir sus posiciones y velocidades.
-
-Esto puede hacerse implementando una única condición, implementando dos (una para choques en $x$ y otra para choques en $y$), o implementando cuatro (una por cada borde). Lo importante es que, en cualquier caso, cada condición debe revisar _todas_ las partículas. Para esto puede resultar útil el comando `any`, que recibe un vector de variables booleanas y devuelve `true` si alguna de sus coordenadas es `true`. """
-
-# ╔═╡ c21a9f39-518c-4fbc-af2f-db27e33a2d1d
-# condición
-begin
-	
-function condicionChoqueIzq(u,t,integrator)
-	for gas in 1:Int(length(u)/4)
-			Posx = u[(gas-1)*4 + 1]
-			if(Posx<0)
-				return true
-			end
-	end
-	return false
-end
-
-function condicionChoquePiso(u,t,integrator)
-	for gas in 1:Int(length(u)/4)
-			Posy = u[(gas-1)*4 + 2]
-			if(Posy<0)
-				return true
-			end
-	end
-	return false
-end
-
-function condicionChoqueDer(u,t,integrator)
-	for gas in 1:Int(length(u)/4)
-			Posx = u[(gas-1)*4 + 1]
-			print(integrator.p[3])
-			if(Posx > integrator.p[3]) #ACA HAY QUE PONER LA L !!!!!!!!!
-				return true
-			end
-	end
-	return false
-end
-
-function condicionChoqueTecho(u,t,integrator)
-	for gas in 1:Int(length(u)/4)
-			Posy = u[(gas-1)*4 + 2]
-			if(Posy > integrator.p[3]) #ACA HAY QUE PONER LA L !!!!!!!!!
-				return true
-			end
-	end
-	return false
-end
-	
-end
-
-# ╔═╡ cb7222c4-4530-4c25-9123-894a0ae7a184
-# rebotes
+# ╔═╡ 968b5c2d-f9de-4ede-a39e-9266e3492261
 begin
 
-function respuestaChoqueIzq!(integrator)
-	for gas in 1:Int(length(integrator.u)/4)
-			Posx = integrator.u[(gas-1)*4 + 1]
-			if(Posx<0)
-				integrator.u[(gas-1)*4 + 3] = -integrator.u[(gas-1)*4 + 3]
-				integrator.u[(gas-1)*4 + 1]  = 0 - (integrator.u[(gas-1)*4 + 1]  - 0)
-			end
-	end
-end
-function respuestaChoquePiso!(integrator)
-	for gas in 1:Int(length(integrator.u)/4)
-			Posy = integrator.u[(gas-1)*4 + 2]
-			if(Posy<0)
-				integrator.u[(gas-1)*4 + 4] = -integrator.u[(gas-1)*4 + 4]
-				integrator.u[(gas-1)*4 + 2] = 0 - (integrator.u[(gas-1)*4 + 2] - 0)
-			end
-	end
-end
-function respuestaChoqueDer!(integrator)
-	for gas in 1:Int(length(integrator.u)/4)
-			Posx = integrator.u[(gas-1)*4 + 1]
-			if(Posx>integrator.p[3])
-				integrator.u[(gas-1)*4 + 3] = -integrator.u[(gas-1)*4 + 3]
-				integrator.u[(gas-1)*4 + 1] = integrator.p[3] - (integrator.u[(gas-1)*4 + 1] -integrator.p[3])
-			end
-	end
-end
-function respuestaChoqueTecho!(integrator)
-	for gas in 1:Int(length(integrator.u)/4)
-			Posy = integrator.u[(gas-1)*4 + 2]
-			if(Posy>integrator.p[3])
-				integrator.u[(gas-1)*4 + 4] = -integrator.u[(gas-1)*4 + 4]
-				integrator.u[(gas-1)*4 + 2] = integrator.p[3] - (integrator.u[(gas-1)*4 + 2] -integrator.p[3])
-			end
-	end
-end
-
-end
-
-# ╔═╡ 10cfbe02-510c-4d52-9133-d51adb26deb2
-begin
-	dc1 = DiscreteCallback(condicionChoqueIzq,respuestaChoqueIzq!)
-	dc2 = DiscreteCallback(condicionChoqueDer,respuestaChoqueDer!)
-	dc3 = DiscreteCallback(condicionChoquePiso,respuestaChoquePiso!)
-	dc4 = DiscreteCallback(condicionChoqueTecho,respuestaChoqueTecho!)
-	cbsetSala = CallbackSet(dc1,dc2,dc3,dc4)
-end
-
-# ╔═╡ 0515150e-6e13-4cc4-b68f-61708a3cf4f4
-md""" ###### Ejercicio 4:
-
-Implementar una función que reciba un conjunto de parámetros adecuados y ejecute una simulación. Verificar que se ejecuta sin errores simulando un sistema con dos partículas. """
-
-
-
-# ╔═╡ 9da98062-6c3b-49e3-8b96-92dcc89769c7
-# simulación
-begin
-	k1 = float.(1.0e-5)
-	masas = float.([1.0,1.0,1.0,1.0,1.0])
 	n = 5
-	tspan = [0,20]
-	datoInicialEspacial = float.(generarPosicionesVelocidadesAlAzar(n, L, 3))
-	#datoInicialEspacial = float.([1,1,0,0,0.1,0.1,0,0,1,0,0,0])
-	pInfo = float.([k1, masas, L, 0.01])
-	Pgas  = ODEProblem(gases,datoInicialEspacial,tspan,pInfo)
-	solCuerpos = solve(Pgas, callback=cbsetSala,dtmax=0.1) #callback=cbsetSala
-
+	limiteIni = 100
+	velIni = 0.05
+	minMasa = 1
+	maxMasa = 3
+	minDis = 1
+	constanteGravitacional = 0.4982 
+	tIni = 0
+	tFin = 2000
+	
+	tspan = [tIni,tFin]
+	masas = generarMasasAlAzar(n, minMasa, maxMasa)
+	
+	posVel = generarPosicionesVelocidadesAlAzar(n, limiteIni, velIni)
+	
+	datoInicialEspacial = float.(posVel)
+	pInfo = [constanteGravitacional, masas, minDis]
 end
 
-# ╔═╡ 316fd5e6-f050-46db-8239-a39ee7a2a593
+# ╔═╡ 68b2297d-1f00-42ec-a33b-ceca1a34e836
 begin
-	plot(solCuerpos,idxs=[(i,i+1) for i in 1:4:n*4])
-	plot!([0,0,L,L,0],[0,L,L,0,0], label="pared")
+	Pcuerpos  = ODEProblem(nCuerpos,datoInicialEspacial,tspan,pInfo)
+	solCuerpos = solve(Pcuerpos)
+	
 end
 
-# ╔═╡ e3687e0a-450a-4bce-8520-7e613d526490
-animate(solCuerpos,idxs=[(i,i+1) for i in 1:4:n*4])
+# ╔═╡ dad489ae-e94b-47e5-b945-78676068beb0
+plot(solCuerpos,idxs=[(i,i+1,i+2) for i in 1:6:25], labels= ["Planeta 1" "Planeta 2" "Planeta 3" "Planeta 4" "Planeta 5"])
 
-# ╔═╡ a5fa4f83-3169-4268-b816-7b8fe2c5333a
-md"""###### Ejercicio 5:
+# ╔═╡ 9e5ef700-7857-46cd-b79b-0d7b36295052
+begin
+	cantFrames = 500
+	rangoTiempo = tIni: (tFin-tIni)/cantFrames : tFin
+	vectorTiempos = zeros(cantFrames)
+	for i in 1:cantFrames
+		vectorTiempos[i] = rangoTiempo[i]
+		
+	end
+	solCuerpos2 = solCuerpos(vectorTiempos)
+end
 
-Para visualizar los resultados implementar una función que reciba la solución de una simulación y realice una animación. Cada cuadro de la animación debe contener las líneas que delimitan la caja y un scatter plot de las posiciones de las masas en un instante determinado. 
+# ╔═╡ 318c53db-fa4b-429f-a31e-f8255f88fb40
+L = limiteIni*1.5
 
-Tomando $k_1 = 10^{-6}$ y masas iguales a 1 realizar simulaciones con 2, 5 y 10 partículas. Experimentar con distintas velocidades iniciales y comprobar que las interacciones entre partículas y los choques con las paredes se realicen correctamente. Para evitar problemas de precisión puede llegar a ser necesario fijar tolerancias menores a las estándar. Tener en cuenta que tolerancias muy chicas aumentan el tiempo de ejecución: es necesario hacer un balance. Realizar una simulación con 50 partículas y si es posible con 100. 
+# ╔═╡ 17da1b40-99f6-4cca-b496-c698375bb4fa
+begin
+	animacion = @animate for i in 1:length(solCuerpos2[1,:])
+		difPared = 10
+		plot(xlims=(-difPared,L+difPared),ylims=(-difPared,L+difPared), zlims=(-difPared,L+difPared))
+		for j in 1:6:(n)*6
+			scatter!([solCuerpos2[j,i]], [solCuerpos2[j+1,i]], [solCuerpos2[j+2,i]], markersize=2*masas[Int(1+(j-1)/6)], legend=:none)
+		end
+	end
+end
 
-Es interesante también estudiar el caso en que las masas son variables. Simular un ejemplo con masas aleatorias (digamos, entre $0.5$ y $2.5$). Para visualizar la simulación con mayor claridad es recomendable graficar los puntos con distintos tamaños, escalados de acuerdo a su masa. Para ello, utilizar el parámetro `markersize` de `scatter`."""
-
-# ╔═╡ 35f58720-56f4-4cce-adab-95414062f3d0
-# animación
-
-
-# ╔═╡ e606d381-d37e-414d-9c68-c65205e61873
-# prueba con 2
-
-# ╔═╡ ecd0f578-2614-4473-af25-0db650688a06
-# prueba con 50 o 100
-
-# ╔═╡ 29da6749-52fb-4881-88d8-556613629dac
-# prueba con 50 o 100 de masas distintas
-
-# ╔═╡ c0924df8-3a8f-4923-b341-e77e692fcb84
-md"""##### Adicionales:
-
-###### Fuerzas adicionales:
-
-Podemos agregar al sistema fuerzas de atracción que actúen a distancias intermedias. De este modo, si dos partículas están muy lejos una de otra prácticamente no interactúan, si están menos lejos se atraen y si están muy cerca se repelen. Por ejemplo, podemos considerar un potencial  de la forma: 
-
-$E^P_{ij} = k_1 \frac{m_1m_2}{d_{ij}^4} - k_2 \frac{m_1m_2}{d_{ij}^3},$
-
-donde el primer término es el mismo con el que trabajamos previamente y el segundo es atractivo. Experimentar con distintos valores de $k_2$ y de las velocidades iniciales, buscando que se formen cúmulos de partículas (pequeños o grandes). Para ello, resulta útil deducir la distancia de equilibrio entre dos partículas (que depende de $k_1$ y $k_2$). 
-
-También se puede agregar al sistema una fuerza gravitatoria (aunque dadas las magnitudes que estamos manejando, debería ser inferior a la gravitación usual).
-
-Realizar simulaciones con masas iguales y con masas variables."""
-
-# ╔═╡ 84d5d1f3-3592-470b-a75d-c210cbfd8171
-
-
-# ╔═╡ 70eb4406-cb25-4d69-abbb-ab2555b5ec1f
-md"""###### Energía:
-
-Dado que nuestras fuerzas son conservativas es interesante verificar si la energía del sistema se conserva. La energía total viene dada por:
-
-$E = \sum_{i,j} E_{ij}^P + \sum_i E_i^C,$
-
-donde $E_i^C$ es la energía cinética de la partícula $i$:
-
-$E_i^C = \frac{1}{2}m_i|v_i|^2.$
-
-Implementar funciones que calculen la energía potencial y la energía cinética para un instante de tiempo dado. Computar la energía total de una solución a lo largo del tiempo y graficarla. ¿Es constante? Si no lo es, ¿qué se puede hacer para lograr que sea constante? Graficar también cada energía por separado.
-
-"""
-
-# ╔═╡ 9bef5920-c2bd-47d1-a856-f6bcc46ae9f7
-
-
-# ╔═╡ 7a78309c-1a30-40fd-8750-813e617a1622
-md"""###### Modulación de energía cinética: 
-La temperatura del sistema es proporcional a su energía cinética, que viene dada por:
-
-$E^C = \sum_i E^C_i = \sum_i \frac{1}{2}m_i|v_i|^2,$
-
-donde $E^C_i$ es la energía cinética de la $i$-ésima partícula. Una simulación más realista de un gas encerrado en un recinto puede obtenerse manteniendo constante la temperatura (i.e.: la energía cinética). Esto se logra normalizando las velocidades de manera tal que la energía cinética se mantenga constante. El procedimiento es el siguiente:
-
-1. Calcular la energía cinética inicial total $\bar{E}^C$, sobre el dato inicial. 
-2. Implementar una DiscreteCallback cuya condición valga siempre `true` y cuya acción sea computar la energía cinética total en el paso actual $E^C_{tot}$ y corregir las velocidades de las partículas haciendo:
-
-$v_i = \sqrt\frac{\bar{E}^C}{E^C_{tot}}v_i$
-
-Con este reescale se consigue que la _nueva_ energía cinética total sea igual a $\bar{E}^C$. 
-
-Simular el sistema con esta corrección y comparar con las simulaciones anteriores. 
-
-Un agregado interesante consiste en introducir una modulación de la temperatura del sistema introduciendo en el reescale de velocidades un factor que dependa del tiempo. Por ejemplo, si nuestra simulación se realiza en el intervalo $[0,T]$ y queremos ir enfriando el sistema, podemos hacer: 
-
-$v_i = \frac{T-t_i}{T}\sqrt\frac{\bar{E}^C}{E^C_{tot}}v_i.$
-
-Realizar simulaciones en este sentido. ¿Qué se observa?
-"""
-
-# ╔═╡ a52a3642-fc32-4ffc-94e4-d054e54e7ea0
-
-
-# ╔═╡ 8d702baa-8fb4-4ef4-ad31-b10404243a2e
-md"""###### Presión:
-
-La presión a la que se encuentra el gas es proporcional a la cantidad de rebotes de partículas contra las paredes de la caja. Modificar los programas de manera que: 
-
-1. El parámetro p incluya una variable adicional que funcionará como contador.
-2. Cuando se realice una acción de rebote, se sume 1 al contador. 
-
-El parámetro `p` es modificado por el solver, de modo que luego de resolver puede recuperarse el número de choques. 
-
-Implementar funciones que resuelvan el sistema: 
-
-1. Con distinto número de partículas y cota de velocidad inicial fija. Hacer varias simulaciones para cada cantidad de partículas, para generar estadística. Graficar la cantidad de choques contra las paredes en función del número de partículas.
-2. Con un número fijo de partículas y cota de velocidad inicial variable. Hacer varias simulaciones para cada cota de velocidad. Graficar la cantidad de choques contra las paredes en función de la cota para la velocidad."""
-
-
+# ╔═╡ 2d9a3464-a373-463d-883f-c9c82fdc6b05
+mp4(animacion, "planetasmoviendoLindo.mp4")
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -393,15 +162,15 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [compat]
 DifferentialEquations = "~7.3.0"
-Distributions = "~0.25.70"
-Plots = "~1.32.1"
+Distributions = "~0.25.71"
+Plots = "~1.33.0"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.7.2"
+julia_version = "1.7.3"
 manifest_format = "2.0"
 
 [[deps.Adapt]]
@@ -638,9 +407,9 @@ version = "0.4.0"
 
 [[deps.DiffEqBase]]
 deps = ["ArrayInterfaceCore", "ChainRulesCore", "DataStructures", "Distributions", "DocStringExtensions", "FastBroadcast", "ForwardDiff", "FunctionWrappers", "FunctionWrappersWrappers", "LinearAlgebra", "Logging", "MuladdMacro", "NonlinearSolve", "Parameters", "Printf", "RecursiveArrayTools", "Reexport", "Requires", "SciMLBase", "Setfield", "SparseArrays", "Static", "StaticArrays", "Statistics", "Tricks", "ZygoteRules"]
-git-tree-sha1 = "c6ee0e2c5566e91a5aab0a36b65480849dd9bcb2"
+git-tree-sha1 = "09d39361dd1f1dea55dd4b5ce22855134c795365"
 uuid = "2b5f629d-d688-5b77-993f-72d75c75574e"
-version = "6.103.2"
+version = "6.104.1"
 
 [[deps.DiffEqCallbacks]]
 deps = ["DataStructures", "DiffEqBase", "ForwardDiff", "LinearAlgebra", "Markdown", "NLsolve", "Parameters", "RecipesBase", "RecursiveArrayTools", "SciMLBase", "StaticArrays"]
@@ -684,9 +453,9 @@ uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[deps.Distributions]]
 deps = ["ChainRulesCore", "DensityInterface", "FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SparseArrays", "SpecialFunctions", "Statistics", "StatsBase", "StatsFuns", "Test"]
-git-tree-sha1 = "8579b5cdae93e55c0cff50fbb0c2d1220efd5beb"
+git-tree-sha1 = "ee407ce31ab2f1bacadc3bd987e96de17e00aed3"
 uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
-version = "0.25.70"
+version = "0.25.71"
 
 [[deps.DocStringExtensions]]
 deps = ["LibGit2"]
@@ -695,7 +464,7 @@ uuid = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 version = "0.9.1"
 
 [[deps.Downloads]]
-deps = ["ArgTools", "LibCURL", "NetworkOptions"]
+deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 
 [[deps.DualNumbers]]
@@ -703,12 +472,6 @@ deps = ["Calculus", "NaNMath", "SpecialFunctions"]
 git-tree-sha1 = "5837a837389fccf076445fce071c8ddaea35a566"
 uuid = "fa6b7ba4-c1ee-5f82-b5fc-ecf0adba8f74"
 version = "0.6.8"
-
-[[deps.EarCut_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "3f3a2501fa7236e9b911e0f7a588c657e822bb6d"
-uuid = "5ae413db-bbd1-5e63-b57d-d24a61df00f5"
-version = "2.2.3+0"
 
 [[deps.Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -721,11 +484,6 @@ deps = ["ArrayInterfaceCore", "GPUArraysCore", "GenericSchur", "LinearAlgebra", 
 git-tree-sha1 = "b40c9037e1a33990466bc5d224ced34b34eebdb0"
 uuid = "d4d017d3-3776-5f7e-afef-a10c40355c18"
 version = "1.18.0"
-
-[[deps.Extents]]
-git-tree-sha1 = "5e1e4c53fa39afe63a7d356e30452249365fba99"
-uuid = "411431e0-e8b7-467b-b5e0-f676ba4f2910"
-version = "0.1.1"
 
 [[deps.FFMPEG]]
 deps = ["FFMPEG_jll"]
@@ -752,9 +510,12 @@ version = "0.3.2"
 
 [[deps.FastLapackInterface]]
 deps = ["LinearAlgebra"]
-git-tree-sha1 = "cfd9d0dbb947181644c00bd7e988b4bb30a5b2a5"
+git-tree-sha1 = "14a6f7a21125f715d935fe8f83560ee833f7d79d"
 uuid = "29a986be-02c6-4525-aec4-84b980013641"
-version = "1.2.6"
+version = "1.2.7"
+
+[[deps.FileWatching]]
+uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[deps.FillArrays]]
 deps = ["LinearAlgebra", "Random", "SparseArrays", "Statistics"]
@@ -839,27 +600,15 @@ version = "0.66.2"
 
 [[deps.GR_jll]]
 deps = ["Artifacts", "Bzip2_jll", "Cairo_jll", "FFMPEG_jll", "Fontconfig_jll", "GLFW_jll", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Libtiff_jll", "Pixman_jll", "Pkg", "Qt5Base_jll", "Zlib_jll", "libpng_jll"]
-git-tree-sha1 = "2d908286d120c584abbe7621756c341707096ba4"
+git-tree-sha1 = "3697c23d09d5ec6f2088faa68f0d926b6889b5be"
 uuid = "d2c73de3-f751-5644-a686-071e5b155ba9"
-version = "0.66.2+0"
+version = "0.67.0+0"
 
 [[deps.GenericSchur]]
 deps = ["LinearAlgebra", "Printf"]
 git-tree-sha1 = "fb69b2a645fa69ba5f474af09221b9308b160ce6"
 uuid = "c145ed77-6b09-5dd9-b285-bf645a82121e"
 version = "0.5.3"
-
-[[deps.GeoInterface]]
-deps = ["Extents"]
-git-tree-sha1 = "fb28b5dc239d0174d7297310ef7b84a11804dfab"
-uuid = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
-version = "1.0.1"
-
-[[deps.GeometryBasics]]
-deps = ["EarCut_jll", "GeoInterface", "IterTools", "LinearAlgebra", "StaticArrays", "StructArrays", "Tables"]
-git-tree-sha1 = "a7a97895780dab1085a97769316aa348830dc991"
-uuid = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
-version = "0.4.3"
 
 [[deps.Gettext_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Libiconv_jll", "Pkg", "XML2_jll"]
@@ -944,11 +693,6 @@ git-tree-sha1 = "7fd44fd4ff43fc60815f8e764c0f352b83c49151"
 uuid = "92d709cd-6900-40b7-9082-c6be49f344b6"
 version = "0.1.1"
 
-[[deps.IterTools]]
-git-tree-sha1 = "fa6287a4469f5e048d763df38279ee729fbd44e5"
-uuid = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
-version = "1.4.0"
-
 [[deps.IterativeSolvers]]
 deps = ["LinearAlgebra", "Printf", "Random", "RecipesBase", "SparseArrays"]
 git-tree-sha1 = "1169632f425f79429f245113b775a0e3d121457c"
@@ -1026,10 +770,10 @@ uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 version = "1.3.0"
 
 [[deps.Latexify]]
-deps = ["Formatting", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "Printf", "Requires"]
-git-tree-sha1 = "1a43be956d433b5d0321197150c2f94e16c0aaa0"
+deps = ["Formatting", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "OrderedCollections", "Printf", "Requires"]
+git-tree-sha1 = "ab9aa169d2160129beb241cb2750ca499b4e90e9"
 uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
-version = "0.15.16"
+version = "0.15.17"
 
 [[deps.LayoutPointers]]
 deps = ["ArrayInterface", "ArrayInterfaceOffsetArrays", "ArrayInterfaceStaticArrays", "LinearAlgebra", "ManualMemory", "SIMDTypes", "Static"]
@@ -1216,10 +960,10 @@ version = "1.0.1"
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
 
 [[deps.NonlinearSolve]]
-deps = ["ArrayInterfaceCore", "FiniteDiff", "ForwardDiff", "IterativeSolvers", "LinearAlgebra", "RecursiveArrayTools", "RecursiveFactorization", "Reexport", "SciMLBase", "Setfield", "StaticArrays", "UnPack"]
-git-tree-sha1 = "a754a21521c0ab48d37f44bbac1eefd1387bdcfc"
+deps = ["ArrayInterfaceCore", "FiniteDiff", "ForwardDiff", "LinearAlgebra", "RecursiveArrayTools", "Reexport", "SciMLBase", "Setfield", "StaticArrays", "UnPack"]
+git-tree-sha1 = "12ea26dc2d8d8f6773bccfe7e616b129b9705380"
 uuid = "8913a72c-1f9b-4ce2-8d82-65094dcecaec"
-version = "0.3.22"
+version = "0.3.23"
 
 [[deps.OffsetArrays]]
 deps = ["Adapt"]
@@ -1323,10 +1067,10 @@ uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "1.3.1"
 
 [[deps.Plots]]
-deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers", "GR", "GeometryBasics", "JSON", "LaTeXStrings", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "RelocatableFolders", "Requires", "Scratch", "Showoff", "SparseArrays", "Statistics", "StatsBase", "UUIDs", "UnicodeFun", "Unzip"]
-git-tree-sha1 = "e9cab2c5e3b7be152ad6241d2011718838a99a27"
+deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers", "GR", "JSON", "LaTeXStrings", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "RelocatableFolders", "Requires", "Scratch", "Showoff", "SparseArrays", "Statistics", "StatsBase", "UUIDs", "UnicodeFun", "Unzip"]
+git-tree-sha1 = "6062b3b25ad3c58e817df0747fc51518b9110e5f"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-version = "1.32.1"
+version = "1.33.0"
 
 [[deps.PoissonRandom]]
 deps = ["Random"]
@@ -1353,10 +1097,10 @@ uuid = "85a6dd25-e78a-55b7-8502-1745935b8125"
 version = "0.2.4"
 
 [[deps.PreallocationTools]]
-deps = ["Adapt", "ArrayInterfaceCore", "ForwardDiff", "ReverseDiff"]
-git-tree-sha1 = "ebe90ecfb31f1781a6da31a986036896e5847fb8"
+deps = ["Adapt", "ArrayInterfaceCore", "ForwardDiff"]
+git-tree-sha1 = "3953d18698157e1d27a51678c89c88d53e071a42"
 uuid = "d236fae5-4411-538c-8e31-a6e3d9e00b46"
-version = "0.4.3"
+version = "0.4.4"
 
 [[deps.Preferences]]
 deps = ["TOML"]
@@ -1446,12 +1190,6 @@ git-tree-sha1 = "256eeeec186fa7f26f2801732774ccf277f05db9"
 uuid = "ae5879a3-cd67-5da8-be7f-38c6eb64a37b"
 version = "1.1.1"
 
-[[deps.ReverseDiff]]
-deps = ["ChainRulesCore", "DiffResults", "DiffRules", "ForwardDiff", "FunctionWrappers", "LinearAlgebra", "LogExpFunctions", "MacroTools", "NaNMath", "Random", "SpecialFunctions", "StaticArrays", "Statistics"]
-git-tree-sha1 = "b8e2eb3d8e1530acb73d8949eab3cedb1d43f840"
-uuid = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
-version = "1.14.1"
-
 [[deps.Rmath]]
 deps = ["Random", "Rmath_jll"]
 git-tree-sha1 = "bf3188feca147ce108c76ad82c2792c57abe7b1f"
@@ -1485,10 +1223,10 @@ uuid = "476501e8-09a2-5ece-8869-fb82de89a1fa"
 version = "0.6.35"
 
 [[deps.SciMLBase]]
-deps = ["ArrayInterfaceCore", "CommonSolve", "ConstructionBase", "Distributed", "DocStringExtensions", "FunctionWrappersWrappers", "IteratorInterfaceExtensions", "LinearAlgebra", "Logging", "Markdown", "RecipesBase", "RecursiveArrayTools", "StaticArraysCore", "Statistics", "Tables"]
-git-tree-sha1 = "92bd64f7d216d266103560f157744257c1caf9b7"
+deps = ["ArrayInterfaceCore", "CommonSolve", "ConstructionBase", "Distributed", "DocStringExtensions", "FunctionWrappersWrappers", "IteratorInterfaceExtensions", "LinearAlgebra", "Logging", "Markdown", "Preferences", "RecipesBase", "RecursiveArrayTools", "StaticArraysCore", "Statistics", "Tables"]
+git-tree-sha1 = "8c7acbc1a974db5f533b59ab74b69042fa05b002"
 uuid = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
-version = "1.55.0"
+version = "1.57.0"
 
 [[deps.Scratch]]
 deps = ["Dates"]
@@ -1564,9 +1302,9 @@ version = "0.7.6"
 
 [[deps.StaticArrays]]
 deps = ["LinearAlgebra", "Random", "StaticArraysCore", "Statistics"]
-git-tree-sha1 = "dfec37b90740e3b9aa5dc2613892a3fc155c3b42"
+git-tree-sha1 = "efa8acd030667776248eabb054b1836ac81d92f0"
 uuid = "90137ffa-7385-5640-81b9-e52037218182"
-version = "1.5.6"
+version = "1.5.7"
 
 [[deps.StaticArraysCore]]
 git-tree-sha1 = "ec2bd695e905a3c755b33026954b119ea17f2d22"
@@ -1612,12 +1350,6 @@ deps = ["ArrayInterface", "CloseOpenIntervals", "IfElse", "LayoutPointers", "Man
 git-tree-sha1 = "ac730bd978bf35f9fe45daa0bd1f51e493e97eb4"
 uuid = "7792a7ef-975c-4747-a70f-980b88e8d1da"
 version = "0.3.15"
-
-[[deps.StructArrays]]
-deps = ["Adapt", "DataAPI", "StaticArraysCore", "Tables"]
-git-tree-sha1 = "8c6ac65ec9ab781af05b08ff305ddc727c25f680"
-uuid = "09ab397b-f2b6-538f-b94a-2f83cf4a842a"
-version = "0.6.12"
 
 [[deps.SuiteSparse]]
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
@@ -1728,9 +1460,9 @@ version = "0.2.0"
 
 [[deps.VectorizationBase]]
 deps = ["ArrayInterface", "CPUSummary", "HostCPUFeatures", "IfElse", "LayoutPointers", "Libdl", "LinearAlgebra", "SIMDTypes", "Static"]
-git-tree-sha1 = "05be19531ae910fb482db2d4c45e1aa1cde50560"
+git-tree-sha1 = "9765c9389978f4c5a2c9c25dce4cef7c0f51dce3"
 uuid = "3d5dd08c-fd9d-11e8-17fa-ed2836048c2f"
-version = "0.21.47"
+version = "0.21.48"
 
 [[deps.VertexSafeGraphs]]
 deps = ["Graphs"]
@@ -1966,39 +1698,18 @@ version = "1.4.1+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═5699b85e-0f55-11ed-0865-9fbd5aa9097c
-# ╟─5ba9125c-262e-4a31-9515-109463527031
-# ╟─d7d2e805-781f-4b07-9adc-9c75acc66bc9
-# ╟─68a95dca-e8ce-4253-a068-1cd2cfac893a
-# ╟─9ec881e2-3a6f-47c6-a900-40376f929f3f
-# ╠═dbe0b543-3c51-4732-88ec-364064088380
-# ╟─373f650b-86d1-45ca-aad8-613940e2f788
-# ╠═a1ce46ff-f4e1-4a84-b1d0-31c67cc7523a
-# ╠═73d3bf5e-8626-4a7f-9404-a953c59d5989
-# ╠═ff6ebf08-69b3-4d3c-82b4-af70f12ddd30
-# ╠═cd6203d6-dd50-4d03-9ac1-0400e124b1e0
-# ╟─ea76cc50-1005-4902-87f2-85ba43525134
-# ╠═caba579c-5cce-42c0-8293-19b3bbe8a1fa
-# ╠═8a05aeea-be56-4b46-a42c-6356c2de73ed
-# ╟─239075d6-fde1-4794-825c-1bd4e9380681
-# ╠═c21a9f39-518c-4fbc-af2f-db27e33a2d1d
-# ╠═cb7222c4-4530-4c25-9123-894a0ae7a184
-# ╠═10cfbe02-510c-4d52-9133-d51adb26deb2
-# ╟─0515150e-6e13-4cc4-b68f-61708a3cf4f4
-# ╠═9da98062-6c3b-49e3-8b96-92dcc89769c7
-# ╠═316fd5e6-f050-46db-8239-a39ee7a2a593
-# ╠═e3687e0a-450a-4bce-8520-7e613d526490
-# ╟─a5fa4f83-3169-4268-b816-7b8fe2c5333a
-# ╠═35f58720-56f4-4cce-adab-95414062f3d0
-# ╠═e606d381-d37e-414d-9c68-c65205e61873
-# ╠═ecd0f578-2614-4473-af25-0db650688a06
-# ╠═29da6749-52fb-4881-88d8-556613629dac
-# ╟─c0924df8-3a8f-4923-b341-e77e692fcb84
-# ╠═84d5d1f3-3592-470b-a75d-c210cbfd8171
-# ╟─70eb4406-cb25-4d69-abbb-ab2555b5ec1f
-# ╠═9bef5920-c2bd-47d1-a856-f6bcc46ae9f7
-# ╟─7a78309c-1a30-40fd-8750-813e617a1622
-# ╠═a52a3642-fc32-4ffc-94e4-d054e54e7ea0
-# ╟─8d702baa-8fb4-4ef4-ad31-b10404243a2e
+# ╠═8742a142-351f-11ed-0ddf-73a85f33dcf8
+# ╠═f9147cd8-96cd-4c2a-b697-a7a23f56cefc
+# ╠═d25c5c7c-ecff-4977-a82a-9ee622185b06
+# ╠═7b23999e-3fb9-4843-82cf-751d760bc4d5
+# ╠═2839015a-1b64-47da-bf3d-448a8bf7ba98
+# ╠═71a07232-9a8e-48fc-be41-0702c45263e8
+# ╠═968b5c2d-f9de-4ede-a39e-9266e3492261
+# ╠═68b2297d-1f00-42ec-a33b-ceca1a34e836
+# ╠═dad489ae-e94b-47e5-b945-78676068beb0
+# ╠═9e5ef700-7857-46cd-b79b-0d7b36295052
+# ╠═318c53db-fa4b-429f-a31e-f8255f88fb40
+# ╠═17da1b40-99f6-4cca-b496-c698375bb4fa
+# ╠═2d9a3464-a373-463d-883f-c9c82fdc6b05
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.9
+# v0.19.11
 
 using Markdown
 using InteractiveUtils
@@ -78,11 +78,6 @@ animate(solCuerpos,idxs=[(i,i+1, i+2) for i in 1:6:25, fps=5])
 # ╔═╡ 3f2ccd6a-b313-4eea-b659-fbb5ba1c4764
 500000^3
 
-# ╔═╡ a1dce34b-657d-4946-a960-ceb6ac83d15c
-begin
-	datoInicialEspacial = float.(posVel)
-end
-
 # ╔═╡ 644dc99d-fa82-45e1-8514-980f78417e69
 begin
 	dist = 100000 # 100 km de distancia a la orbita del planeta centrico
@@ -140,6 +135,11 @@ begin
 	pInfo = [constanteGravitacional, masas, minDis]
 end
 
+# ╔═╡ a1dce34b-657d-4946-a960-ceb6ac83d15c
+begin
+	datoInicialEspacial = float.(posVel)
+end
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -155,7 +155,7 @@ Plots = "~1.32.1"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.7.2"
+julia_version = "1.7.3"
 manifest_format = "2.0"
 
 [[deps.Adapt]]
@@ -449,7 +449,7 @@ uuid = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 version = "0.9.1"
 
 [[deps.Downloads]]
-deps = ["ArgTools", "LibCURL", "NetworkOptions"]
+deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 
 [[deps.DualNumbers]]
@@ -509,6 +509,9 @@ deps = ["LinearAlgebra"]
 git-tree-sha1 = "cfd9d0dbb947181644c00bd7e988b4bb30a5b2a5"
 uuid = "29a986be-02c6-4525-aec4-84b980013641"
 version = "1.2.6"
+
+[[deps.FileWatching]]
+uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[deps.FillArrays]]
 deps = ["LinearAlgebra", "Random", "SparseArrays", "Statistics"]
@@ -1723,7 +1726,6 @@ version = "1.4.1+0"
 # ╠═1efd1ba2-2f8f-11ed-35be-21ee92b1d1ae
 # ╠═27c072bb-4b33-4fed-aa14-86a94a9de6c2
 # ╠═644dc99d-fa82-45e1-8514-980f78417e69
-# ╠═a1dce34b-657d-4946-a960-ceb6ac83d15c
 # ╠═37d50a58-7e5a-4a27-b8e4-a664d0d80997
 # ╠═ff334e98-372c-46a6-a81a-390b10b015fe
 # ╠═8a5ef6b2-670f-4bd0-9b1a-26a3b3748a07

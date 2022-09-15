@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.9
+# v0.19.11
 
 using Markdown
 using InteractiveUtils
@@ -294,7 +294,7 @@ end
 
 # ╔═╡ d1ede4d9-0d7b-43c2-aeb7-cf45a7f1d044
 begin
-	cantFrames = 100
+	cantFrames = 500
 	rangoTiempo = tIni: (tFin-tIni)/cantFrames : tFin
 	vectorTiempos = zeros(cantFrames)
 	for i in 1:cantFrames
@@ -317,7 +317,7 @@ begin
 end
 
 # ╔═╡ 439d5166-361a-4ece-9e0d-d46e3fcb8354
-mp4(animacion ) #"videoParticulas.mp4"
+mp4(animacion, "videoParticulasLindo.mp4" ) #"videoParticulas.mp4"
 
 # ╔═╡ a5fa4f83-3169-4268-b816-7b8fe2c5333a
 md"""###### Ejercicio 5:
@@ -439,7 +439,7 @@ Plots = "~1.33.0"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.7.2"
+julia_version = "1.7.3"
 manifest_format = "2.0"
 
 [[deps.Adapt]]
@@ -733,7 +733,7 @@ uuid = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 version = "0.9.1"
 
 [[deps.Downloads]]
-deps = ["ArgTools", "LibCURL", "NetworkOptions"]
+deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 
 [[deps.DualNumbers]]
@@ -779,9 +779,12 @@ version = "0.3.2"
 
 [[deps.FastLapackInterface]]
 deps = ["LinearAlgebra"]
-git-tree-sha1 = "cfd9d0dbb947181644c00bd7e988b4bb30a5b2a5"
+git-tree-sha1 = "14a6f7a21125f715d935fe8f83560ee833f7d79d"
 uuid = "29a986be-02c6-4525-aec4-84b980013641"
-version = "1.2.6"
+version = "1.2.7"
+
+[[deps.FileWatching]]
+uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[deps.FillArrays]]
 deps = ["LinearAlgebra", "Random", "SparseArrays", "Statistics"]
