@@ -13,63 +13,6 @@ end
 # ╔═╡ 27c072bb-4b33-4fed-aa14-86a94a9de6c2
  distEuclideana(x1,y1,z1,x2,y2,z2) = sqrt((x1-x2)^2+(y1-y2)^2+(z1-z2)^2)
 
-# ╔═╡ 644dc99d-fa82-45e1-8514-980f78417e69
-begin
-	dist = 100000 # 100 km de distancia a la orbita del planeta centrico
-	xIni1,yIni1,zIni1 = [0.0,0.0,0.0]
-	xIni2,yIni2,zIni2 = [dist,0,0.0]
-	xIni3,yIni3,zIni3 = [0,dist,0.0]
-	xIni4,yIni4,zIni4 = [-dist,0,0]
-	xIni5,yIni5,zIni5 = [0,-dist,0]
-	
-	pos1 = xIni1,yIni1,zIni1
-	pos2 = xIni2,yIni2,zIni2
-	pos3 = xIni3,yIni3,zIni3
-	pos4 = xIni4,yIni4,zIni4
-	pos5 = xIni5,yIni5,zIni5
-	posiciones = pos1, pos2, pos3, pos4, pos5
-
-	velocidadGiro = 300 # metros x seg
-	velocidadCaida = 0.001
-	
-	xVelIni1, yVelIni1, zVelIni1 = 0,-0., velocidadCaida
-	xVelIni2, yVelIni2, zVelIni2 = 0,velocidadGiro, velocidadCaida
-	xVelIni3, yVelIni3, zVelIni3 = -velocidadGiro,0,velocidadCaida
-	xVelIni4, yVelIni4, zVelIni4 = 0.0,-velocidadGiro, velocidadCaida
-	xVelIni5, yVelIni5, zVelIni5 = velocidadGiro,0., velocidadCaida
-	
-	vel1 = xVelIni1, yVelIni1, zVelIni1
-	vel2 = xVelIni2, yVelIni2, zVelIni2
-	vel3 = xVelIni3, yVelIni3, zVelIni3
-	vel4 = xVelIni4, yVelIni4, zVelIni4
-	vel5 = xVelIni5, yVelIni5, zVelIni5
-	velocidades = vel1, vel2, vel3, vel4, vel5
-
-	masa1 = 10000000000. #10 mil millones de kilos
-	masa2 = 10000000000.
-	masa3 = 10000000000.
-	masa4 = 10000000000
-	masa5 = 10000000000
-	masas = masa1, masa2, masa3, masa4, masa5
-	
-	constanteGravitacional = 0.4982 
-	
-	posVel = []
-	for i in 1:length(posiciones)
-		for j in 1:3
-			push!(posVel, posiciones[i][j])
-		end
-		for j in 1:3
-			push!(posVel, velocidades[i][j])
-		end
-		
-	end
-	
-	datoInicialEspacial = float.(posVel)
-	minDis = 10
-	pInfo = [constanteGravitacional, masas, minDis]
-end
-
 # ╔═╡ 37d50a58-7e5a-4a27-b8e4-a664d0d80997
 function nCuerpos(du,u,pInfo,t)
 	G, masas, minDis = pInfo
@@ -134,6 +77,68 @@ animate(solCuerpos,idxs=[(i,i+1, i+2) for i in 1:6:25, fps=5])
 
 # ╔═╡ 3f2ccd6a-b313-4eea-b659-fbb5ba1c4764
 500000^3
+
+# ╔═╡ a1dce34b-657d-4946-a960-ceb6ac83d15c
+begin
+	datoInicialEspacial = float.(posVel)
+end
+
+# ╔═╡ 644dc99d-fa82-45e1-8514-980f78417e69
+begin
+	dist = 100000 # 100 km de distancia a la orbita del planeta centrico
+	xIni1,yIni1,zIni1 = [0.0,0.0,0.0]
+	xIni2,yIni2,zIni2 = [dist,0,0.0]
+	xIni3,yIni3,zIni3 = [0,dist,0.0]
+	xIni4,yIni4,zIni4 = [-dist,0,0]
+	xIni5,yIni5,zIni5 = [0,-dist,0]
+	
+	pos1 = xIni1,yIni1,zIni1
+	pos2 = xIni2,yIni2,zIni2
+	pos3 = xIni3,yIni3,zIni3
+	pos4 = xIni4,yIni4,zIni4
+	pos5 = xIni5,yIni5,zIni5
+	posiciones = pos1, pos2, pos3, pos4, pos5
+
+	velocidadGiro = 300 # metros x seg
+	velocidadCaida = 0.001
+	
+	xVelIni1, yVelIni1, zVelIni1 = 0,-0., velocidadCaida
+	xVelIni2, yVelIni2, zVelIni2 = 0,velocidadGiro, velocidadCaida
+	xVelIni3, yVelIni3, zVelIni3 = -velocidadGiro,0,velocidadCaida
+	xVelIni4, yVelIni4, zVelIni4 = 0.0,-velocidadGiro, velocidadCaida
+	xVelIni5, yVelIni5, zVelIni5 = velocidadGiro,0., velocidadCaida
+	
+	vel1 = xVelIni1, yVelIni1, zVelIni1
+	vel2 = xVelIni2, yVelIni2, zVelIni2
+	vel3 = xVelIni3, yVelIni3, zVelIni3
+	vel4 = xVelIni4, yVelIni4, zVelIni4
+	vel5 = xVelIni5, yVelIni5, zVelIni5
+	velocidades = vel1, vel2, vel3, vel4, vel5
+
+	masa1 = 10000000000. #10 mil millones de kilos
+	masa2 = 10000000000.
+	masa3 = 10000000000.
+	masa4 = 10000000000
+	masa5 = 10000000000
+	masas = masa1, masa2, masa3, masa4, masa5
+	
+	constanteGravitacional = 0.4982 
+	
+	posVel = []
+	for i in 1:length(posiciones)
+		for j in 1:3
+			push!(posVel, posiciones[i][j])
+		end
+		for j in 1:3
+			push!(posVel, velocidades[i][j])
+		end
+		
+	end
+	
+	datoInicialEspacial = float.(posVel)
+	minDis = 10
+	pInfo = [constanteGravitacional, masas, minDis]
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1718,6 +1723,7 @@ version = "1.4.1+0"
 # ╠═1efd1ba2-2f8f-11ed-35be-21ee92b1d1ae
 # ╠═27c072bb-4b33-4fed-aa14-86a94a9de6c2
 # ╠═644dc99d-fa82-45e1-8514-980f78417e69
+# ╠═a1dce34b-657d-4946-a960-ceb6ac83d15c
 # ╠═37d50a58-7e5a-4a27-b8e4-a664d0d80997
 # ╠═ff334e98-372c-46a6-a81a-390b10b015fe
 # ╠═8a5ef6b2-670f-4bd0-9b1a-26a3b3748a07
