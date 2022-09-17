@@ -94,17 +94,13 @@ end
 # ╔═╡ 968b5c2d-f9de-4ede-a39e-9266e3492261
 begin
 
-	n = 5
-	limiteIni = 100
-	velIni = 0.05
-	minMasa = 1
-	maxMasa = 3
-	minDis = 1
+	n = 10
+	limiteIni = 1000
+	velIni = 0.8
+	minMasa = 10
+	maxMasa = 80
+	minDis = 5
 	constanteGravitacional = 0.4982 
-	tIni = 0
-	tFin = 2000
-	
-	tspan = [tIni,tFin]
 	masas = generarMasasAlAzar(n, minMasa, maxMasa)
 	
 	posVel = generarPosicionesVelocidadesAlAzar(n, limiteIni, velIni)
@@ -115,17 +111,21 @@ end
 
 # ╔═╡ 68b2297d-1f00-42ec-a33b-ceca1a34e836
 begin
+	tIni = 0
+	tFin = 9000
+	
+	tspan = [tIni,tFin]
 	Pcuerpos  = ODEProblem(nCuerpos,datoInicialEspacial,tspan,pInfo)
 	solCuerpos = solve(Pcuerpos)
 	
 end
 
 # ╔═╡ dad489ae-e94b-47e5-b945-78676068beb0
-plot(solCuerpos,idxs=[(i,i+1,i+2) for i in 1:6:25], labels= ["Planeta 1" "Planeta 2" "Planeta 3" "Planeta 4" "Planeta 5"])
+plot(solCuerpos,idxs=[(i,i+1,i+2) for i in 1:6:6*n], labels= ["Planeta 1" "Planeta 2" "Planeta 3" "Planeta 4" "Planeta 5" "Planeta 6" "Planeta 7" "Planeta 8" "Planeta 9" "Planeta 10"])
 
 # ╔═╡ 9e5ef700-7857-46cd-b79b-0d7b36295052
 begin
-	cantFrames = 500
+	cantFrames = 450
 	rangoTiempo = tIni: (tFin-tIni)/cantFrames : tFin
 	vectorTiempos = zeros(cantFrames)
 	for i in 1:cantFrames
@@ -136,21 +136,21 @@ begin
 end
 
 # ╔═╡ 318c53db-fa4b-429f-a31e-f8255f88fb40
-L = limiteIni*1.5
+L = limiteIni*1
 
 # ╔═╡ 17da1b40-99f6-4cca-b496-c698375bb4fa
 begin
 	animacion = @animate for i in 1:length(solCuerpos2[1,:])
-		difPared = 10
+		difPared = limiteIni/2
 		plot(xlims=(-difPared,L+difPared),ylims=(-difPared,L+difPared), zlims=(-difPared,L+difPared))
 		for j in 1:6:(n)*6
-			scatter!([solCuerpos2[j,i]], [solCuerpos2[j+1,i]], [solCuerpos2[j+2,i]], markersize=2*masas[Int(1+(j-1)/6)], legend=:none)
+			scatter!([solCuerpos2[j,i]], [solCuerpos2[j+1,i]], [solCuerpos2[j+2,i]], markersize=0.15*masas[Int(1+(j-1)/6)], legend=:none)
 		end
 	end
 end
 
 # ╔═╡ 2d9a3464-a373-463d-883f-c9c82fdc6b05
-mp4(animacion, "planetasmoviendoLindo.mp4")
+mp4(animacion) #"planetas2.mp4"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
