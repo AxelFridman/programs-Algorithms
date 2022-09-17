@@ -52,11 +52,11 @@ border-left: 5px solid #eee;
 ```
 ```{r setup2, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-require(klippy)
+#require(klippy)
 ```
 
-```{r klippy, echo=FALSE, include=TRUE}
-klippy::klippy()
+```{r, echo=FALSE, include=TRUE}
+#klippy::klippy()
 
 # Me fijo si estos paquetes están instalados y si no, los instalo
 packages <- c("cowplot", "readr", "ggplot2", "dplyr", "lavaan", "Hmisc",
@@ -134,7 +134,8 @@ g = ggplot(data=dfCategoricas, aes(x=categ, y=valor, fill=siono)) +
   geom_bar(stat="identity", position=position_dodge(), show.legend = FALSE) + 
   xlab("Condicion") +
   ylab("Porcentaje que tuvo un ACV") +
-  
+  labs(title = "Grafico porcentajes de ACV por cada grupo") +
+  labs(caption = "Figura 1")+
   geom_text(aes(label=c("Casadx","Si","Si","Urbana","No Casadx","No","No","Rural")), vjust=1.6, color="white",
             position = position_dodge(0.9), size=3.5) 
 ```
@@ -144,6 +145,7 @@ g = ggplot(data=dfCategoricas, aes(x=categ, y=valor, fill=siono)) +
 ```{r echo=FALSE, fig.height=5, fig.width=5, message=FALSE, warning=FALSE}
 g
 ```
+
 Como el dataset cuenta con muchas variables categóricas y numéricas, decidí primero explorar algunas de las categorías. Lo que se ve es por cada categoría, Casado, no casado, sin enfermedad del corazón, con enfermedad del corazón etc, la proporción de gente en ese subgrupo que tuvo un ACV. 
 Es decir la barra de más de la derecha nos mide el total de gente que tuvo un acv y vive en zona urbana dividido la cantidad de gente que vive en una zona urbana.
 Si bien no podemos asignarle causalidad, algunas relaciones son más fuertes que otras, la residencia no parece afectar tanto, mientras que tener una enfermedad cardiaca tiene una correlación muy fuerte con tener acv.
@@ -161,18 +163,18 @@ g2 = ggplot(df, aes(x = age, y = stroke, fill = gender)) +
   xlab("Edad en años") +
   ylab("ACV (0 = no, 1 = si)") +
 
-  labs(title = 'Distribuciones en edad')
+  labs(title = 'Distribuciones en edad segun ACV y genero') +
+  labs(caption = "Figura 2")
 ```
 ### Output {.active}
 ```{r message=FALSE, warning=FALSE}
 g2
 ```
+
 Aca hay mucho para analizar, a la izquierda las distribuciones en edad de la gente que no tuvo acv, a la derecha quienes si.
 Lo primero que voy a marcar es que la gente que tiene acv es en su mayoría personas mayores, y que la edad ayuda determinantemente para analizar la probabilidad de tener acv. En cuanto a la posible bimodalidad de la distribución, no encontré ninguna fuente que hable del tema así que podría ser una particularidad de estos datos.
 Lo segundo es que las personas que tuvieron un acv joven son todas mujeres! Lamentablemente este es un fenómeno conocido y ya reportado por el "National Heart Lung and Blood institute".
   
-https://www.nhlbi.nih.gov/news/2022/younger-women-may-be-greater-risk-stroke-according-large-review
-https://www.everydayhealth.com/stroke/younger-women-are-having-more-strokes/
 
 ## Distribuicion en edad de personas alguna vez casadas {.tabset .tabset-fade}
 
@@ -184,15 +186,21 @@ g3 = ggplot(df, aes(x = age, y = ever_married, fill = gender)) +
   geom_density_ridges(scale=0.95, alpha=0.5,rel_min_height = 0.001) +
   xlab("Edad en años") +
   ylab("Alguna vez casados") +
-
-  labs(title = 'Distribuciones en edad')
+  labs(caption = "Figura 3") +
+  labs(title = 'Distribuciones en edad segun si estuvieron casados')
 ```
 ### Output {.active}
 ```{r message=FALSE, warning=FALSE}
 g3
 ```
 
-Y volviendo a lo mencionado en el primer gráfico, haber estado casado está completamente relacionado con la edad, y como vimos en el gráfico 2, la edad lo está a su vez con el riesgo de tener acv. Casarse NO causa necesariamente un accidente cardiovascular.
+Y volviendo a lo mencionado en la figura 1, haber estado casado está completamente relacionado con la edad, y como vimos en la figura 2, la edad lo está a su vez con el riesgo de tener acv. Casarse NO causa necesariamente un accidente cardiovascular.
 
 Muchas gracias por leer. 
+
+Fuentes:
+
+https://www.nhlbi.nih.gov/news/2022/younger-women-may-be-greater-risk-stroke-according-large-review
+
+https://www.everydayhealth.com/stroke/younger-women-are-having-more-strokes/
 
