@@ -8,7 +8,9 @@ using InteractiveUtils
 import Pkg; Pkg.add("Plots")
 
 # ╔═╡ 0ee9e42e-deea-43a3-9b1d-1911a07e7599
-using Plots,DifferentialEquations
+begin 
+	using Plots, DifferentialEquations
+end
 
 # ╔═╡ 6dea5ecf-6a70-4bcf-8786-ca11a0309913
 begin
