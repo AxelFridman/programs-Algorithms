@@ -1,0 +1,9 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+mean(rnorm(100000,0,1000))
+```
+

@@ -1,0 +1,29 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(usethis)
+library(gitcreds)
+library(credentials)
+library(gert)
+library(gh)
+```
+```{r}
+use_git_config(user.name = "Axel Fridman", user.email = "fridman.axel@gmail.com" )
+```
+
+```{r}
+create_github_token()
+```
+```{r}
+gitcreds_set()
+```
+
+```{r}
+gitcreds_get()
+```
+```{r}
+
+```
+
