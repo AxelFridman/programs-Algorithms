@@ -5,6 +5,57 @@ output: html_notebook
 ```{r}
 library(ggplot2)
 ```
+
+```{r}
+bootstrap1 = function(muestra, cantResampleo, funcionEstimadora){
+  estimadores = rep(0, cantResampleo)
+  for (i in (1:cantResampleo)){
+    muestraNueva = sample(muestra, length(muestra), replace = T)
+    estimadores[i] = funcionEstimadora(muestraNueva)
+  }
+  return(estimadores)
+}
+```
+```{r}
+standarError = function(muestra){
+  media = mean(muestra)
+  sumaCuadrada = 0
+  for (i in (1:length(muestra))){
+    sumaCuadrada = sumaCuadrada + (muestra[i]-media)^2
+  }
+  sumaCuadrada = sumaCuadrada/length(muestra)
+  return(sqrt(sumaCuadrada))
+}
+```
+
+```{r}
+muestra = c(1,0.2,0.3,0.4,0.5,0.6,0.7)
+estimadores = bootstrap1(muestra, 1000, mean)
+```
+
+```{r}
+sd(estimadores)
+sdTita = standarError(estimadores)
+```
+```{r}
+estMomentoFuncion5 = function(muestra){
+  a = 1/mean(muestra) - 1
+  return(1/a)
+}
+```
+```{r}
+tita = estMomentoFuncion5(estimadores)
+```
+
+```{r}
+#METODO 1
+c(tita + qnorm(0.025) * sdTita, tita - qnorm(0.025) * sdTita)
+```
+
+```{r}
+#METODO 2
+c(quantile(estimadores,0.025),quantile(estimadores,0.975))
+```
 ```{r}
 df = read.csv("Debernardi.csv")
 View(df)
@@ -149,6 +200,116 @@ p6 = ggplot(dfnorm, aes(x = shneid)) +
 p7 = ggplot(dfnorm, aes(x = gamma)) + 
   geom_area(stat = "bin", bins=100)
 p1 + p2 + p3+p4+p5+p6+p7
+```
+```{r}
+crearDataset = function (cantVariables, cantObservaciones, parametro=1){
+  df = data.frame(1:cantObservaciones)
+  colnames(df)=c("tipo")
+  nom = c("tipo")
+  for (i in 1:cantVariables) {
+    df[i+1] = rnorm(cantObservaciones)
+    nom[i+1]=paste("var",i,sep = "")
+  }
+  colnames(df)=nom
+  df$tipo=rep(c(0,1,2),cantObservaciones/3)
+  return(df)
+}
+```
+```{r}
+maximaCorrelacion = function (cantVariables, cantObservaciones, parametro=1){
+  res <- cor(df)
+  diag(res) = 0
+  resMod = abs(res)
+  cuales = which.max(abs(res))
+  return(c(max(res), cuales) )
+}
+```
+```{r}
+dfdiferencia = function(df){
+  df3 = (df[df$tipo==2,] - df[df$tipo==1,])
+  df3$tipo = 0
+return(df3)
+}
+```
+
+```{r}
+variableMasSignificativaTtest = function(df){
+  return(c(max(apply(df, 2, mean)), max(apply(df, 2, sd))))
+}
+```
+```{r}
+variablesSignificativas= function(df, dfdif, nivelConfianza){
+  i = 1
+  significativas = c()
+  cuanSignificativas = c()
+  for (var in 2:ncol(df)) {
+    testcito = t.test(
+    x           = df[,var],
+    y           = dfdif[,var],
+    alternative = "two.sided",
+    mu          = 0,
+    var.equal   = TRUE,
+    conf.level  = nivelConfianza
+  )
+  #¨print(testcito$p.value)
+  if(testcito$p.value<(1-nivelConfianza)){
+    significativas[i]=var
+    cuanSignificativas[i] = testcito$p.value
+    i = i+1
+    }
+  }
+  dfsig = data.frame(significativas)
+  dfsig["pvalor"] = cuanSignificativas
+  colnames(dfsig) = c("variablesSignificativas", "pValor")
+  return(dfsig)
+}
+```
+```{r}
+realizar1exp = function(nVar, nObs, nivelConfianza){
+  df= crearDataset(cantVar, cantObs)
+  df1 = df[df$tipo==1,]
+  df2 = df[df$tipo==2,]
+  s =variablesSignificativas(df1, df2, nivelConfianza)
+  return(length(s$variablesSignificativas))
+  
+}
+```
+¨
+```{r}
+realizarKexperimentos = function(nVar, nObs, nivelConfianza, k){
+  cantVarSig = 0
+  for (i in 1:k) {
+    cantVarSig = cantVarSig + realizar1exp(nVar, nObs, nivelConfianza)
+  }
+  return(cantVarSig/k)
+  }
+```
+```{r}
+cantVar = 100
+cantObs = 120
+nivelConfianza = 0.99
+k = 50
+realizarKexperimentos(cantVar,cantObs, nivelConfianza, k)
+
+```
+
+
+```{r}
+df= crearDataset(cantVar, cantObs)
+dfdif = dfdiferencia(df)
+df1 = df[df$tipo==1,]
+df2 = df[df$tipo==2,]
+variableMasSignificativaTtest(dfdif)
+#s = maximaCorrelacion(df)
+```
+
+```{r}
+s =variablesSignificativas(df1, df2, nivelConfianza)
+s
+```
+
+```{r}
+shapiro.test(dfdif$var1)
 ```
 
 
