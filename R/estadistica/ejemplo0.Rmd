@@ -5,6 +5,52 @@ output: html_notebook
 ```{r}
 library(ggplot2)
 ```
+```{r}
+df = read.csv("Debernardi.csv")
+diag1 = df[df$diagnosis==1,]
+diag2 = df[df$diagnosis==2,]
+diag3 = df[df$diagnosis==3,]
+```
+```{r}
+hist(diag1$LYVE1)
+```
+```{r}
+hist(diag2$LYVE1)
+```
+```{r}
+hist(diag3$LYVE1)
+```
+```{r}
+density(df$LYVE1)
+p <- ggplot(df, aes(y=as.factor(diagnosis), x=LYVE1, fill=diagnosis)) + 
+  geom_violin()
+p
+```
+```{r}
+funcionAcumuladaEmpirica = function(datos){
+  N = length(datos)
+  datos = sort(datos)
+  Xacumulada = c()
+  Yacumulada = c()
+  suma = 0
+  for (i in 1:N){
+    Xacumulada = append(Xacumulada, datos[i])
+    Yacumulada = append(Yacumulada, suma)
+    suma = suma + 1/N
+    Xacumulada = append(Xacumulada, datos[i])
+    Yacumulada = append(Yacumulada, suma)
+  }
+  return(list(v1 = Xacumulada, v2 = Yacumulada))
+}
+```
+```{r}
+asd = funcionAcumuladaEmpirica(diag1$LYVE1)
+x = asd$v1
+y = asd$v2
+```
+```{r}
+plot(x,y,type="l")
+```
 
 ```{r}
 bootstrap1 = function(muestra, cantResampleo, funcionEstimadora){
