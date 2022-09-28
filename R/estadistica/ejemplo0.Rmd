@@ -21,7 +21,10 @@ hist(diag2$LYVE1)
 hist(diag3$LYVE1)
 ```
 ```{r}
-density(df$LYVE1)
+plot(density(df$LYVE1, kernel = "gaussian"))
+```
+
+```{r}
 p <- ggplot(df, aes(y=as.factor(diagnosis), x=LYVE1, fill=diagnosis)) + 
   geom_violin()
 p
