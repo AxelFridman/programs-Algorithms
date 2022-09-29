@@ -14,8 +14,7 @@ macro bind(def, element)
     end
 end
 
-# ╔═╡ 6f7b7813-091b-427c-9023-d8d36b0edbf5
-
+# ╔═╡ f4d1876c-4007-11ed-2a21-7107f11812e2
 begin
 	using FFTW
 	using Random
@@ -26,103 +25,121 @@ begin
 	using DataFrames
 end
 
-# ╔═╡ 1091d0e4-3dae-11ed-2ff9-dbeda488e651
-xn = [0.5,0.2,0.10, 0.9, 0.5, 3.0]
+# ╔═╡ 2c54441e-33d4-4807-a2c1-5e34358d2b27
+function integrarConTrapecios(funcion, intervalo, cantPasos)
+	ini = intervalo[1]
+	fin = intervalo[2]
+	tamanioPaso = (fin-ini)/cantPasos
+	tspan = collect(ini:tamanioPaso:fin)
+	#return tspan
+	suma = 0
+	for i in 1:length(tspan)-1
+		valorIzq = funcion(tspan[i])
+		valorDer = funcion(tspan[i+1])
+		suma = suma + tamanioPaso * (valorIzq + valorDer)/2
+	end
+	return suma
+end
 
-# ╔═╡ 67e4fdad-6fc8-43cf-8680-397d91690dd8
-function hacerMatriznxn(xn)
-	e = 2.7182818284590
-	N = length(xn)
-	t = 0: 1/N : (N-1)/N
-	mat = (zeros(Complex,N,N))
+# ╔═╡ 3455f71a-d000-4533-9f51-a676aeaa8940
+begin
+	f(x) = sin(x)
+	fI(x) = -cos(x)
+	interv = [-15000, 15000]
+	pasos = (interv[2]-interv[1])*100 #100 pasitos por cada unidad
+	
+	e = 2.7182818284590452353602
+	f2(x) = e^(-(x^2))
+end
+
+# ╔═╡ d9d6c49f-73df-4be5-977e-282a1e7be639
+sqrt(pi) ≈  integrarConTrapecios(f2, interv, pasos)
+
+# ╔═╡ 79810c5e-82a2-4a67-b4b4-f95c99558527
+@bind N Slider(0:1:100)
+
+# ╔═╡ 3bf8a6d7-d86c-46ec-b0bf-e51465761e89
+begin
+	nucleoDirichet(t) = sin((N + 1/2)*t) / (2*sin(t/2))
+	tdir = -pi:0.01:pi
+end
+
+# ╔═╡ dbd3174e-338a-403b-8e51-7cb307bb7a3f
+plot(tdir, nucleoDirichet)
+
+# ╔═╡ e89707ac-c08d-495f-9584-07f0f1675cd1
+
+
+# ╔═╡ 7bafaf30-d824-4331-ae80-099e3d527b02
+begin
+	interv2 = [-pi, pi]
+	integrarConTrapecios(nucleoDirichet, interv2, 80001) /pi
+end
+
+# ╔═╡ 21887d8b-d836-4899-8944-6b798303f1af
+function seriesFourier(f, N)
+	an = []
+	bn = []
+	interv2 = [-pi, pi]
 	for i in 1:N
-		for j in 1:N
-			mat[i,j] = e^(-im*2*π*(j-1)*t[i])
-		end
+		fc(x) = f(x) * cos(i*x)
+		fs(x) = f(x) * sin(i*x)
+		integralfc = integrarConTrapecios(fc, interv2, 1000) /pi
+		integralfs = integrarConTrapecios(fs, interv2, 1000) /pi
+		an = push!(an, integralfc)
+		bn = push!(bn, integralfs)
 	end
-	return mat
+	a0 =  integrarConTrapecios(f, interv2, 1000) /pi
+	return(an,bn,a0)
 end
 
-# ╔═╡ 0b3abfd9-0cac-4ea4-b83a-3e82e23504de
-valoresRandXn = rand(Uniform(0, 100),100)
+# ╔═╡ c04048c9-0297-4e63-8116-175ec3444c82
+seriesFourier(f2, 100)
 
-# ╔═╡ e5569081-b2e2-472a-8033-7eb454e6652a
-begin
-mat = hacerMatriznxn(valoresRandXn)
-yn = mat * valoresRandXn
-fft(valoresRandXn) ≈ yn
-end
+# ╔═╡ 757f30da-7089-4a1d-a6f1-cf49e60f2e7f
+@bind N1 Slider(1:1:100)
 
-# ╔═╡ 672545c2-8d0e-431a-9d29-1e6b2cb263ea
-yn
-
-# ╔═╡ 900a218b-f177-4446-a475-ccea7723c155
-@bind w1 Slider(10:10:500)
-
-# ╔═╡ 17ae2b86-c38f-4a0e-a09c-7d355270fc33
-@bind w2 Slider(10:10:500)
-
-# ╔═╡ 494cf68e-e388-4712-a367-d32425cfe5ab
-valoresRandWn = rand(Uniform(160, 1800),10)
-
-# ╔═╡ b64ac132-6a1a-4aa3-a5c5-9e57c5514744
-begin
-	fs = 46.1*10^3
-	#w = 100
-	t = 0:1/fs:2.5
-	y1 = 0.1 * sin.(2*pi*w1*t)
-	#y2 = 0.1 * sin.(2*pi*valoresRandWn*t)
-
-	ynRand =[]
-	for i in 1:length(valoresRandWn)
-		yk = 0.1 * sin.(2*pi*valoresRandWn[i]*t)
-		push!(ynRand,yk)
+# ╔═╡ d411d2ad-c11f-42fb-8cc7-6b146ad7e66f
+function dameValoresConcretosDesdeSerie(x,an, bn,a0) #asume interv -pi a pi
+	suma= a0/2
+	for k in 1:length(an)
+		suma= suma + an[k]*cos(k*x) + bn[k]*sin(k*x)
 	end
-	
+	return suma
 end
 
-# ╔═╡ cb0823b5-dfe2-494a-9684-7804731f0a2e
-sum(ynRand)
-
-# ╔═╡ 8552cafe-6e62-4e56-8683-bd6d299d99c9
-ss = sum(ynRand)
-
-# ╔═╡ f74eead5-fab9-4335-80df-ba332e934308
-wavplay(ss,fs)
-
-# ╔═╡ fc572cdd-d6df-4afe-9386-4b071dda0be9
-plot(t,ss)
-
-# ╔═╡ d41ab265-3196-4bc4-a1f6-8635b228c0d7
-function dameNotas()
-	notasMusicales=zeros(12,9)
-	t1 = 2 .^collect(0:8)
-	t2 = (2^(1/12)) .^collect(0:11)
-	inicialDoOctavaCero = 16.3515978
-	for i in 1:12
-		for j in 1:9
-			notasMusicales[i,j] = t1[j]*t2[i]*inicialDoOctavaCero
-		end
-	end
-	return notasMusicales
-end
-
-# ╔═╡ c087372b-4151-4b20-ae44-008d9d9bd2f7
-notasMusicales = dameNotas()
-
-# ╔═╡ 1b483a08-9ddb-4812-8d3a-16098ed1ebf0
-LaEnCuarta = notasMusicales[10,5]
-
-# ╔═╡ 42c17aeb-0dc0-4b84-a4e8-94bd8b626a08
+# ╔═╡ 2fa8669e-05b3-4ae6-ad7e-aca884f5ea14
 begin
-	fs2 = 46.1*10^3
-	t2 = 0:1/fs:0.5
-	yLa = 0.1 * sin.(2*pi*LaEnCuarta*t)
-	
+	f4(x) =sin(x)*cos(x) + (1+ x^2)/(x-pi-1)
+	interv3 = -pi:1/1000:pi
+	an,bn,a0 = seriesFourier(f4, N1)
+	funcionEstimadaFourier(x) = dameValoresConcretosDesdeSerie(x, an,bn,a0) 
 end
 
-# ╔═╡ 085553f8-2151-4a4c-827c-1d53ed1577ac
-wavplay(yLa,fs)
+# ╔═╡ 47538d54-45e9-4e4f-8d31-5786140ffcf2
+
+
+# ╔═╡ 758d11a1-5e70-4bfc-971c-6fae2d6685fc
+begin 
+plot(f4, interv3)
+plot!(funcionEstimadaFourier, interv3)
+end
+
+# ╔═╡ 7fe0085e-9d3e-42dd-8a97-aeb15670ddec
+@bind N2 Slider(1:1:100)
+
+# ╔═╡ db285f52-3f78-47f1-af4b-1873f6f80f59
+begin
+	find(x) = Int(x>0)
+	an2,bn2,a02 = seriesFourier(find, N2)
+	funcionEstimadaFourier2(x) = dameValoresConcretosDesdeSerie(x, an2,bn2,a02) 
+end
+
+# ╔═╡ b881ed0f-2ef8-4580-af8d-376384f1336e
+begin 
+plot(find, interv3)
+plot!(funcionEstimadaFourier2, interv3)
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1251,24 +1268,24 @@ version = "1.4.1+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═1091d0e4-3dae-11ed-2ff9-dbeda488e651
-# ╠═6f7b7813-091b-427c-9023-d8d36b0edbf5
-# ╠═67e4fdad-6fc8-43cf-8680-397d91690dd8
-# ╠═0b3abfd9-0cac-4ea4-b83a-3e82e23504de
-# ╠═e5569081-b2e2-472a-8033-7eb454e6652a
-# ╠═672545c2-8d0e-431a-9d29-1e6b2cb263ea
-# ╠═900a218b-f177-4446-a475-ccea7723c155
-# ╠═17ae2b86-c38f-4a0e-a09c-7d355270fc33
-# ╠═494cf68e-e388-4712-a367-d32425cfe5ab
-# ╠═cb0823b5-dfe2-494a-9684-7804731f0a2e
-# ╠═b64ac132-6a1a-4aa3-a5c5-9e57c5514744
-# ╠═8552cafe-6e62-4e56-8683-bd6d299d99c9
-# ╠═f74eead5-fab9-4335-80df-ba332e934308
-# ╠═fc572cdd-d6df-4afe-9386-4b071dda0be9
-# ╠═d41ab265-3196-4bc4-a1f6-8635b228c0d7
-# ╠═c087372b-4151-4b20-ae44-008d9d9bd2f7
-# ╠═1b483a08-9ddb-4812-8d3a-16098ed1ebf0
-# ╠═42c17aeb-0dc0-4b84-a4e8-94bd8b626a08
-# ╠═085553f8-2151-4a4c-827c-1d53ed1577ac
+# ╠═f4d1876c-4007-11ed-2a21-7107f11812e2
+# ╠═2c54441e-33d4-4807-a2c1-5e34358d2b27
+# ╠═3455f71a-d000-4533-9f51-a676aeaa8940
+# ╠═d9d6c49f-73df-4be5-977e-282a1e7be639
+# ╠═79810c5e-82a2-4a67-b4b4-f95c99558527
+# ╠═3bf8a6d7-d86c-46ec-b0bf-e51465761e89
+# ╠═dbd3174e-338a-403b-8e51-7cb307bb7a3f
+# ╠═e89707ac-c08d-495f-9584-07f0f1675cd1
+# ╠═7bafaf30-d824-4331-ae80-099e3d527b02
+# ╠═21887d8b-d836-4899-8944-6b798303f1af
+# ╠═c04048c9-0297-4e63-8116-175ec3444c82
+# ╠═757f30da-7089-4a1d-a6f1-cf49e60f2e7f
+# ╠═d411d2ad-c11f-42fb-8cc7-6b146ad7e66f
+# ╠═2fa8669e-05b3-4ae6-ad7e-aca884f5ea14
+# ╠═47538d54-45e9-4e4f-8d31-5786140ffcf2
+# ╠═758d11a1-5e70-4bfc-971c-6fae2d6685fc
+# ╠═7fe0085e-9d3e-42dd-8a97-aeb15670ddec
+# ╠═db285f52-3f78-47f1-af4b-1873f6f80f59
+# ╠═b881ed0f-2ef8-4580-af8d-376384f1336e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
