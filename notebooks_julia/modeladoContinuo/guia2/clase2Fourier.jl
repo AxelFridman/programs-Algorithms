@@ -14,8 +14,7 @@ macro bind(def, element)
     end
 end
 
-# ╔═╡ 6f7b7813-091b-427c-9023-d8d36b0edbf5
-
+# ╔═╡ 5a5e5c4c-4588-11ed-1758-3da2e8e8450e
 begin
 	using FFTW
 	using Random
@@ -23,111 +22,100 @@ begin
 	using WAV
 	using Plots
 	using PlutoUI
-	using DataFrames
 end
 
-# ╔═╡ 1091d0e4-3dae-11ed-2ff9-dbeda488e651
-xn = [0.5,0.2,0.10, 0.9, 0.5, 3.0]
+# ╔═╡ 15c88b81-350f-4442-9b34-5fe82865f4e1
+@bind pasito Slider(0.001:0.001:0.125)
 
-# ╔═╡ 67e4fdad-6fc8-43cf-8680-397d91690dd8
-function hacerMatriznxn(xn)
-	e = 2.7182818284590
-	N = length(xn)
-	t = 0: 1/N : (N-1)/N
-	mat = (zeros(Complex,N,N))
-	for i in 1:N
-		for j in 1:N
-			mat[i,j] = e^(-im*2*π*(j-1)*t[i])
-		end
-	end
-	return mat
-end
+# ╔═╡ 272329ad-848e-421d-ad53-133a4294f6bd
+@bind w1 Slider(-10:0.1:10)
 
-# ╔═╡ 0b3abfd9-0cac-4ea4-b83a-3e82e23504de
-valoresRandXn = rand(Uniform(0, 100),100)
+# ╔═╡ ae169acf-df78-4bdf-ba4d-41b710a0c46d
+@bind w2 Slider(-10:0.1:10)
 
-# ╔═╡ e5569081-b2e2-472a-8033-7eb454e6652a
+# ╔═╡ df5caf34-3d51-401f-8e10-2df41eec7279
 begin
-mat = hacerMatriznxn(valoresRandXn)
-yn = mat * valoresRandXn
-fft(valoresRandXn) ≈ yn
+	f131(x) = sin(w1*2*pi*x)
+	f132(x) = sin(w2*2*pi*x)
+	grilla13 = 0:pasito:1
+	plot(grilla13, f131.(grilla13), label="frecuencia w1")
+	plot!(grilla13, f132.(grilla13), label="frecuencia w2")
 end
 
-# ╔═╡ 672545c2-8d0e-431a-9d29-1e6b2cb263ea
-yn
+# ╔═╡ 9caf14dc-09d6-4fd4-a7fd-b930f9094dd2
 
-# ╔═╡ 900a218b-f177-4446-a475-ccea7723c155
-@bind w1 Slider(10:10:500)
 
-# ╔═╡ 17ae2b86-c38f-4a0e-a09c-7d355270fc33
-@bind w2 Slider(10:10:500)
+# ╔═╡ 509d97a1-4e9b-4c16-93bb-ced99e81ca6f
+v1 = [1,2,3,4]
 
-# ╔═╡ 494cf68e-e388-4712-a367-d32425cfe5ab
-valoresRandWn = rand(Uniform(160, 1800),10)
+# ╔═╡ 8ee3fdc8-0bb2-4fec-88f8-073f56627428
+Int(floor(log(2,length(v1)))+1)
 
-# ╔═╡ b64ac132-6a1a-4aa3-a5c5-9e57c5514744
-begin
-	fs = 46.1*10^3
-	#w = 100
-	t = 0:1/fs:2.5
-	y1 = 0.1 * sin.(2*pi*w1*t)
-	#y2 = 0.1 * sin.(2*pi*valoresRandWn*t)
+# ╔═╡ 89092dff-b654-4af6-a668-c25f688269dc
+vNuevo = zeros(Int(2^floor(log(2,length(v1)))+2))
 
-	ynRand =[]
-	for i in 1:length(valoresRandWn)
-		yk = 0.1 * sin.(2*pi*valoresRandWn[i]*t)
-		push!(ynRand,yk)
+# ╔═╡ 33ddb3d5-dda3-4581-805b-da412fdd77c5
+function algoritmoFFT(v)
+	if(length(v)==1)
+		return v[1]
 	end
-	
-end
-
-# ╔═╡ cb0823b5-dfe2-494a-9684-7804731f0a2e
-sum(ynRand)
-
-# ╔═╡ 8552cafe-6e62-4e56-8683-bd6d299d99c9
-ss = sum(ynRand)
-
-# ╔═╡ f74eead5-fab9-4335-80df-ba332e934308
-wavplay(ss,fs)
-
-# ╔═╡ fc572cdd-d6df-4afe-9386-4b071dda0be9
-plot(t,ss)
-
-# ╔═╡ d41ab265-3196-4bc4-a1f6-8635b228c0d7
-function dameNotas()
-	notasMusicales=zeros(12,9)
-	t1 = 2 .^collect(0:8)
-	t2 = (2^(1/12)) .^collect(0:11)
-	inicialDoOctavaCero = 16.3515978
-	for i in 1:12
-		for j in 1:9
-			notasMusicales[i,j] = t1[j]*t2[i]*inicialDoOctavaCero
-		end
+	N = length(v)
+	pares = v[1:2:N-1]
+	impares = v[2:2:N]
+	xftr = algoritmoFFT(pares)
+	yftr = algoritmoFFT(impares)
+	vtr = zeros(Complex,N)
+	for k in 0:Int(N/2 - 1)
+		#print(xftr)
+		vtr[Int(k+1)] = xftr[k+1] + exp((-2*pi*k*im/N)) * yftr[k+1]
+		vtr[Int(k+1+N/2)] = xftr[k+1] - exp((-2*pi*k*im/N)) * yftr[k+1]
 	end
-	return notasMusicales
+	return vtr
 end
 
-# ╔═╡ c087372b-4151-4b20-ae44-008d9d9bd2f7
-notasMusicales = dameNotas()
-
-# ╔═╡ 1b483a08-9ddb-4812-8d3a-16098ed1ebf0
-LaEnCuarta = notasMusicales[10,5]
-
-# ╔═╡ 42c17aeb-0dc0-4b84-a4e8-94bd8b626a08
-begin
-	fs2 = 46.1*10^3
-	t2 = 0:1/fs:0.5
-	yLa = 0.1 * sin.(2*pi*LaEnCuarta*t)
-	
+# ╔═╡ 98baf474-2cd8-4eda-9708-ee9d36592cf1
+function paresEimpares(v)
+	pares = v[1:2:length(v)-1]
+	impares = v[2:2:length(v)-1]
 end
 
-# ╔═╡ 085553f8-2151-4a4c-827c-1d53ed1577ac
-wavplay(yLa,fs)
+# ╔═╡ 2754a81e-4cdd-40e0-ae6b-228f088c682d
+v = [1,2,3,14,5,6,7,8,10,20,30,40,50,60,70,10]
+
+# ╔═╡ d70f3dcf-cc34-4281-98b8-222f24eff752
+algoritmoFFT(v)
+
+# ╔═╡ a8379f87-3f4e-45d5-9770-ead52b6e706d
+fft(v)
+
+# ╔═╡ ad845c31-f8f0-493c-865c-b653239fc12c
+length(v)
+
+# ╔═╡ 45616d55-9d1d-413b-a4ce-77175b1b5078
+pares = v[1:2:length(v)-1]
+
+# ╔═╡ 5123ad30-9cfa-4488-b95c-a1f0d536892d
+	impares = v[2:2:length(v)]
+
+
+# ╔═╡ f35f9811-d741-49e6-85c2-8098141e3d75
+k = 0:10
+
+# ╔═╡ 4da0da90-f5e1-4118-9cf5-dbbc97403c78
+k[4]
+
+# ╔═╡ 24466fe8-6490-48f7-85dd-5d4f6e77df0a
+im * 3
+
+# ╔═╡ 3bc9c4c2-a4ad-4148-b988-23f7b65efd3c
+a = 4
+
+# ╔═╡ bfcac072-f419-48c2-8cd5-6514710c92a6
+vtr = (zeros(3)) + im
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
-DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
@@ -136,7 +124,6 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 WAV = "8149f6b0-98f6-5db9-b78f-408fbbb8ef88"
 
 [compat]
-DataFrames = "~1.4.1"
 Distributions = "~0.25.75"
 FFTW = "~1.5.0"
 Plots = "~1.35.2"
@@ -252,32 +239,16 @@ git-tree-sha1 = "d05d9e7b7aedff4e5b51a029dced05cfb6125781"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
 version = "0.6.2"
 
-[[deps.Crayons]]
-git-tree-sha1 = "249fe38abf76d48563e2f4556bebd215aa317e15"
-uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
-version = "4.1.1"
-
 [[deps.DataAPI]]
 git-tree-sha1 = "46d2680e618f8abd007bce0c3026cb0c4a8f2032"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
 version = "1.12.0"
-
-[[deps.DataFrames]]
-deps = ["Compat", "DataAPI", "Future", "InvertedIndices", "IteratorInterfaceExtensions", "LinearAlgebra", "Markdown", "Missings", "PooledArrays", "PrettyTables", "Printf", "REPL", "Random", "Reexport", "SnoopPrecompile", "SortingAlgorithms", "Statistics", "TableTraits", "Tables", "Unicode"]
-git-tree-sha1 = "558078b0b78278683a7445c626ee78c86b9bb000"
-uuid = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-version = "1.4.1"
 
 [[deps.DataStructures]]
 deps = ["Compat", "InteractiveUtils", "OrderedCollections"]
 git-tree-sha1 = "d1fff3a548102f48987a52a2e0d114fa97d730f0"
 uuid = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 version = "0.18.13"
-
-[[deps.DataValueInterfaces]]
-git-tree-sha1 = "bfc1187b79289637fa0ef6d4436ebdfe6905cbd6"
-uuid = "e2d170a0-9d28-54be-80f0-106bbe20a464"
-version = "1.0.0"
 
 [[deps.Dates]]
 deps = ["Printf"]
@@ -387,10 +358,6 @@ git-tree-sha1 = "aa31987c2ba8704e23c6c8ba8a4f769d5d7e4f91"
 uuid = "559328eb-81f9-559d-9380-de523a88c83c"
 version = "1.0.10+0"
 
-[[deps.Future]]
-deps = ["Random"]
-uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
-
 [[deps.GLFW_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libglvnd_jll", "Pkg", "Xorg_libXcursor_jll", "Xorg_libXi_jll", "Xorg_libXinerama_jll", "Xorg_libXrandr_jll"]
 git-tree-sha1 = "d972031d28c8c8d9d7b41a536ad7bb0c2579caca"
@@ -489,20 +456,10 @@ git-tree-sha1 = "49510dfcb407e572524ba94aeae2fced1f3feb0f"
 uuid = "3587e190-3f89-42d0-90ee-14403ec27112"
 version = "0.1.8"
 
-[[deps.InvertedIndices]]
-git-tree-sha1 = "bee5f1ef5bf65df56bdd2e40447590b272a5471f"
-uuid = "41ab1584-1d38-5bbf-9106-f11c6c58b48f"
-version = "1.1.0"
-
 [[deps.IrrationalConstants]]
 git-tree-sha1 = "7fd44fd4ff43fc60815f8e764c0f352b83c49151"
 uuid = "92d709cd-6900-40b7-9082-c6be49f344b6"
 version = "0.1.1"
-
-[[deps.IteratorInterfaceExtensions]]
-git-tree-sha1 = "a3f24677c21f5bbe9d2a714f95dcd58337fb2856"
-uuid = "82899510-4779-5014-852e-03e436cf321d"
-version = "1.0.0"
 
 [[deps.JLFzf]]
 deps = ["Pipe", "REPL", "Random", "fzf_jll"]
@@ -797,23 +754,11 @@ git-tree-sha1 = "2777a5c2c91b3145f5aa75b61bb4c2eb38797136"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 version = "0.7.43"
 
-[[deps.PooledArrays]]
-deps = ["DataAPI", "Future"]
-git-tree-sha1 = "a6062fe4063cdafe78f4a0a81cfffb89721b30e7"
-uuid = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
-version = "1.4.2"
-
 [[deps.Preferences]]
 deps = ["TOML"]
 git-tree-sha1 = "47e5f437cc0e7ef2ce8406ce1e7e24d44915f88d"
 uuid = "21216c6a-2e73-6563-6e65-726566657250"
 version = "1.3.0"
-
-[[deps.PrettyTables]]
-deps = ["Crayons", "Formatting", "Markdown", "Reexport", "StringManipulation", "Tables"]
-git-tree-sha1 = "460d9e154365e058c4d886f6f7d6df5ffa1ea80e"
-uuid = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
-version = "2.1.2"
 
 [[deps.Printf]]
 deps = ["Unicode"]
@@ -949,11 +894,6 @@ git-tree-sha1 = "5783b877201a82fc0014cbf381e7e6eb130473a4"
 uuid = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
 version = "1.0.1"
 
-[[deps.StringManipulation]]
-git-tree-sha1 = "46da2434b41f41ac3594ee9816ce5541c6096123"
-uuid = "892a3eda-7b42-436c-8928-eab12a02cf0e"
-version = "0.3.0"
-
 [[deps.SuiteSparse]]
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
 uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
@@ -961,18 +901,6 @@ uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
 [[deps.TOML]]
 deps = ["Dates"]
 uuid = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
-
-[[deps.TableTraits]]
-deps = ["IteratorInterfaceExtensions"]
-git-tree-sha1 = "c06b2f539df1c6efa794486abfb6ed2022561a39"
-uuid = "3783bdb8-4a98-5b6b-af9a-565f29a5fe9c"
-version = "1.0.1"
-
-[[deps.Tables]]
-deps = ["DataAPI", "DataValueInterfaces", "IteratorInterfaceExtensions", "LinearAlgebra", "OrderedCollections", "TableTraits", "Test"]
-git-tree-sha1 = "2d7164f7b8a066bcfa6224e67736ce0eb54aef5b"
-uuid = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
-version = "1.9.0"
 
 [[deps.Tar]]
 deps = ["ArgTools", "SHA"]
@@ -1256,24 +1184,27 @@ version = "1.4.1+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═1091d0e4-3dae-11ed-2ff9-dbeda488e651
-# ╠═6f7b7813-091b-427c-9023-d8d36b0edbf5
-# ╠═67e4fdad-6fc8-43cf-8680-397d91690dd8
-# ╠═0b3abfd9-0cac-4ea4-b83a-3e82e23504de
-# ╠═e5569081-b2e2-472a-8033-7eb454e6652a
-# ╠═672545c2-8d0e-431a-9d29-1e6b2cb263ea
-# ╠═900a218b-f177-4446-a475-ccea7723c155
-# ╠═17ae2b86-c38f-4a0e-a09c-7d355270fc33
-# ╠═494cf68e-e388-4712-a367-d32425cfe5ab
-# ╠═cb0823b5-dfe2-494a-9684-7804731f0a2e
-# ╠═b64ac132-6a1a-4aa3-a5c5-9e57c5514744
-# ╠═8552cafe-6e62-4e56-8683-bd6d299d99c9
-# ╠═f74eead5-fab9-4335-80df-ba332e934308
-# ╠═fc572cdd-d6df-4afe-9386-4b071dda0be9
-# ╠═d41ab265-3196-4bc4-a1f6-8635b228c0d7
-# ╠═c087372b-4151-4b20-ae44-008d9d9bd2f7
-# ╠═1b483a08-9ddb-4812-8d3a-16098ed1ebf0
-# ╠═42c17aeb-0dc0-4b84-a4e8-94bd8b626a08
-# ╠═085553f8-2151-4a4c-827c-1d53ed1577ac
+# ╠═5a5e5c4c-4588-11ed-1758-3da2e8e8450e
+# ╠═15c88b81-350f-4442-9b34-5fe82865f4e1
+# ╠═272329ad-848e-421d-ad53-133a4294f6bd
+# ╠═ae169acf-df78-4bdf-ba4d-41b710a0c46d
+# ╠═df5caf34-3d51-401f-8e10-2df41eec7279
+# ╠═9caf14dc-09d6-4fd4-a7fd-b930f9094dd2
+# ╠═509d97a1-4e9b-4c16-93bb-ced99e81ca6f
+# ╠═8ee3fdc8-0bb2-4fec-88f8-073f56627428
+# ╠═89092dff-b654-4af6-a668-c25f688269dc
+# ╠═33ddb3d5-dda3-4581-805b-da412fdd77c5
+# ╠═98baf474-2cd8-4eda-9708-ee9d36592cf1
+# ╠═2754a81e-4cdd-40e0-ae6b-228f088c682d
+# ╠═d70f3dcf-cc34-4281-98b8-222f24eff752
+# ╠═a8379f87-3f4e-45d5-9770-ead52b6e706d
+# ╠═ad845c31-f8f0-493c-865c-b653239fc12c
+# ╠═45616d55-9d1d-413b-a4ce-77175b1b5078
+# ╠═5123ad30-9cfa-4488-b95c-a1f0d536892d
+# ╠═f35f9811-d741-49e6-85c2-8098141e3d75
+# ╠═4da0da90-f5e1-4118-9cf5-dbbc97403c78
+# ╠═24466fe8-6490-48f7-85dd-5d4f6e77df0a
+# ╠═3bc9c4c2-a4ad-4148-b988-23f7b65efd3c
+# ╠═bfcac072-f419-48c2-8cd5-6514710c92a6
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
