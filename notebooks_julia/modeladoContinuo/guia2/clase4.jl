@@ -16,25 +16,22 @@ begin
 	using DataFrames
 end
 
+# ╔═╡ 854e051c-7286-47d8-a193-26211bb3bb91
+begin
+using CSV
+filtros = CSV.read("filtros.csv",DataFrame)
+end
+
 # ╔═╡ 55e66bf7-e108-4d3d-99f9-d514fe8acc40
 function convulocionDiscreta(v, w)
-	v1 = zeros(max(length(v),length(w)))
-	w1 = zeros(max(length(v),length(w)))
-	for i in 1:length(v)
-		v1[i] = v[i]
-	end
-	for i in 1:length(w)
-		w1[i] = w[i]
-	end
-	#print(w1)
-	#print(v1)
-	vw = zeros(length(v)+length(w)-1)
-	n = length(v1)
+	
+	vw = zeros(Complex{Float64},length(v)+length(w)-1)
+	n = length(v)
 		
 	for i in 1:length(vw)
 		for j in 1:n
-			if i-j>=1
-				vw[i] = vw[i] + v1[j]*w1[i-j]
+			if (i-j>=0 && i-j<=length(w)-1)			
+				vw[i] = vw[i] + v[j]*w[i-j+1]
 			end 
 		end
 	end
@@ -42,17 +39,140 @@ function convulocionDiscreta(v, w)
 end
 
 # ╔═╡ b8a02575-f563-446d-af8a-fbf875a024e4
-v = [1,2,1]
+v = [1,2,-1]
 
 # ╔═╡ ff266558-cfcf-414b-ba31-0d1cb681912d
 w = [3,1,-5,2,-1]
 
 # ╔═╡ a5b5698f-3ab9-4505-9257-2f9bc70ee2e0
 convulocionDiscreta(v, w)
+# 3,7,-6,-9,8,-4,1
+
+# ╔═╡ 2197472e-ecca-4f5e-8fa1-da5917bbed02
+# ifft(fft(v).fft(w)) = (v * w) convolucion
+
+# ╔═╡ a16d31b4-a4c7-47dd-8dfc-3162f9dced7f
+begin
+	v1 = zeros(length(v)+length(w)-1)
+	w1 = zeros(length(v)+length(w)-1)
+	for i in 1:length(v)
+		v1[i] = v[i]
+	end
+	for i in 1:length(w)
+		w1[i] = w[i]
+	end
+	
+end
+
+# ╔═╡ dde244e4-3dca-498e-b477-3ad401c2a218
+fv = fft(v1)
+
+# ╔═╡ 599c12d7-a7fc-4b46-9689-75fd1bbea39a
+fw = fft(w1)
+
+# ╔═╡ 179a9f0e-7df6-470b-bee0-871f51997745
+fvw = fv .* fw
+
+# ╔═╡ ad5292ae-c0b6-483a-8a0a-8591cfb4b06e
+fvw2 = Complex{Float64}.(fvw)
+
+# ╔═╡ ccef796d-43d7-4cfc-b70b-85490f0d79ac
+real.(ifft(fvw2))
+
+# ╔═╡ 4a903998-edd0-4891-b755-84749bd8e906
+md"""
+	Ej 24
+"""
+
+# ╔═╡ f50b6669-20c5-4198-98c0-3dee9704eb1e
+fil2 = filtros[:,2]
+
+# ╔═╡ 1f1a8b9e-d7cb-4c95-9c2c-29801a7bf115
+begin
+	secret1 = wavread("secret1.wav")
+	secret2 = wavread("secret2.wav")
+	secret3 = wavread("secret3.wav")
+	secret4 = wavread("secret4.wav")
+	secret5 = wavread("secret5.wav")
+end
+
+# ╔═╡ d6d2ceb6-fc4c-42ee-9ec7-3112b8725a80
+begin
+	fsec1 = fft(secret1[1])
+	fsec2 = fft(secret2[1])
+	fsec3 = fft(secret3[1])
+	fsec4 = fft(secret4[1])
+	fsec5 = fft(secret5[1])
+
+	ffreqsec1 = fftfreq(length(secret1[1]), secret1[2] )
+	ffreqsec2 = fftfreq(length(secret2[1]), secret2[2] )
+	ffreqsec3 = fftfreq(length(secret3[1]), secret3[2] )
+	ffreqsec4 = fftfreq(length(secret4[1]), secret4[2] )
+	ffreqsec5 = fftfreq(length(secret5[1]), secret5[2] )
+
+end
+
+# ╔═╡ ba61eb59-b6e1-4e3b-b584-2c63453685d0
+begin
+	tonsec1 =sortperm(vec(abs.(fsec1)), rev=true)
+	tonsec2 =sortperm(vec(abs.(fsec2)), rev=true)
+	tonsec3 =sortperm(vec(abs.(fsec3)), rev=true)
+	tonsec4 =sortperm(vec(abs.(fsec4)), rev=true)
+	tonsec5 =sortperm(vec(abs.(fsec5)), rev=true)
+end
+
+# ╔═╡ aeabe297-3e03-4b27-87f8-7f35cf88fb1a
+plot(ffreqsec1, abs.(fsec1), xlim = [-2000,2000])
+
+# ╔═╡ f3d63139-4ca3-405b-bcb1-09cf96f67a90
+filtro1 = [0.125,0.125, 0.25, 0.125,0.125]
+
+# ╔═╡ b9a59a49-98e9-4750-98fc-a095c096a4e3
+fflimpiado = convulocionDiscreta(fsec1, fil2)
+
+# ╔═╡ 21be9aa2-403b-480f-8cc0-597406c85af0
+fflimrecort = (fflimpiado[1+Int(length(fil2)/2):end-Int(length(fil2)/2)+1])
+
+# ╔═╡ 90358aff-c9ae-4e20-a9c8-75cda53d0d9e
+length(fflimrecort)
+
+# ╔═╡ 98b80602-7409-4fd8-a142-c4048af02807
+length(ffreqsec1)
+
+# ╔═╡ 3d1f60e6-72cd-4c85-a5ef-b826b0da5481
+function dameSonidoFiltrado(frecuFour, filtro)
+	fflimpiado = convulocionDiscreta(frecuFour, filtro)
+	fflimrecort = (fflimpiado[1+Int(length(filtro)/2):end-Int(length(filtro)/2)+1])
+end
+
+# ╔═╡ f8259bcc-b1fb-420c-b6f5-740f5c530031
+plot(ffreqsec1, abs.(fflimrecort), xlim = [-2000,2000])
+
+# ╔═╡ 66417abf-daf2-4c8a-ba55-2a9d941694f2
+randvec = rand(Uniform(-0.1, 0.1),length(ffreqsec1))
+
+# ╔═╡ 57e49da9-5c70-4319-aeb5-84ff7c068ca7
+ranf = fft(randvec)
+
+# ╔═╡ 3a06cc07-ac6f-4219-84a5-5bda25162e76
+plot(ffreqsec1, abs.(ranf))
+
+# ╔═╡ ba90b458-7893-474e-a3d2-095c9aed8c13
+filtradoyrec2 =  fft(dameSonidoFiltrado(randvec, fil2))
+
+# ╔═╡ 7a02281c-0f00-4b13-b827-e4e988d9247a
+plot(ffreqsec1, real.(filtradoyrec2), xlim = [-2000,2000])
+
+# ╔═╡ 0b1eea0f-bf54-4c48-8ba4-a2bbd3167f05
+
+
+# ╔═╡ 6bab426e-fa6f-4ebb-b785-b4f123258524
+wavplay(1500* real.(ifft(filtradoyrec2)),secret1[2])
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
@@ -62,6 +182,7 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 WAV = "8149f6b0-98f6-5db9-b78f-408fbbb8ef88"
 
 [compat]
+CSV = "~0.10.4"
 DataFrames = "~1.4.1"
 Distributions = "~0.25.76"
 FFTW = "~1.5.0"
@@ -108,6 +229,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "19a35467a82e236ff51bc17a3a44b69ef35185a2"
 uuid = "6e34b625-4abd-537c-b88f-471c36dfa7a0"
 version = "1.0.8+0"
+
+[[deps.CSV]]
+deps = ["CodecZlib", "Dates", "FilePathsBase", "InlineStrings", "Mmap", "Parsers", "PooledArrays", "SentinelArrays", "Tables", "Unicode", "WeakRefStrings"]
+git-tree-sha1 = "873fb188a4b9d76549b81465b1f75c82aaf59238"
+uuid = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+version = "0.10.4"
 
 [[deps.Cairo_jll]]
 deps = ["Artifacts", "Bzip2_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "JLLWrappers", "LZO_jll", "Libdl", "Pixman_jll", "Pkg", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Zlib_jll", "libpng_jll"]
@@ -277,6 +404,12 @@ git-tree-sha1 = "7be5f99f7d15578798f338f5433b6c432ea8037b"
 uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 version = "1.16.0"
 
+[[deps.FilePathsBase]]
+deps = ["Compat", "Dates", "Mmap", "Printf", "Test", "UUIDs"]
+git-tree-sha1 = "e27c4ebe80e8699540f2d6c805cc12203b614f12"
+uuid = "48062228-2e41-5def-b9a4-89aafe57970f"
+version = "0.9.20"
+
 [[deps.FillArrays]]
 deps = ["LinearAlgebra", "Random", "SparseArrays", "Statistics"]
 git-tree-sha1 = "802bfc139833d2ba893dd9e62ba1767c88d708ae"
@@ -360,9 +493,9 @@ version = "1.0.2"
 
 [[deps.HTTP]]
 deps = ["Base64", "CodecZlib", "Dates", "IniFile", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
-git-tree-sha1 = "e8c58d5f03b9d9eb9ed7067a2f34c7c371ab130b"
+git-tree-sha1 = "a97d47758e933cd5fe5ea181d178936a9fc60427"
 uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "1.4.1"
+version = "1.5.1"
 
 [[deps.HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Pkg"]
@@ -398,6 +531,12 @@ version = "0.2.2"
 git-tree-sha1 = "f550e6e32074c939295eb5ea6de31849ac2c9625"
 uuid = "83e8ac13-25f8-5344-8a64-a9f2b223428f"
 version = "0.5.1"
+
+[[deps.InlineStrings]]
+deps = ["Parsers"]
+git-tree-sha1 = "db619c421554e1e7e07491b85a8f4b96b3f04ca0"
+uuid = "842dd82b-1e85-43dc-bf29-5d0ee9dffc48"
+version = "1.2.2"
 
 [[deps.IntelOpenMP_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -641,9 +780,9 @@ uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
-git-tree-sha1 = "ebe81469e9d7b471d7ddb611d9e147ea16de0add"
+git-tree-sha1 = "3c3c4a401d267b04942545b1e964a20279587fd7"
 uuid = "4d8831e6-92b7-49fb-bdf8-b643e874388c"
-version = "1.2.1"
+version = "1.3.0"
 
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -767,9 +906,9 @@ uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [[deps.RecipesBase]]
 deps = ["SnoopPrecompile"]
-git-tree-sha1 = "612a4d76ad98e9722c8ba387614539155a59e30c"
+git-tree-sha1 = "d12e612bba40d189cead6ff857ddb67bd2e6a387"
 uuid = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
-version = "1.3.0"
+version = "1.3.1"
 
 [[deps.RecipesPipeline]]
 deps = ["Dates", "NaNMath", "PlotUtils", "RecipesBase", "SnoopPrecompile"]
@@ -814,6 +953,12 @@ deps = ["Dates"]
 git-tree-sha1 = "f94f779c94e58bf9ea243e77a37e16d9de9126bd"
 uuid = "6c6a2e73-6563-6170-7368-637461726353"
 version = "1.1.1"
+
+[[deps.SentinelArrays]]
+deps = ["Dates", "Random"]
+git-tree-sha1 = "efd23b378ea5f2db53a55ae53d3133de4e080aa9"
+uuid = "91c51154-3ec4-41a3-a24f-3f23e20d615c"
+version = "1.3.16"
 
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
@@ -965,6 +1110,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "4528479aa01ee1b3b4cd0e6faef0e04cf16466da"
 uuid = "2381bf8a-dfd0-557d-9999-79630e7b1b91"
 version = "1.25.0+0"
+
+[[deps.WeakRefStrings]]
+deps = ["DataAPI", "InlineStrings", "Parsers"]
+git-tree-sha1 = "b1be2855ed9ed8eac54e5caff2afcdb442d52c23"
+uuid = "ea10d353-3f73-51f8-a26c-33c1cb351aa5"
+version = "1.4.2"
 
 [[deps.XML2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Pkg", "Zlib_jll"]
@@ -1187,5 +1338,33 @@ version = "1.4.1+0"
 # ╠═b8a02575-f563-446d-af8a-fbf875a024e4
 # ╠═ff266558-cfcf-414b-ba31-0d1cb681912d
 # ╠═a5b5698f-3ab9-4505-9257-2f9bc70ee2e0
+# ╠═2197472e-ecca-4f5e-8fa1-da5917bbed02
+# ╠═a16d31b4-a4c7-47dd-8dfc-3162f9dced7f
+# ╠═dde244e4-3dca-498e-b477-3ad401c2a218
+# ╠═599c12d7-a7fc-4b46-9689-75fd1bbea39a
+# ╠═179a9f0e-7df6-470b-bee0-871f51997745
+# ╠═ad5292ae-c0b6-483a-8a0a-8591cfb4b06e
+# ╠═ccef796d-43d7-4cfc-b70b-85490f0d79ac
+# ╠═4a903998-edd0-4891-b755-84749bd8e906
+# ╠═854e051c-7286-47d8-a193-26211bb3bb91
+# ╠═f50b6669-20c5-4198-98c0-3dee9704eb1e
+# ╠═1f1a8b9e-d7cb-4c95-9c2c-29801a7bf115
+# ╠═d6d2ceb6-fc4c-42ee-9ec7-3112b8725a80
+# ╠═ba61eb59-b6e1-4e3b-b584-2c63453685d0
+# ╠═aeabe297-3e03-4b27-87f8-7f35cf88fb1a
+# ╠═f3d63139-4ca3-405b-bcb1-09cf96f67a90
+# ╠═b9a59a49-98e9-4750-98fc-a095c096a4e3
+# ╠═21be9aa2-403b-480f-8cc0-597406c85af0
+# ╠═90358aff-c9ae-4e20-a9c8-75cda53d0d9e
+# ╠═98b80602-7409-4fd8-a142-c4048af02807
+# ╠═3d1f60e6-72cd-4c85-a5ef-b826b0da5481
+# ╠═f8259bcc-b1fb-420c-b6f5-740f5c530031
+# ╠═66417abf-daf2-4c8a-ba55-2a9d941694f2
+# ╠═57e49da9-5c70-4319-aeb5-84ff7c068ca7
+# ╠═3a06cc07-ac6f-4219-84a5-5bda25162e76
+# ╠═ba90b458-7893-474e-a3d2-095c9aed8c13
+# ╠═7a02281c-0f00-4b13-b827-e4e988d9247a
+# ╠═0b1eea0f-bf54-4c48-8ba4-a2bbd3167f05
+# ╠═6bab426e-fa6f-4ebb-b785-b4f123258524
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
