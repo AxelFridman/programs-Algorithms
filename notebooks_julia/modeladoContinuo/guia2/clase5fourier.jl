@@ -4,7 +4,7 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ ef275808-4b08-11ed-0a69-a74ea8061e9b
+# ╔═╡ 5228be44-53ae-11ed-10a3-6302856fb8fe
 
 begin
 	using FFTW
@@ -16,339 +16,92 @@ begin
 	using DataFrames
 end
 
-# ╔═╡ fd5276a4-79df-441a-a561-6723a56f3496
-function dameNotas()
-	notasMusicales=zeros(12,9)
-	t1 = 2 .^collect(0:8)
-	t2 = (2^(1/12)) .^collect(0:11)
-	inicialDoOctavaCero = 16.3515978
-	for i in 1:12
-		for j in 1:9
-			notasMusicales[i,j] = t1[j]*t2[i]*inicialDoOctavaCero
+# ╔═╡ fb2b3cf9-7fd8-43cc-befb-c0619992a659
+function convulocionDiscreta(v, w)
+	
+	vw = zeros(Complex{Float64},length(v)+length(w)-1)
+	n = length(v)
+		
+	for i in 1:length(vw)
+		for j in 1:n
+			if (i-j>=0 && i-j<=length(w)-1)			
+				vw[i] = vw[i] + v[j]*w[i-j+1]
+			end 
 		end
 	end
-	return notasMusicales
+	return vw
 end
 
-# ╔═╡ 145eaf0c-c60a-4c63-90cd-988a24c889bb
-notasMusicales = dameNotas()
+# ╔═╡ 73ad5b45-a75c-4306-9e7a-7ad483939490
+CantPuntos = 2^14
 
-# ╔═╡ 49d29404-2152-486f-993d-70bd4940ec53
+# ╔═╡ b1a6e45a-bc7d-4cdd-bbba-8183de0f58ef
 begin
-	LaEnCuarta = notasMusicales[10,5]
-	reCuarta =  notasMusicales[3,5]
-	doSostenidoCuarta = notasMusicales[2,5]
+	int1 = 0   :2*pi/CantPuntos:  2*pi    - 2*pi/CantPuntos
+	int2 = -15 : 30/CantPuntos :  15      - 30/CantPuntos
+	int3 = -1   : 2/CantPuntos  :  1      - 2/CantPuntos
 end
 
-# ╔═╡ 19406453-ea00-4f32-b716-9789c95a6d00
+# ╔═╡ 9f77efe1-52f0-480f-8c83-edc1ff3103ec
+long2 = int2[length(int2)] - int2[1]
+
+# ╔═╡ 1be56459-8bcc-40ec-8e36-2377c35d9311
 begin
-	fs = 46.1*10^3
-	t2 = 0:1/fs:1
-	yLa = 0.1 * sin.(2*pi*LaEnCuarta*t2)
-	yRe = 0.1 * sin.(2*pi*reCuarta*t2)
-	doSos = 0.1 * sin.(2*pi*doSostenidoCuarta*t2)
-	nota = yLa + yRe + doSos
+	f1(x) = sin(x)
+	f2(x) = cos(x)*ℯ^(-x^2)
+	f3(x) = x^2
 end
 
-# ╔═╡ 61bc4618-b42e-4a6e-898d-fcbb2206df68
-wavplay(nota,fs)
-
-# ╔═╡ ebc9a411-1dce-43fc-b77e-39d03fffbc01
-plot(t2, nota)
-
-
-# ╔═╡ f6599ca2-0b1b-4e97-9298-b84417390098
+# ╔═╡ 8d85b166-9582-4809-be92-2dc8059f2298
 begin
-	yfft = abs.(fft(nota))
-	yrfft = abs.(rfft(nota))
+	plot(int2, f2)
+	plot!(int1, f1)
+	plot!(int3, f3)
 end
 
-# ╔═╡ 6c7f5b2c-60bc-40c8-be08-c0804ffdf156
-begin
-	plot(yfft)
-end
-
-# ╔═╡ fe9ef4e0-61f3-4535-878d-e23d28678ea6
-	plot(yrfft)
-
-
-# ╔═╡ d80f32da-3586-4743-93d3-7138bab70eff
-plot(fftshift(yfft), xlim = [22000,24000])
-
-# ╔═╡ 9c1d3548-60a7-4f82-b2f9-81c4210fea47
-ffreq = fftfreq(length(nota), fs)
-
-# ╔═╡ ad4a8224-9603-4083-b564-cc1d21857bbf
-begin
-	plot(ffreq)
-	plot!(ffreq, fftshift(yfft), xlim = [22000,24000])
-end
-
-# ╔═╡ 7daf28c6-52bd-4e50-ad1f-7e0a47b58d1e
-begin
-	sonido1 = wavread("nota1.wav")
-	sonido2 = wavread("nota2.wav")
-	sonido3 = wavread("nota3.wav")
-	sonido4 = wavread("nota4.wav")
-	sonido5 = wavread("nota5.wav")
-	sonido6 = wavread("nota6.wav")
-
-end
-
-# ╔═╡ 37ca39b5-4fc0-409b-90e4-f9bb7e58810d
-begin
-	f1 = fft(sonido1[1])
-	f2 = fft(sonido2[1])
-	f3 = fft(sonido3[1])
-	f4 = fft(sonido4[1])
-	f5 = fft(sonido5[1])
-	f6 = fft(sonido6[1])
-
-	ffreq1 = fftfreq(length(sonido1[1]), sonido1[2] )
-	ffreq2 = fftfreq(length(sonido2[1]), sonido2[2] )
-	ffreq3 = fftfreq(length(sonido3[1]), sonido3[2] )
-	ffreq4 = fftfreq(length(sonido4[1]), sonido4[2] )
-	ffreq5 = fftfreq(length(sonido5[1]), sonido5[2] )
-	ffreq6 = fftfreq(length(sonido6[1]), sonido6[2] )
-
-end
-
-# ╔═╡ 663ce32a-8c63-4847-ad03-567fce5ca6ba
-begin
-	plot(ffreq1)
-	plot!(ffreq2)
-	plot!(ffreq3)
-	plot!(ffreq4)
-	plot!(ffreq5)
-	plot!(ffreq6)
-
-end
-
-# ╔═╡ a2fa23a3-6b11-4855-b67c-20a20a4f184a
-wavplay(sonido5[1],sonido5[2])
-
-# ╔═╡ b4b7e36c-0048-4fb3-9850-d5d220cfab44
-begin
-	plot(fftshift(abs.(f1)), xlim = [5*10^4, 1.1*10^5])
-	plot!(fftshift(abs.(f2)))
-	plot!(fftshift(abs.(f3)))
-	plot!(fftshift(abs.(f4)))
-	plot!(fftshift(abs.(f5)))
-	plot!(fftshift(abs.(f6)))
-end
-
-# ╔═╡ 8d912daf-43ee-4691-a90c-322c7c662214
-begin
-	plot(ffreq1, abs.(f1), xlim = [-2000,2000])
-	plot!(ffreq2, abs.(f2))
-	plot!(ffreq3, abs.(f3))
-	plot!(ffreq4, abs.(f4))
-	plot!(ffreq5, abs.(f5))
-	plot!(ffreq6, abs.(f6))
-
-end
-
-# ╔═╡ 0ec63a21-4c4a-42ae-b86f-4f5d40749bf1
-	plot(ffreq1, abs.(f1), xlim = [-2000,2000])
-
-
-# ╔═╡ 9083975d-1d70-43f2-b845-31179f478870
-dameNotas()
-
-# ╔═╡ 74e0269d-ccf6-4df2-8c19-df54560fec57
-begin
-	ton1 =sortperm(vec(abs.(f1)), rev=true)
-	ton2 =sortperm(vec(abs.(f2)), rev=true)
-	ton3 =sortperm(vec(abs.(f3)), rev=true)
-	ton4 =sortperm(vec(abs.(f4)), rev=true)
-	ton5 =sortperm(vec(abs.(f5)), rev=true)
-	ton6 =sortperm(vec(abs.(f6)), rev=true)
-end
-
-# ╔═╡ 59ab4ef2-0650-45e5-b445-d508dd1f4a26
-begin
-	notaPrincipal1 = ffreq1[ton1[1]]
-	notaPrincipal2 = ffreq2[ton2[1]]
-	notaPrincipal3 = ffreq3[ton3[1]]
-	notaPrincipal4 = ffreq4[ton4[1]]
-	notaPrincipal5 = ffreq5[ton5[1]]
-	notaPrincipal6 = ffreq6[ton6[1]]
-end
-
-# ╔═╡ 181009b2-4435-45c6-ae04-ac8f2c1cb17a
-function notas(SonidoWav)
-	f1 = fft(SonidoWav[1])
-	ffreq1 = fftfreq(length(SonidoWav[1]), SonidoWav[2] )
-	ton1 =sortperm(vec(abs.(f1)), rev=true)
-	notas = zeros(length(ton1))
-	for i in 1:length(ton1)
-		#f1(ton1) me devuelve alturas de los picos
-		notas[i] = ffreq1[ton1[i]]
+# ╔═╡ 1b61d589-8972-4fbd-aa4b-a95d51c50f16
+function calcularDerivada(funcion, intervalo)
+	valorFuncion = funcion.(intervalo)
+	fvalores = fftshift(fft(valorFuncion))
+	longitud = intervalo[length(intervalo)] - intervalo[1]
+	fprimaValores = zeros(Complex, length(intervalo))
+	for k in 1:length(intervalo)
+		fprimaValores[k] = 2*pi/longitud * im * k * fvalores[k]
 	end
-	return abs.(notas)
+	aux = fftshift(Complex{Float64}.(fprimaValores))
+	antiTransDerivada = ifft(aux)
+	return antiTransDerivada
 end
 
-# ╔═╡ 7457a33b-e9cf-4bef-97ce-0a80697b9f4f
-notas(sonido1)
+# ╔═╡ fdbb704f-d101-45cf-8251-7b6717050b35
+begin
+	derivada1 = calcularDerivada(f1, int1)
+	derivada2 = calcularDerivada(f2, int2)
+	derivada3 = calcularDerivada(f3, int3)
+end
 
-# ╔═╡ 5dc7c077-a963-470e-a662-ef1ffbe8f47a
-findall(x -> x>800, vec(abs.(f1)))
-
-# ╔═╡ 3d2df87a-1810-4979-b749-a3611f3771ae
-function limpiarAudio(SonidoWav,frecuenciaMax)
-	f1 = fft(SonidoWav[1])
-	ffreq1 = fftfreq(length(SonidoWav[1]), SonidoWav[2] )
-	notas1 = abs.(notas(SonidoWav))
+# ╔═╡ eabca072-093a-4438-ae2e-952089a5a55a
+begin
 	
-	limpiadas = notas1[findall(x -> x>=frecuenciaMax, notas1)]
-	plot(ffreq1, abs.(f1))
-	return limpiadas
+	plot(int1, f1)
+	plot!(int1, real.(derivada1))
 end
 
-# ╔═╡ 06a7ceb6-f55d-4e39-86ea-d3ff907f8105
-limpiarAudio(sonido1, 1000)
-
-# ╔═╡ 268b3e68-9e87-468c-ae8c-ce8d024f68c7
+# ╔═╡ c7238e74-e716-4e89-b0d3-9bccaf93abf6
 begin
-	secret1 = wavread("secret1.wav")
-	secret2 = wavread("secret2.wav")
-	secret3 = wavread("secret3.wav")
-	secret4 = wavread("secret4.wav")
-	secret5 = wavread("secret5.wav")
+	
+	plot(int2, f2)
+	plot!(int2, real.(derivada2))
 end
 
-# ╔═╡ d1b9d965-cdff-4a6d-9b9e-bf25267f4b1a
+# ╔═╡ ab4e7750-f391-4de1-81e7-95d50506de92
 begin
-	fsec1 = fft(secret1[1])
-	fsec2 = fft(secret2[1])
-	fsec3 = fft(secret3[1])
-	fsec4 = fft(secret4[1])
-	fsec5 = fft(secret5[1])
-
-	ffreqsec1 = fftfreq(length(secret1[1]), secret1[2] )
-	ffreqsec2 = fftfreq(length(secret2[1]), secret2[2] )
-	ffreqsec3 = fftfreq(length(secret3[1]), secret3[2] )
-	ffreqsec4 = fftfreq(length(secret4[1]), secret4[2] )
-	ffreqsec5 = fftfreq(length(secret5[1]), secret5[2] )
-
+	plot(int3, f3)
+	plot!(int3, real.(derivada3))
 end
 
-# ╔═╡ 66882390-ccaf-4a40-93e4-768dfc020306
-begin
-	tonsec1 =sortperm(vec(abs.(fsec1)), rev=true)
-	tonsec2 =sortperm(vec(abs.(fsec2)), rev=true)
-	tonsec3 =sortperm(vec(abs.(fsec3)), rev=true)
-	tonsec4 =sortperm(vec(abs.(fsec4)), rev=true)
-	tonsec5 =sortperm(vec(abs.(fsec5)), rev=true)
-end
-
-# ╔═╡ 2f0d1e82-55c3-47dd-ba3f-cb1067f68ff3
-
-
-# ╔═╡ aa7ee997-5884-4089-8a92-77c2c017ce6d
-plot(ffreqsec1, abs.(fsec1), xlim = [-2000,2000])
-
-# ╔═╡ 33f6a915-f0eb-46e7-ba20-003ffd45201e
-# ╠═╡ show_logs = false
-for i in 1:length(ffreqsec1)
-	if(abs(ffreqsec1[i])>1000)
-		fsec1[i] = 0
-	end
-end
-
-# ╔═╡ 343c4e68-3ab1-44de-a265-9c5acdf0d3b5
-plot(ffreqsec1, abs.(fsec1), xlim=[-1500,1500])
-
-# ╔═╡ b59c0df4-5ab4-4f54-9b06-d347902c5226
-volumen = 150
-
-# ╔═╡ e59556d6-52c2-4d4a-8e85-a50af0f9c8ee
-length(fsec1)
-
-# ╔═╡ 387181f0-9460-40cd-95c3-1209fe7d3dcc
-wavplay(volumen* real.(ifft(fsec1)),secret1[2]) # are u talking to me? robert de niro
-
-# ╔═╡ 840100ee-73ac-4e2e-8c4f-0cdc0460e683
-plot(ffreqsec2, abs.(fsec2), xlim = [-2000,2000])
-
-# ╔═╡ df6eb105-b647-43d0-a512-21683658dc65
-for i in 1:length(ffreqsec2)
-	if(abs(fsec2[i])>5)
-		fsec2[i] = 0
-	end
-end
-
-# ╔═╡ 8edcc4fe-ac2e-4ffd-815b-28a4ce95683d
-plot(ffreqsec2, abs.(fsec2), xlim = [-2000,2000])
-
-# ╔═╡ d0fca0ff-0a64-482f-a461-b32261ad8337
-wavplay(volumen* real.(ifft(fsec2)),secret2[2]) # DISCULPE FUEGO TIENE? simuladores
-
-# ╔═╡ 9161ff86-73e8-450d-b83d-343f5afa4726
-plot(ffreqsec3, abs.(fsec3))
-
-# ╔═╡ 5613bf27-027f-4b2f-a447-54a9bcf7a293
-for i in 1:length(ffreqsec3)
-	if(abs(ffreqsec3[i])>4500)
-		fsec3[i] = 0
-	end
-end
-
-# ╔═╡ 2b387fe7-5c95-4f7e-93d7-234e348b07a6
-plot(ffreqsec3, abs.(fsec3))
-
-# ╔═╡ 04ffff97-5d80-40db-be52-f9913c124d5b
-wavplay(volumen* real.(ifft(fsec3)),secret3[2]) # PLAY IT ONCE SAM, FOR OLD TIME SAKES, casablanca
-
-# ╔═╡ 63f49cda-59ca-422c-9ed8-8e83b212ab03
-plot(ffreqsec4, abs.(fsec4), xlim=[-1000,1000])
-
-# ╔═╡ cc91f6a2-a3d4-4bc9-8890-35062953a1ba
-for i in 1:length(ffreqsec4)
-	if(abs(fsec4[i])>5)
-		fsec4[i] = 0
-	end
-end
-
-# ╔═╡ 06368522-a92a-4a17-a993-85e4451f9041
-plot(ffreqsec4, abs.(fsec4))
-
-# ╔═╡ f3f7a9d2-7009-4a44-9cf0-d608caea4f33
-wavplay(volumen* real.(ifft(fsec4)),secret4[2]) # you know nothing jon snow GOT 
-
-# ╔═╡ 30ac696d-293d-497a-8bad-72a610a49474
-plot(ffreqsec5, abs.(fsec5), xlim=[-1000,1000])
-
-# ╔═╡ 2457b377-ab1a-47d2-b972-2cf5837d6313
-for i in 1:length(ffreqsec5)
-	if(abs(fsec5[i])>10)
-		fsec5[i] = 0
-	end
-end
-
-# ╔═╡ 4be4401f-0540-41ff-a12f-7490e43cb638
-plot(ffreqsec5, abs.(fsec5))
-
-# ╔═╡ 50af54d6-a693-43eb-a529-c428d6acbc9b
-wavplay(volumen* real.(ifft(fsec5)),secret5[2]) # lenwardium leviousa HERMIONE harry potter
-
-# ╔═╡ a9d8ada0-6494-4cee-9a69-f3c5bc9a4f9b
-wavwrite(volumen* real.(ifft(fsec1)), "desencriptado1.wav", Fs=secret1[2])
-
-# ╔═╡ f578af66-fd46-4acf-891e-dc3224cc38ec
-wavwrite(volumen* real.(ifft(fsec2)), "desencriptado2.wav", Fs=secret2[2])
-
-# ╔═╡ ba709707-7eb0-456e-8303-5bed6d5caa8b
-wavwrite(volumen* real.(ifft(fsec3)), "desencriptado3.wav", Fs=secret3[2])
-
-# ╔═╡ 94b03f76-131b-4519-9f7c-7545c3452626
-wavwrite(volumen* real.(ifft(fsec4)), "desencriptado4.wav", Fs=secret4[2])
-
-# ╔═╡ 8faeb768-0519-4beb-bf6a-3c0088036e79
-wavwrite(volumen* real.(ifft(fsec5)), "desencriptado5.wav", Fs=secret5[2])
-
-# ╔═╡ c33972ec-15ba-481e-8d29-b73fc0033165
-
+# ╔═╡ 5313890b-34cc-41a0-8bfc-8be17755fe7f
+derivada3
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -362,11 +115,11 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 WAV = "8149f6b0-98f6-5db9-b78f-408fbbb8ef88"
 
 [compat]
-DataFrames = "~1.3.6"
-Distributions = "~0.25.75"
+DataFrames = "~1.4.1"
+Distributions = "~0.25.76"
 FFTW = "~1.5.0"
-Plots = "~1.35.0"
-PlutoUI = "~0.7.43"
+Plots = "~1.35.5"
+PlutoUI = "~0.7.48"
 WAV = "~1.2.0"
 """
 
@@ -465,9 +218,9 @@ version = "0.12.8"
 
 [[deps.Compat]]
 deps = ["Dates", "LinearAlgebra", "UUIDs"]
-git-tree-sha1 = "5856d3031cdb1f3b2b6340dfdc66b6d9a149a374"
+git-tree-sha1 = "3ca828fe1b75fa84b021a7860bd039eaea84d2f2"
 uuid = "34da2185-b29b-5c13-b0c7-acf172513d20"
-version = "4.2.0"
+version = "4.3.0"
 
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -489,10 +242,10 @@ uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
 version = "1.12.0"
 
 [[deps.DataFrames]]
-deps = ["Compat", "DataAPI", "Future", "InvertedIndices", "IteratorInterfaceExtensions", "LinearAlgebra", "Markdown", "Missings", "PooledArrays", "PrettyTables", "Printf", "REPL", "Reexport", "SortingAlgorithms", "Statistics", "TableTraits", "Tables", "Unicode"]
-git-tree-sha1 = "db2a9cb664fcea7836da4b414c3278d71dd602d2"
+deps = ["Compat", "DataAPI", "Future", "InvertedIndices", "IteratorInterfaceExtensions", "LinearAlgebra", "Markdown", "Missings", "PooledArrays", "PrettyTables", "Printf", "REPL", "Random", "Reexport", "SnoopPrecompile", "SortingAlgorithms", "Statistics", "TableTraits", "Tables", "Unicode"]
+git-tree-sha1 = "558078b0b78278683a7445c626ee78c86b9bb000"
 uuid = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-version = "1.3.6"
+version = "1.4.1"
 
 [[deps.DataStructures]]
 deps = ["Compat", "InteractiveUtils", "OrderedCollections"]
@@ -521,15 +274,15 @@ version = "0.4.0"
 
 [[deps.Distributions]]
 deps = ["ChainRulesCore", "DensityInterface", "FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SparseArrays", "SpecialFunctions", "Statistics", "StatsBase", "StatsFuns", "Test"]
-git-tree-sha1 = "0d7d213133d948c56e8c2d9f4eab0293491d8e4a"
+git-tree-sha1 = "04db820ebcfc1e053bd8cbb8d8bccf0ff3ead3f7"
 uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
-version = "0.25.75"
+version = "0.25.76"
 
 [[deps.DocStringExtensions]]
 deps = ["LibGit2"]
-git-tree-sha1 = "5158c2b41018c5f7eb1470d558127ac274eca0c9"
+git-tree-sha1 = "c36550cb29cbe373e95b3f40486b9a4148f89ffd"
 uuid = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
-version = "0.9.1"
+version = "0.9.2"
 
 [[deps.Downloads]]
 deps = ["ArgTools", "LibCURL", "NetworkOptions"]
@@ -573,15 +326,15 @@ version = "3.3.10+0"
 
 [[deps.FileIO]]
 deps = ["Pkg", "Requires", "UUIDs"]
-git-tree-sha1 = "94f5101b96d2d968ace56f7f2db19d0a5f592e28"
+git-tree-sha1 = "7be5f99f7d15578798f338f5433b6c432ea8037b"
 uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
-version = "1.15.0"
+version = "1.16.0"
 
 [[deps.FillArrays]]
 deps = ["LinearAlgebra", "Random", "SparseArrays", "Statistics"]
-git-tree-sha1 = "87519eb762f85534445f5cda35be12e32759ee14"
+git-tree-sha1 = "802bfc139833d2ba893dd9e62ba1767c88d708ae"
 uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
-version = "0.13.4"
+version = "0.13.5"
 
 [[deps.FixedPointNumbers]]
 deps = ["Statistics"]
@@ -625,9 +378,9 @@ version = "3.3.8+0"
 
 [[deps.GR]]
 deps = ["Base64", "DelimitedFiles", "GR_jll", "HTTP", "JSON", "Libdl", "LinearAlgebra", "Pkg", "Preferences", "Printf", "Random", "Serialization", "Sockets", "Test", "UUIDs"]
-git-tree-sha1 = "a9ec6a35bc5ddc3aeb8938f800dc599e652d0029"
+git-tree-sha1 = "00a9d4abadc05b9476e937a5557fcce476b9e547"
 uuid = "28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71"
-version = "0.69.3"
+version = "0.69.5"
 
 [[deps.GR_jll]]
 deps = ["Artifacts", "Bzip2_jll", "Cairo_jll", "FFMPEG_jll", "Fontconfig_jll", "GLFW_jll", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Libtiff_jll", "Pixman_jll", "Pkg", "Qt5Base_jll", "Zlib_jll", "libpng_jll"]
@@ -660,9 +413,9 @@ version = "1.0.2"
 
 [[deps.HTTP]]
 deps = ["Base64", "CodecZlib", "Dates", "IniFile", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
-git-tree-sha1 = "4abede886fcba15cd5fd041fef776b230d004cee"
+git-tree-sha1 = "a97d47758e933cd5fe5ea181d178936a9fc60427"
 uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "1.4.0"
+version = "1.5.1"
 
 [[deps.HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Pkg"]
@@ -873,17 +626,22 @@ git-tree-sha1 = "5d4d2d9904227b8bd66386c1138cf4d5ffa826bf"
 uuid = "e6f89c97-d47a-5376-807f-9c37f3926c36"
 version = "0.4.9"
 
+[[deps.MIMEs]]
+git-tree-sha1 = "65f28ad4b594aebe22157d6fac869786a255b7eb"
+uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
+version = "0.1.4"
+
 [[deps.MKL_jll]]
 deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "Pkg"]
-git-tree-sha1 = "41d162ae9c868218b1f3fe78cba878aa348c2d26"
+git-tree-sha1 = "2ce8695e1e699b68702c03402672a69f54b8aca9"
 uuid = "856f044c-d86e-5d09-b602-aeab76dc8ba7"
-version = "2022.1.0+0"
+version = "2022.2.0+0"
 
 [[deps.MacroTools]]
 deps = ["Markdown", "Random"]
-git-tree-sha1 = "3d3e902b31198a27340d0bf00d6ac452866021cf"
+git-tree-sha1 = "42324d08725e200c23d4dfb549e0d5d89dede2d2"
 uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
-version = "0.5.9"
+version = "0.5.10"
 
 [[deps.Markdown]]
 deps = ["Base64"]
@@ -891,9 +649,9 @@ uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 
 [[deps.MbedTLS]]
 deps = ["Dates", "MbedTLS_jll", "MozillaCACerts_jll", "Random", "Sockets"]
-git-tree-sha1 = "6872f9594ff273da6d13c7c1a1545d5a8c7d0c1c"
+git-tree-sha1 = "03a9b9718f5682ecb107ac9f7308991db4ce395b"
 uuid = "739be429-bea8-5141-9913-cc70e7f3736d"
-version = "1.1.6"
+version = "1.1.7"
 
 [[deps.MbedTLS_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -941,9 +699,9 @@ uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
-git-tree-sha1 = "02be9f845cb58c2d6029a6d5f67f4e0af3237814"
+git-tree-sha1 = "3c3c4a401d267b04942545b1e964a20279587fd7"
 uuid = "4d8831e6-92b7-49fb-bdf8-b643e874388c"
-version = "1.1.3"
+version = "1.3.0"
 
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -980,9 +738,9 @@ version = "0.11.16"
 
 [[deps.Parsers]]
 deps = ["Dates"]
-git-tree-sha1 = "3d5bf43e3e8b412656404ed9466f1dcbf7c50269"
+git-tree-sha1 = "6c01a9b494f6d2a9fc180a08b182fcb06f0958a0"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "2.4.0"
+version = "2.4.2"
 
 [[deps.Pipe]]
 git-tree-sha1 = "6842804e7867b115ca9de748a0cf6b364523c16d"
@@ -1001,9 +759,9 @@ uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 
 [[deps.PlotThemes]]
 deps = ["PlotUtils", "Statistics"]
-git-tree-sha1 = "8162b2f8547bc23876edd0c5181b27702ae58dce"
+git-tree-sha1 = "1f03a2d339f42dca4a4da149c7e15e9b896ad899"
 uuid = "ccf2f8ad-2431-5c83-bf29-c5338b663b6a"
-version = "3.0.0"
+version = "3.1.0"
 
 [[deps.PlotUtils]]
 deps = ["ColorSchemes", "Colors", "Dates", "Printf", "Random", "Reexport", "SnoopPrecompile", "Statistics"]
@@ -1013,15 +771,15 @@ version = "1.3.1"
 
 [[deps.Plots]]
 deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers", "GR", "JLFzf", "JSON", "LaTeXStrings", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "RelocatableFolders", "Requires", "Scratch", "Showoff", "SnoopPrecompile", "SparseArrays", "Statistics", "StatsBase", "UUIDs", "UnicodeFun", "Unzip"]
-git-tree-sha1 = "f60a3090028cdf16b33a62f97eaedf67a6509824"
+git-tree-sha1 = "0a56829d264eb1bc910cf7c39ac008b5bcb5a0d9"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-version = "1.35.0"
+version = "1.35.5"
 
 [[deps.PlutoUI]]
-deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "Markdown", "Random", "Reexport", "UUIDs"]
-git-tree-sha1 = "2777a5c2c91b3145f5aa75b61bb4c2eb38797136"
+deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
+git-tree-sha1 = "efc140104e6d0ae3e7e30d56c98c4a927154d684"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-version = "0.7.43"
+version = "0.7.48"
 
 [[deps.PooledArrays]]
 deps = ["DataAPI", "Future"]
@@ -1036,10 +794,10 @@ uuid = "21216c6a-2e73-6563-6e65-726566657250"
 version = "1.3.0"
 
 [[deps.PrettyTables]]
-deps = ["Crayons", "Formatting", "Markdown", "Reexport", "Tables"]
-git-tree-sha1 = "dfb54c4e414caa595a1f2ed759b160f5a3ddcba5"
+deps = ["Crayons", "Formatting", "Markdown", "Reexport", "StringManipulation", "Tables"]
+git-tree-sha1 = "460d9e154365e058c4d886f6f7d6df5ffa1ea80e"
 uuid = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
-version = "1.3.1"
+version = "2.1.2"
 
 [[deps.Printf]]
 deps = ["Unicode"]
@@ -1053,9 +811,9 @@ version = "5.15.3+1"
 
 [[deps.QuadGK]]
 deps = ["DataStructures", "LinearAlgebra"]
-git-tree-sha1 = "3c009334f45dfd546a16a57960a821a1a023d241"
+git-tree-sha1 = "97aa253e65b784fd13e83774cadc95b38011d734"
 uuid = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
-version = "2.5.0"
+version = "2.6.0"
 
 [[deps.REPL]]
 deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
@@ -1067,15 +825,15 @@ uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [[deps.RecipesBase]]
 deps = ["SnoopPrecompile"]
-git-tree-sha1 = "612a4d76ad98e9722c8ba387614539155a59e30c"
+git-tree-sha1 = "d12e612bba40d189cead6ff857ddb67bd2e6a387"
 uuid = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
-version = "1.3.0"
+version = "1.3.1"
 
 [[deps.RecipesPipeline]]
-deps = ["Dates", "NaNMath", "PlotUtils", "RecipesBase"]
-git-tree-sha1 = "017f217e647cf20b0081b9be938b78c3443356a0"
+deps = ["Dates", "NaNMath", "PlotUtils", "RecipesBase", "SnoopPrecompile"]
+git-tree-sha1 = "9b1c0c8e9188950e66fc28f40bfe0f8aac311fe0"
 uuid = "01d81517-befc-4cb6-b9ec-a95719d0359c"
-version = "0.6.6"
+version = "0.6.7"
 
 [[deps.Reexport]]
 git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
@@ -1175,6 +933,11 @@ git-tree-sha1 = "5783b877201a82fc0014cbf381e7e6eb130473a4"
 uuid = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
 version = "1.0.1"
 
+[[deps.StringManipulation]]
+git-tree-sha1 = "46da2434b41f41ac3594ee9816ce5541c6096123"
+uuid = "892a3eda-7b42-436c-8928-eab12a02cf0e"
+version = "0.3.0"
+
 [[deps.SuiteSparse]]
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
 uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
@@ -1191,9 +954,9 @@ version = "1.0.1"
 
 [[deps.Tables]]
 deps = ["DataAPI", "DataValueInterfaces", "IteratorInterfaceExtensions", "LinearAlgebra", "OrderedCollections", "TableTraits", "Test"]
-git-tree-sha1 = "2d7164f7b8a066bcfa6224e67736ce0eb54aef5b"
+git-tree-sha1 = "c79322d36826aa2f4fd8ecfa96ddb47b174ac78d"
 uuid = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
-version = "1.9.0"
+version = "1.10.0"
 
 [[deps.Tar]]
 deps = ["ArgTools", "SHA"]
@@ -1477,65 +1240,18 @@ version = "1.4.1+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═ef275808-4b08-11ed-0a69-a74ea8061e9b
-# ╠═fd5276a4-79df-441a-a561-6723a56f3496
-# ╠═145eaf0c-c60a-4c63-90cd-988a24c889bb
-# ╠═49d29404-2152-486f-993d-70bd4940ec53
-# ╠═19406453-ea00-4f32-b716-9789c95a6d00
-# ╠═61bc4618-b42e-4a6e-898d-fcbb2206df68
-# ╠═ebc9a411-1dce-43fc-b77e-39d03fffbc01
-# ╠═f6599ca2-0b1b-4e97-9298-b84417390098
-# ╠═6c7f5b2c-60bc-40c8-be08-c0804ffdf156
-# ╠═fe9ef4e0-61f3-4535-878d-e23d28678ea6
-# ╠═d80f32da-3586-4743-93d3-7138bab70eff
-# ╠═9c1d3548-60a7-4f82-b2f9-81c4210fea47
-# ╠═ad4a8224-9603-4083-b564-cc1d21857bbf
-# ╠═7daf28c6-52bd-4e50-ad1f-7e0a47b58d1e
-# ╠═37ca39b5-4fc0-409b-90e4-f9bb7e58810d
-# ╠═663ce32a-8c63-4847-ad03-567fce5ca6ba
-# ╠═a2fa23a3-6b11-4855-b67c-20a20a4f184a
-# ╠═b4b7e36c-0048-4fb3-9850-d5d220cfab44
-# ╠═8d912daf-43ee-4691-a90c-322c7c662214
-# ╠═0ec63a21-4c4a-42ae-b86f-4f5d40749bf1
-# ╠═9083975d-1d70-43f2-b845-31179f478870
-# ╠═74e0269d-ccf6-4df2-8c19-df54560fec57
-# ╠═59ab4ef2-0650-45e5-b445-d508dd1f4a26
-# ╠═181009b2-4435-45c6-ae04-ac8f2c1cb17a
-# ╠═7457a33b-e9cf-4bef-97ce-0a80697b9f4f
-# ╠═5dc7c077-a963-470e-a662-ef1ffbe8f47a
-# ╠═3d2df87a-1810-4979-b749-a3611f3771ae
-# ╠═06a7ceb6-f55d-4e39-86ea-d3ff907f8105
-# ╠═268b3e68-9e87-468c-ae8c-ce8d024f68c7
-# ╠═d1b9d965-cdff-4a6d-9b9e-bf25267f4b1a
-# ╠═66882390-ccaf-4a40-93e4-768dfc020306
-# ╠═2f0d1e82-55c3-47dd-ba3f-cb1067f68ff3
-# ╠═aa7ee997-5884-4089-8a92-77c2c017ce6d
-# ╠═33f6a915-f0eb-46e7-ba20-003ffd45201e
-# ╠═343c4e68-3ab1-44de-a265-9c5acdf0d3b5
-# ╠═b59c0df4-5ab4-4f54-9b06-d347902c5226
-# ╠═e59556d6-52c2-4d4a-8e85-a50af0f9c8ee
-# ╠═387181f0-9460-40cd-95c3-1209fe7d3dcc
-# ╠═840100ee-73ac-4e2e-8c4f-0cdc0460e683
-# ╠═df6eb105-b647-43d0-a512-21683658dc65
-# ╠═8edcc4fe-ac2e-4ffd-815b-28a4ce95683d
-# ╠═d0fca0ff-0a64-482f-a461-b32261ad8337
-# ╠═9161ff86-73e8-450d-b83d-343f5afa4726
-# ╠═5613bf27-027f-4b2f-a447-54a9bcf7a293
-# ╠═2b387fe7-5c95-4f7e-93d7-234e348b07a6
-# ╠═04ffff97-5d80-40db-be52-f9913c124d5b
-# ╠═63f49cda-59ca-422c-9ed8-8e83b212ab03
-# ╠═cc91f6a2-a3d4-4bc9-8890-35062953a1ba
-# ╠═06368522-a92a-4a17-a993-85e4451f9041
-# ╠═f3f7a9d2-7009-4a44-9cf0-d608caea4f33
-# ╠═30ac696d-293d-497a-8bad-72a610a49474
-# ╠═2457b377-ab1a-47d2-b972-2cf5837d6313
-# ╠═4be4401f-0540-41ff-a12f-7490e43cb638
-# ╠═50af54d6-a693-43eb-a529-c428d6acbc9b
-# ╠═a9d8ada0-6494-4cee-9a69-f3c5bc9a4f9b
-# ╠═f578af66-fd46-4acf-891e-dc3224cc38ec
-# ╠═ba709707-7eb0-456e-8303-5bed6d5caa8b
-# ╠═94b03f76-131b-4519-9f7c-7545c3452626
-# ╠═8faeb768-0519-4beb-bf6a-3c0088036e79
-# ╠═c33972ec-15ba-481e-8d29-b73fc0033165
+# ╠═5228be44-53ae-11ed-10a3-6302856fb8fe
+# ╠═fb2b3cf9-7fd8-43cc-befb-c0619992a659
+# ╠═73ad5b45-a75c-4306-9e7a-7ad483939490
+# ╠═b1a6e45a-bc7d-4cdd-bbba-8183de0f58ef
+# ╠═9f77efe1-52f0-480f-8c83-edc1ff3103ec
+# ╠═1be56459-8bcc-40ec-8e36-2377c35d9311
+# ╠═8d85b166-9582-4809-be92-2dc8059f2298
+# ╠═1b61d589-8972-4fbd-aa4b-a95d51c50f16
+# ╠═fdbb704f-d101-45cf-8251-7b6717050b35
+# ╠═eabca072-093a-4438-ae2e-952089a5a55a
+# ╠═c7238e74-e716-4e89-b0d3-9bccaf93abf6
+# ╠═ab4e7750-f391-4de1-81e7-95d50506de92
+# ╠═5313890b-34cc-41a0-8bfc-8be17755fe7f
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
