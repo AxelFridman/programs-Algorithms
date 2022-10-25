@@ -1,0 +1,95 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+generarMatriz = function(datosX, funciones){
+  matriz = matrix(0,  length(datosX), length(funciones))
+  res =lapply(funciones, do.call, list(1:length(datosX)))
+  for (i in 1:length(funciones)){
+    vec = unlist(res[i])
+    for (j in 1:length(datosX)){
+      matriz[j,i] = vec[j]   
+    }
+  }
+  return(matriz)
+}
+```
+
+```{r}
+modeloLinealizado = function(datosX, y, funciones){
+  X = generarMatriz(datosX, funciones)
+  transX = t(X)
+  theta = solve(transX%*%X) %*% (transX) %*% (y)
+  return(theta)
+} 
+```
+```{r}
+f0 = function(x) return(x**0)
+f1 = function(x) return(x)
+f2 = function(x) return(x**2)
+funcionesPack = c(f0,f1,f2)
+```
+
+```{r}
+#modeloLinealizado(datosX, y, funcionesPack)
+```
+
+```{r}
+generarMallaEvaluar = function(ini, fin, delta, funciones, theta){
+  malla = seq(ini, fin, delta)
+  res =lapply(funciones, do.call, list(malla))
+  ev = rep(0, length(malla))
+  for (j in 1:length(malla)){
+    for (i in 1:length(funciones)){
+      ev[j] = ev[j] + theta[i]*unlist(res[i])[j]
+    }
+  }
+  return(list(malla, ev))
+}
+
+```
+
+```{r}
+y = cars$dist
+x = cars$speed
+theta = modeloLinealizado(x, y, funcionesPack)
+resu  = generarMallaEvaluar(4, 26, 0.01, funcionesPack, theta)
+```
+```{r}
+modR = lm(y ~ poly(x, 2))
+#modR.predict(unlist(resu[1]))
+prediccion = predict(modR, data.frame( x = unlist(resu[1])))#$fit
+```
+
+```{r}
+plot(cars$speed, cars$dist)
+lines(unlist(resu[1]), unlist(resu[2]), col= "red")
+lines(unlist(resu[1]), prediccion, col= "blue")
+
+```
+```{r}
+datosX = c(1,2,3,4,5,6,7,8,9,10,11,12)
+y2 = c(1,4.2,9.1,16, 25.0, 37,24,18,9,5,2,-1)
+theta2 = modeloLinealizado(datosX, y2, funcionesPack)
+```
+
+```{r}
+resu2  = generarMallaEvaluar(0.5, 13, 0.1, funcionesPack, theta2)
+```
+```{r}
+modR2 = lm(y2 ~ poly(datosX, 2))
+#modR.predict(unlist(resu[1]))
+prediccion2 = predict(modR2, data.frame( datosX = unlist(resu2[1])))#$fit
+```
+
+```{r}
+plot(datosX, y2)
+lines(unlist(resu2[1]), unlist(resu2[2]), col= "red")
+lines(unlist(resu2[1]), prediccion2, col= "blue")
+```
+```{r}
+
+```
+
+
