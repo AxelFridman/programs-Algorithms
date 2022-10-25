@@ -5,7 +5,7 @@ output: html_notebook
 ```{r}
 generarMatriz = function(datosX, funciones){
   matriz = matrix(0,  length(datosX), length(funciones))
-  res =lapply(funciones, do.call, list(1:length(datosX)))
+  res =lapply(funciones, do.call, list((datosX)))
   for (i in 1:length(funciones)){
     vec = unlist(res[i])
     for (j in 1:length(datosX)){
@@ -57,15 +57,15 @@ theta = modeloLinealizado(x, y, funcionesPack)
 resu  = generarMallaEvaluar(4, 26, 0.01, funcionesPack, theta)
 ```
 ```{r}
-modR = lm(y ~ poly(x, 2))
+#modR = lm(y ~ poly(x, 2))
 #modR.predict(unlist(resu[1]))
-prediccion = predict(modR, data.frame( x = unlist(resu[1])))#$fit
+#prediccion = predict(modR, data.frame( x = unlist(resu[1])))#$fit
 ```
 
 ```{r}
 plot(cars$speed, cars$dist)
 lines(unlist(resu[1]), unlist(resu[2]), col= "red")
-lines(unlist(resu[1]), prediccion, col= "blue")
+#lines(unlist(resu[1]), prediccion, col= "blue")
 
 ```
 ```{r}
@@ -78,15 +78,15 @@ theta2 = modeloLinealizado(datosX, y2, funcionesPack)
 resu2  = generarMallaEvaluar(0.5, 13, 0.1, funcionesPack, theta2)
 ```
 ```{r}
-modR2 = lm(y2 ~ poly(datosX, 2))
+#modR2 = lm(y2 ~ poly(datosX, 2))
 #modR.predict(unlist(resu[1]))
-prediccion2 = predict(modR2, data.frame( datosX = unlist(resu2[1])))#$fit
+#prediccion2 = predict(modR2, data.frame( datosX = unlist(resu2[1])))#$fit
 ```
 
 ```{r}
 plot(datosX, y2)
 lines(unlist(resu2[1]), unlist(resu2[2]), col= "red")
-lines(unlist(resu2[1]), prediccion2, col= "blue")
+#lines(unlist(resu2[1]), prediccion2, col= "blue")
 ```
 ```{r}
 
