@@ -50,6 +50,7 @@ generarMallaEvaluar = function(ini, fin, delta, funciones, theta){
 
 ```
 
+
 ```{r}
 y = cars$dist
 x = cars$speed
@@ -89,7 +90,30 @@ lines(unlist(resu2[1]), unlist(resu2[2]), col= "red")
 #lines(unlist(resu2[1]), prediccion2, col= "blue")
 ```
 ```{r}
-
+n=13
+datosX2 = seq(1:n)
+y3 = -50 + 10 * datosX2 - 50 * datosX2**2 + 0.05 * e**datosX2 +  rnorm(n,0,100)#
+theta3 = modeloLinealizado(datosX2, y3, funcionesPack20)
+```
+```{r}
+e = 2.7182
+f00 = function(x) return(x**0)
+f10 = function(x) return(x)
+f20 = function(x) return(e**x)
+f30 = function(x) return(x**2)
+#f40 = function(x) return(1*e**(-x))
+funcionesPack20 = c(f00,f10,f20,f30)
+```
+```{r}
+resu3  = generarMallaEvaluar(min(datosX2)-1, max(datosX2)+1, 0.1, funcionesPack20, theta3)
 ```
 
+```{r}
+plot(datosX2, y3)
+lines(unlist(resu3[1]), unlist(resu3[2]), col= "red")
+#lines(unlist(resu2[1]), prediccion2, col= "blue")
+```
+```{r}
+print(thetha3)
+```
 
