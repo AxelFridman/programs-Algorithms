@@ -1,0 +1,43 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+dfBebes = read.table(file = "bajoPeso.txt",sep = "", header = T)
+```
+```{r}
+mod = lm(presSist ~ edadG + apgar5, data = dfBebes)
+```
+
+```{r}
+summary(mod)
+```
+```{r}
+qf(0.95,2,97)
+```
+
+```{r}
+confint(mod)
+```
+```{r}
+dfBebes$varon = as.factor(dfBebes$varon)
+varones = dfBebes[dfBebes$varon==1,]
+mujeres = dfBebes[dfBebes$varon==0,]
+
+```
+
+
+```{r}
+mod2 = lm(varones$presSist ~ varones$edadG)
+summary(mod2)
+```
+```{r}
+mod3 = lm(mujeres$presSist ~ mujeres$edadG)
+summary(mod3)
+```
+```{r}
+mod3 = lm(presSist ~. ,data = dfBebes[,-3])
+summary(mod3)
+```
+

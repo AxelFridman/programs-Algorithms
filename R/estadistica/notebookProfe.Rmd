@@ -1,0 +1,245 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+#cargo los datos
+datos<-cars
+names(datos)
+
+#defino las variables
+x<-datos$speed #velocidad del auto
+y<-datos$dist #distancia requerida de frenado
+
+plot(x,y)
+
+# armamos a mano la matriz de diseño
+X<-cbind(rep(1,length(x)),x)
+
+#calculamos usando la formula
+beta_sombrero<-solve(t(X)%*%X)%*%t(X)%*%y
+
+beta_sombrero0<-beta_sombrero[1]
+beta_sombrero1<-beta_sombrero[2]
+
+#graficamos la recta
+plot(x,y,pch=20)
+abline(beta_sombrero,col="dodgerblue3", lwd=2)#, lty=2)
+
+#superponemos las estimaciones de nuestros puntos de diseño
+y_sombrero<-beta_sombrero0+beta_sombrero1*x
+points(x,y_sombrero,col="orange", pch=18)
+
+
+# estimamos sigma^2
+
+sum((y-y_sombrero)^2)/(length(x)-2)
+
+# para agregar mas covariables
+
+x2<-x^2
+reg2<-lm(y~x+x2)
+summary(reg2)
+
+#graficamos
+y2<-reg2$coefficients[1]+reg2$coefficients[2]*x+reg2$coefficients[3]*x2
+lines(x,y2, col="darkolivegreen", lwd=2)
+
+
+```
+
+```{r}
+setwd("C:/Users/Florencia/Dropbox/IECD_3M/2022/Clases practicas 2022/Clase 18")
+setwd("~/Dropbox/IECD_3M/2022/Clases practicas 2022/Clase 18")
+nbp <- read.table("bajoPeso.txt",header=TRUE)
+names(nbp)
+m <- dim(nbp)
+attach(nbp)
+plot(apgar5,presSist)
+ajuste <- lm(presSist~edadG+apgar5)
+names(ajuste)
+summary(ajuste)
+names(summary(ajuste))
+summary(ajuste)$sigma
+sum(ajuste$coefficients*c(1,31,7))
+```
+
+```{r}
+rm(list=ls())
+
+
+## Simulacion
+
+
+sigma<-sqrt(1.3)
+beta.star0<- 0.1
+beta.star1<- 0.025
+
+
+equis<- seq(1,10, by=0.1)
+set.seed(123)
+
+z<- exp(beta.star0+beta.star1*equis*equis)
+y<- z+rnorm(length(equis),0,sigma)
+
+# con puntos
+plot(equis,y,pch=20,col="grey30",xlab="x",ylim=c(0,10))
+
+#grafico la verdadera
+lines(equis,z,lwd=2,col="magenta")
+
+
+###########################################################
+#
+#Ajusto un modelo lineal simple 
+#
+#E(Y)= beta_0+beta_1*equis
+#
+###########################################################
+
+salida.lineal<- lm(y~equis)
+lines(equis,salida.lineal$fit,col="orange",lwd=2)
+
+
+###########################################################
+#
+#Ajusto un modelo una cuadratica
+#
+#E(Y)= beta_0+beta_1*equis+beta_2*equis^2
+#
+###########################################################
+
+plot(equis,y,pch=20,col="grey30",xlab="x",ylim=c(0,10))
+lines(equis,z,lwd=2)
+
+salida<- lm(y~poly(equis,2,raw=TRUE))
+lines(equis,salida$fit,col="orange",lwd=2)
+
+###########################################################
+#
+#Ajusto un modelo un polinomio de grado 5
+#
+#E(Y)= beta_0+beta_1*equis+...+beta_5*equis^5
+#
+###########################################################
+
+plot(equis,y,pch=20,col="grey30",xlab="x",ylim=c(0,10))
+lines(equis,z,lwd=2)
+
+salida<- lm(y~poly(equis,5,raw=TRUE))
+lines(equis,salida$fit,col="orange",lwd=2)
+
+colores<-rainbow(9)
+
+###########################################################
+#
+# Ahora lo repito 9 veces y grafico las rectas ajustadas
+#
+###########################################################
+
+
+# sin puntos
+plot(equis,y,pch=20,col="grey30",xlab="x",type="n",ylim=c(0,10))
+lines(equis,z,lwd=2)
+
+set.seed(123)
+for(i in 1: 9){
+  z<- exp(beta.star0+beta.star1*equis*equis)
+  y<- z+rnorm(length(equis),0,sigma)
+  salida.lineal<- lm(y~equis)
+  lines(equis,salida.lineal$fit,col=colores[i],lwd=2)
+}
+lines(equis,z,lwd=2)
+#points(equis,y)
+###########################################################
+#
+# Repito 9 veces y grafico las cuadraticas ajustadas
+#
+###########################################################
+
+### Ahora ajusto cuadraticas
+set.seed(123)
+
+z<- exp(beta.star0+beta.star1*equis*equis)
+y<- z+rnorm(length(equis),0,sigma)
+
+plot(equis,y,pch=20,col="grey30",xlab="x",type="n",ylim=c(0,10))
+lines(equis,z,lwd=2)
+
+salida<- lm(y~poly(equis,2,raw=TRUE))
+lines(equis,salida$fit,col=15,lwd=2)
+
+
+for(i in 1:9){
+  z<- exp(beta.star0+beta.star1*equis*equis)
+  y<- z+rnorm(length(equis),0,sigma)
+  salida<- lm(y~poly(equis,2,raw=TRUE))
+  lines(equis,salida$fit,col=colores[i],lwd=2)
+}
+lines(equis,z,lwd=2)
+#points(equis,y)
+
+###########################################################
+#
+# 9 veces y grafico los polinomio de grado 5 ajustados
+#
+###########################################################
+
+set.seed(123)
+
+z<- exp(beta.star0+beta.star1*equis*equis)
+y<- z+rnorm(length(equis),0,sigma)
+
+plot(equis,y,pch=20,col="grey30",xlab="x",type="n",ylim=c(-1,10))
+lines(equis,z,lwd=2)
+
+salida<- lm(y~poly(equis,5,raw=TRUE))
+lines(equis,salida$fit,col="orange",lwd=2)
+
+for(i in 1: 9){
+  z<- exp(beta.star0+beta.star1*equis*equis)
+  y<- z+rnorm(length(equis),0,sigma)
+  salida<- lm(y~poly(equis,5,raw=TRUE))
+  lines(equis,salida$fit,col=colores[i],lwd=2)
+}
+
+lines(equis,z,lwd=2)
+
+
+###########################################################
+#
+# Vamos a predecir con los distintos ajustes en x_o=4
+# Repetimos Nrep=1000 veces
+#
+###########################################################
+Nrep<- 1000
+set.seed(123)
+
+pred1<-pred2<-pred5<-pred10<-pred15<-c()
+
+
+
+equis.new<- data.frame(equis=c(4))
+
+for(i in 1: Nrep){
+  z<- exp(beta.star0+beta.star1*equis*equis)
+  y<- z+rnorm(length(equis),0,sigma)
+  salida1<- lm(y~equis)
+  salida2<- lm(y~poly(equis,2,raw=TRUE))
+  salida5<- lm(y~poly(equis,5,raw=TRUE))
+  salida10<- lm(y~poly(equis,10,raw=TRUE))
+  salida15<- lm(y~poly(equis,15,raw=TRUE))
+  pred1<-c(pred1,predict(salida1,newdata=equis.new))
+  pred2<-c(pred2,predict(salida2,newdata=equis.new))
+  pred5<-c(pred5,predict(salida5,newdata=equis.new))
+  pred10<-c(pred10,predict(salida10,newdata=equis.new))
+  pred15<-c(pred15,predict(salida15,newdata=equis.new))
+}
+
+boxplot(pred1,pred2,pred5,pred10,pred15,names=c("1","2","5","10","15"),xlab="Grado del Polinomio")
+abline(h=exp(beta.star0+beta.star1*4*4),lwd=2,col="magenta")
+       
+       
+```
+
