@@ -4,82 +4,83 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 31582130-592d-11ed-27b8-4df5f6e368fe
+# ╔═╡ fb455544-5608-11ed-2a0d-358c49ef59c5
 begin
 	using Random
 	using LinearAlgebra
 	using Plots
 end
 
-# ╔═╡ f4b04d1a-1e00-4b70-8531-a1dc992904ba
+# ╔═╡ 3f968bb1-33fb-4577-b108-0a1e11f3f7dd
 begin
-	h = 0.001
-	comienzo = 0
-	fin = 1
+	h = 0.1
+	comienzo = -2
+	fin = - comienzo
 end
 
-# ╔═╡ 079a35da-330e-4516-a467-2fd4994a1803
+# ╔═╡ 53cc690f-6aaf-4c33-82b6-1a8fc7ff0a0e
 tspan = comienzo:h:fin
 
-# ╔═╡ 2dcb3f9e-402e-4b1c-a44a-d5ac55abc1a8
-e = exp(1)
-
-# ╔═╡ 17ec12a9-53ec-4e3a-ab50-ca9e21599731
-f(x) = e^x
-
-# ╔═╡ af5116ab-5c75-4c5e-97b6-9fb45f4b0408
-"
-uxx = f(x) para x entre 0 y 1
-u(0) = α
-u(1) = β
-"
-
-# ╔═╡ 20afd282-073d-42fe-abb7-ae36b786e3a6
+# ╔═╡ fbee766e-f3f2-446b-b854-5f6b19be540e
 begin
-	α = 1
-	β = exp(1)
-	u = f.(tspan)
-end
-
-# ╔═╡ 2ed25d60-8932-4818-ad3c-46b724b962e7
-begin
-	datosBorde = zeros(length(tspan)-2)
-	datosBorde[1] = α
-	datosBorde[end] = β
+	f(x) = x^4
+	fder(x) = x^3 *4
+	fderSeg(x) = x^2 *12
+	derReal = fder.(tspan)
+	dersegReal = fderSeg.(tspan)
 	
+	u = f.(tspan)
+	d = 2*ones(length(tspan))
+	dl = -1*ones(length(tspan)-1)
+	du = -1*ones(length(tspan)-1)
+	A = Tridiagonal(dl ,d , du )
+	
+	d2 = 0*ones(length(tspan))
+	dl2 = -1*ones(length(tspan)-1)
+	du2 = 1*ones(length(tspan)-1)
+	A2 = Tridiagonal(dl2 ,d2 , du2 )
 end
 
-# ╔═╡ a2fee870-8f83-4bd5-bd5c-892842ef7cfd
-	#uprimaSeg = -1/(h^2) * ((A * u) .+ datosBorde)
-
-# ╔═╡ fae5b72e-9196-466f-8d4e-ce62ec6c536c
+# ╔═╡ 8fc60920-65bf-4b66-8339-e4bd4610472d
 begin
-		ulor = f.(tspan[2:end-1])
-		dlor = -2*ones(length(tspan[2:end-1]))
-		dllor = 1*ones(length(tspan[2:end-1])-1)
-		dulor = 1*ones(length(tspan[2:end-1])-1)
-		Alor = Tridiagonal(dllor ,dlor , dulor )
+	uprimaCentrada = 1/(h*2) * (A2 * u)
+	uprimaSeg = -1/(h^2) * (A * u) #.+ u)
 end
 
-# ╔═╡ bf240fdf-f264-4b0b-b35d-be260b6ebe3b
-ulor
-
-# ╔═╡ e1e2e886-513e-496a-aa78-9cb0e9feabf6
-ures = inv(Alor) * (h^2 .* ulor - datosBorde)
-
-# ╔═╡ 9cf51c6f-468a-41da-bc9a-ccb87d47a1b0
+# ╔═╡ 08a00cc9-f2bd-4d67-92e8-997843a14a20
 begin
 	plot(tspan, u, label="original")
-	plot!(tspan[2:end-1], ures, label="estimo")
+	plot!(tspan[2:end-1], uprimaCentrada[2:end-1], label="derivadaEstimada")
+	plot!(tspan, derReal, label = "derivadaReal")
+	
+	errorDerivadaPromedioPorPunto = sum(abs.(uprimaCentrada[2:end-1] - derReal[2:end-1]))/(length(derReal)-2)
 end
 
-# ╔═╡ 7f3e4a68-c783-47f7-9e62-71bd3e3923bf
-md"""
-Cond neumann
-"""
+# ╔═╡ 2a9918bd-77cf-48fe-8332-a48d50fe0bbe
+begin
+	plot(tspan, u, label="original")
+	plot!(tspan[2:end-1], uprimaSeg[2:end-1], label="derivadaSegEstimada")
+	plot!(tspan, dersegReal, label = "derivadaSegReal")
 
-# ╔═╡ eca81107-fe41-4ea0-a376-d415776c6a04
+	errorDerivadaSegPromedioPorPunto = sum(abs.(uprimaSeg[2:end-1] - dersegReal[2:end-1]))/(length(dersegReal)-2)
+end
 
+# ╔═╡ 56f84b43-ba7d-47b6-9a89-6276235d372b
+begin
+	e = 2.7182
+	f3(x) = e^(cos(2*pi*x)) + cos(sin(5/(0.1+x^2)))
+	u3 = f3.(tspan)
+	uprimaCentrada3 = 1/(h*2) * (A2 * u3)
+end
+
+# ╔═╡ ab0894af-418c-4b74-acd4-580d82ff5233
+begin
+	plot(tspan, u3, label="original")
+	plot!(tspan[2:end-1], uprimaCentrada3[2:end-1], label="derivadaEstimada")
+end
+
+# ╔═╡ f5334f2c-7555-4e91-9261-dee8e8ee2ff0
+	
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -89,7 +90,7 @@ Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [compat]
-Plots = "~1.35.8"
+Plots = "~1.35.5"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -539,9 +540,9 @@ version = "1.3.0"
 
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "f6e9dba33f9f2c44e08a020b0caf6903be540004"
+git-tree-sha1 = "e60321e3f2616584ff98f0a4f18d98ae6f89bbb3"
 uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
-version = "1.1.19+0"
+version = "1.1.17+0"
 
 [[deps.OpenSpecFun_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Pkg"]
@@ -599,9 +600,9 @@ version = "1.3.1"
 
 [[deps.Plots]]
 deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers", "GR", "JLFzf", "JSON", "LaTeXStrings", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "RelocatableFolders", "Requires", "Scratch", "Showoff", "SnoopPrecompile", "SparseArrays", "Statistics", "StatsBase", "UUIDs", "UnicodeFun", "Unzip"]
-git-tree-sha1 = "b434dce10c0290ab22cb941a9d72c470f304c71d"
+git-tree-sha1 = "0a56829d264eb1bc910cf7c39ac008b5bcb5a0d9"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-version = "1.35.8"
+version = "1.35.5"
 
 [[deps.Preferences]]
 deps = ["TOML"]
@@ -635,9 +636,9 @@ version = "1.3.1"
 
 [[deps.RecipesPipeline]]
 deps = ["Dates", "NaNMath", "PlotUtils", "RecipesBase", "SnoopPrecompile"]
-git-tree-sha1 = "249df6fb3520492092ccebe921829920215ab205"
+git-tree-sha1 = "9b1c0c8e9188950e66fc28f40bfe0f8aac311fe0"
 uuid = "01d81517-befc-4cb6-b9ec-a95719d0359c"
-version = "0.6.9"
+version = "0.6.7"
 
 [[deps.Reexport]]
 git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
@@ -994,20 +995,15 @@ version = "1.4.1+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═31582130-592d-11ed-27b8-4df5f6e368fe
-# ╠═f4b04d1a-1e00-4b70-8531-a1dc992904ba
-# ╠═079a35da-330e-4516-a467-2fd4994a1803
-# ╠═2dcb3f9e-402e-4b1c-a44a-d5ac55abc1a8
-# ╠═17ec12a9-53ec-4e3a-ab50-ca9e21599731
-# ╠═af5116ab-5c75-4c5e-97b6-9fb45f4b0408
-# ╠═20afd282-073d-42fe-abb7-ae36b786e3a6
-# ╠═2ed25d60-8932-4818-ad3c-46b724b962e7
-# ╠═a2fee870-8f83-4bd5-bd5c-892842ef7cfd
-# ╠═fae5b72e-9196-466f-8d4e-ce62ec6c536c
-# ╠═bf240fdf-f264-4b0b-b35d-be260b6ebe3b
-# ╠═e1e2e886-513e-496a-aa78-9cb0e9feabf6
-# ╠═9cf51c6f-468a-41da-bc9a-ccb87d47a1b0
-# ╠═7f3e4a68-c783-47f7-9e62-71bd3e3923bf
-# ╠═eca81107-fe41-4ea0-a376-d415776c6a04
+# ╠═fb455544-5608-11ed-2a0d-358c49ef59c5
+# ╠═3f968bb1-33fb-4577-b108-0a1e11f3f7dd
+# ╠═53cc690f-6aaf-4c33-82b6-1a8fc7ff0a0e
+# ╠═fbee766e-f3f2-446b-b854-5f6b19be540e
+# ╠═8fc60920-65bf-4b66-8339-e4bd4610472d
+# ╠═08a00cc9-f2bd-4d67-92e8-997843a14a20
+# ╠═2a9918bd-77cf-48fe-8332-a48d50fe0bbe
+# ╠═56f84b43-ba7d-47b6-9a89-6276235d372b
+# ╠═ab0894af-418c-4b74-acd4-580d82ff5233
+# ╠═f5334f2c-7555-4e91-9261-dee8e8ee2ff0
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

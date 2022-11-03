@@ -4,82 +4,117 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 31582130-592d-11ed-27b8-4df5f6e368fe
+# ╔═╡ c208652a-5b8d-11ed-1016-25b3693651ee
 begin
 	using Random
 	using LinearAlgebra
 	using Plots
 end
 
-# ╔═╡ f4b04d1a-1e00-4b70-8531-a1dc992904ba
+# ╔═╡ 4cb9539d-63c3-4a86-a1b7-a0304a1f8710
+# Ec de calor
+
+# ╔═╡ b7d65178-314a-40f7-bb0c-6a965bcf20e7
 begin
-	h = 0.001
-	comienzo = 0
+	h = 0.01
+	comienzo = -1
 	fin = 1
 end
 
-# ╔═╡ 079a35da-330e-4516-a467-2fd4994a1803
+# ╔═╡ ac9ecabd-2c35-4925-a42a-69517094dbcc
 tspan = comienzo:h:fin
 
-# ╔═╡ 2dcb3f9e-402e-4b1c-a44a-d5ac55abc1a8
-e = exp(1)
-
-# ╔═╡ 17ec12a9-53ec-4e3a-ab50-ca9e21599731
-f(x) = e^x
-
-# ╔═╡ af5116ab-5c75-4c5e-97b6-9fb45f4b0408
-"
-uxx = f(x) para x entre 0 y 1
-u(0) = α
-u(1) = β
-"
-
-# ╔═╡ 20afd282-073d-42fe-abb7-ae36b786e3a6
+# ╔═╡ 30c5f357-ab86-4a8f-bee6-acdf7cd425cc
 begin
-	α = 1
-	β = exp(1)
-	u = f.(tspan)
+		r = 2
+		dlor = (-2*r +1)*ones(length(tspan[2:end-1]))
+		dllor = r*ones(length(tspan[2:end-1])-1)
+		dulor = r*ones(length(tspan[2:end-1])-1)
+		A = Tridiagonal(dllor ,dlor , dulor )
 end
 
-# ╔═╡ 2ed25d60-8932-4818-ad3c-46b724b962e7
-begin
-	datosBorde = zeros(length(tspan)-2)
-	datosBorde[1] = α
-	datosBorde[end] = β
+# ╔═╡ 29751226-dd61-4c17-9a75-bbe4cff59816
+function actualizarTemperatura(matriz, tempActual)
+	return (matriz*tempActual)
+end
+
+# ╔═╡ c3dac1b8-34ee-4735-8b46-ace87ba8e8d0
+function actualizarTemperatura2promedio(tempborde1, tempborde2, tempActual)
+	tempNueva = zeros(length(tempActual))
+	tempNueva[1] = tempActual[1]/2 + tempborde1/2
+	tempNueva[end] = tempActual[end]/2 + tempborde2/2
+	for i in 2:length(tempActual)-1
+		tempNueva[i] = (tempActual[i] + tempActual[i+1] + tempActual[i-1])/3
+	end
+	return tempNueva
+end
+
+# ╔═╡ cd67d795-2fb4-49c3-91ee-dbd9058998a5
+function ecuacionesDeCalor(tempInicial, xspan, tspan)
+	r = (tspan[2]-tspan[1]) / (xspan[2]-xspan[1])^2
+	dlor = (-2*r +1)*ones(length(xspan[2:end-1]))
+	dllor = r*ones(length(xspan[2:end-1])-1)
+	dulor = r*ones(length(xspan[2:end-1])-1)
+	A = Tridiagonal(dllor ,dlor , dulor )
 	
+	temps = [tempInicial]
+	for i in 1:length(tspan)
+		push!(temps,actualizarTemperatura(A, temps[i]))
+	end
+	return temps
 end
 
-# ╔═╡ a2fee870-8f83-4bd5-bd5c-892842ef7cfd
-	#uprimaSeg = -1/(h^2) * ((A * u) .+ datosBorde)
+# ╔═╡ 1ec421b6-4b61-4b08-9918-e61511c475d4
+function ecdeCalorPromediada(borde1, borde2, tempInicial, pasos)
+	temps = [tempInicial]
+	for i in 1:pasos
+		push!(temps,actualizarTemperatura2promedio(borde1, borde2, temps[i]))
+	end
+	return temps
+end
 
-# ╔═╡ fae5b72e-9196-466f-8d4e-ce62ec6c536c
+# ╔═╡ 2e12de3d-ae19-4fe8-a8b0-842385ea79f8
+tspan2 = 0:0.01:10
+
+# ╔═╡ cad9a175-bc00-4571-bf84-eb59ec10bbde
+0.01^2/2
+
+# ╔═╡ 7d3c5ab2-994b-494a-9dac-af4b196fe0e7
+xspan = -10:0.5:10
+
+# ╔═╡ 44d8ba7f-8a6a-47a1-93fd-d35adbecdb2c
+datosIniciales = xspan[2:end-1].*2 .+ sin.(π*xspan[2:end-1])#10 .* abs.(rand(Float64, length(dlor)))
+
+# ╔═╡ 5ef73bde-02b9-4424-bd5f-ff6e8683ed19
+temperaturas = ecuacionesDeCalor(datosIniciales, xspan, tspan2)
+
+# ╔═╡ af1e271c-76b0-4994-911e-94ce08584b7e
+temperaturas[end - 1]
+
+# ╔═╡ 719cd0a8-1e1c-4427-8334-907b497c23de
 begin
-		ulor = f.(tspan[2:end-1])
-		dlor = -2*ones(length(tspan[2:end-1]))
-		dllor = 1*ones(length(tspan[2:end-1])-1)
-		dulor = 1*ones(length(tspan[2:end-1])-1)
-		Alor = Tridiagonal(dllor ,dlor , dulor )
+	plot(xspan[2: end - 1], temperaturas[1], label="primero")
+	#plot!(xspan[2: end - 1], temperaturas[5], label="medio")
+	#plot!(xspan[2: end - 1], temperaturas[6], label="medio  + 1")
+	plot!(xspan[2: end - 1], temperaturas[end - 1], label="final")
 end
 
-# ╔═╡ bf240fdf-f264-4b0b-b35d-be260b6ebe3b
-ulor
+# ╔═╡ 2a207f6b-8a49-4ac2-91cd-0f3c32e1ebd2
+	plot(xspan[2:end-1], temperaturas[end ], label="final")
 
-# ╔═╡ e1e2e886-513e-496a-aa78-9cb0e9feabf6
-ures = inv(Alor) * (h^2 .* ulor - datosBorde)
 
-# ╔═╡ 9cf51c6f-468a-41da-bc9a-ccb87d47a1b0
-begin
-	plot(tspan, u, label="original")
-	plot!(tspan[2:end-1], ures, label="estimo")
+# ╔═╡ 1df63975-6853-4081-9141-3e3d5002273f
+@gif for i in 1:length(temperaturas)
+	plot(xspan[2: end - 1], temperaturas[i], label="",ylim=(-10,10))
 end
 
-# ╔═╡ 7f3e4a68-c783-47f7-9e62-71bd3e3923bf
-md"""
-Cond neumann
-"""
+# ╔═╡ d2d35ce2-dfba-42d4-b3d8-4e8e3f1b83a2
+temperaturasPromediadas = ecdeCalorPromediada(5, 10, datosIniciales, 400)
 
-# ╔═╡ eca81107-fe41-4ea0-a376-d415776c6a04
-
+# ╔═╡ 3f943488-fea3-4d1e-b5bb-da7a138dfb5e
+@gif for i in 1:length(temperaturasPromediadas)
+	plot(xspan[2: end - 1], temperaturasPromediadas[i], label="",ylim=(-20,20))
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -994,20 +1029,25 @@ version = "1.4.1+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═31582130-592d-11ed-27b8-4df5f6e368fe
-# ╠═f4b04d1a-1e00-4b70-8531-a1dc992904ba
-# ╠═079a35da-330e-4516-a467-2fd4994a1803
-# ╠═2dcb3f9e-402e-4b1c-a44a-d5ac55abc1a8
-# ╠═17ec12a9-53ec-4e3a-ab50-ca9e21599731
-# ╠═af5116ab-5c75-4c5e-97b6-9fb45f4b0408
-# ╠═20afd282-073d-42fe-abb7-ae36b786e3a6
-# ╠═2ed25d60-8932-4818-ad3c-46b724b962e7
-# ╠═a2fee870-8f83-4bd5-bd5c-892842ef7cfd
-# ╠═fae5b72e-9196-466f-8d4e-ce62ec6c536c
-# ╠═bf240fdf-f264-4b0b-b35d-be260b6ebe3b
-# ╠═e1e2e886-513e-496a-aa78-9cb0e9feabf6
-# ╠═9cf51c6f-468a-41da-bc9a-ccb87d47a1b0
-# ╠═7f3e4a68-c783-47f7-9e62-71bd3e3923bf
-# ╠═eca81107-fe41-4ea0-a376-d415776c6a04
+# ╠═c208652a-5b8d-11ed-1016-25b3693651ee
+# ╠═4cb9539d-63c3-4a86-a1b7-a0304a1f8710
+# ╠═b7d65178-314a-40f7-bb0c-6a965bcf20e7
+# ╠═ac9ecabd-2c35-4925-a42a-69517094dbcc
+# ╠═30c5f357-ab86-4a8f-bee6-acdf7cd425cc
+# ╠═29751226-dd61-4c17-9a75-bbe4cff59816
+# ╠═c3dac1b8-34ee-4735-8b46-ace87ba8e8d0
+# ╠═44d8ba7f-8a6a-47a1-93fd-d35adbecdb2c
+# ╠═cd67d795-2fb4-49c3-91ee-dbd9058998a5
+# ╠═1ec421b6-4b61-4b08-9918-e61511c475d4
+# ╠═2e12de3d-ae19-4fe8-a8b0-842385ea79f8
+# ╠═cad9a175-bc00-4571-bf84-eb59ec10bbde
+# ╠═7d3c5ab2-994b-494a-9dac-af4b196fe0e7
+# ╠═5ef73bde-02b9-4424-bd5f-ff6e8683ed19
+# ╠═af1e271c-76b0-4994-911e-94ce08584b7e
+# ╠═719cd0a8-1e1c-4427-8334-907b497c23de
+# ╠═2a207f6b-8a49-4ac2-91cd-0f3c32e1ebd2
+# ╠═1df63975-6853-4081-9141-3e3d5002273f
+# ╠═d2d35ce2-dfba-42d4-b3d8-4e8e3f1b83a2
+# ╠═3f943488-fea3-4d1e-b5bb-da7a138dfb5e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
