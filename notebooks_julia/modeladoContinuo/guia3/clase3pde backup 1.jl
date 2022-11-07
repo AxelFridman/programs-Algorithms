@@ -74,17 +74,10 @@ function ecdeCalorPromediada(borde1, borde2, tempInicial, pasos)
 end
 
 # ╔═╡ 2e12de3d-ae19-4fe8-a8b0-842385ea79f8
-tspan2 = 0:0.01:30
-
-# ╔═╡ 485c51eb-81db-478f-b333-b45efaf1427f
-md"""
-Condicion de estabilidad de metodo explicito
-"""
+tspan2 = 0:0.01:10
 
 # ╔═╡ cad9a175-bc00-4571-bf84-eb59ec10bbde
-md"""
-alpha * (diferencial t) / [(diferencial x) ^ 2] tiene que ser menor que 1/2
-"""
+0.01^2/2
 
 # ╔═╡ 7d3c5ab2-994b-494a-9dac-af4b196fe0e7
 xspan = -10:0.5:10
@@ -111,7 +104,7 @@ end
 
 
 # ╔═╡ 1df63975-6853-4081-9141-3e3d5002273f
-@gif for i in 1:10:length(temperaturas)
+@gif for i in 1:length(temperaturas)
 	plot(xspan[2: end - 1], temperaturas[i], label="",ylim=(-10,10))
 end
 
@@ -122,9 +115,6 @@ temperaturasPromediadas = ecdeCalorPromediada(5, 10, datosIniciales, 400)
 @gif for i in 1:length(temperaturasPromediadas)
 	plot(xspan[2: end - 1], temperaturasPromediadas[i], label="",ylim=(-20,20))
 end
-
-# ╔═╡ e1f1c32a-f5f1-44a3-a515-ff99d7922149
-
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -347,9 +337,9 @@ version = "1.0.2"
 
 [[deps.HTTP]]
 deps = ["Base64", "CodecZlib", "Dates", "IniFile", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
-git-tree-sha1 = "8556f4b387fcd1d9b3013d798eecbcfa0d985e66"
+git-tree-sha1 = "a97d47758e933cd5fe5ea181d178936a9fc60427"
 uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "1.5.2"
+version = "1.5.1"
 
 [[deps.HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Pkg"]
@@ -578,9 +568,9 @@ uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
-git-tree-sha1 = "5628f092c6186a80484bfefdf89ff64efdaec552"
+git-tree-sha1 = "3c3c4a401d267b04942545b1e964a20279587fd7"
 uuid = "4d8831e6-92b7-49fb-bdf8-b643e874388c"
-version = "1.3.1"
+version = "1.3.0"
 
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -610,10 +600,10 @@ deps = ["Artifacts", "Libdl"]
 uuid = "efcefdf7-47ab-520b-bdef-62a2eaa19f15"
 
 [[deps.Parsers]]
-deps = ["Dates", "SnoopPrecompile"]
-git-tree-sha1 = "cceb0257b662528ecdf0b4b4302eb00e767b38e7"
+deps = ["Dates"]
+git-tree-sha1 = "6c01a9b494f6d2a9fc180a08b182fcb06f0958a0"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "2.5.0"
+version = "2.4.2"
 
 [[deps.Pipe]]
 git-tree-sha1 = "6842804e7867b115ca9de748a0cf6b364523c16d"
@@ -680,9 +670,9 @@ version = "1.3.1"
 
 [[deps.RecipesPipeline]]
 deps = ["Dates", "NaNMath", "PlotUtils", "RecipesBase", "SnoopPrecompile"]
-git-tree-sha1 = "a030182cccc5c461386c6f055c36ab8449ef1340"
+git-tree-sha1 = "249df6fb3520492092ccebe921829920215ab205"
 uuid = "01d81517-befc-4cb6-b9ec-a95719d0359c"
-version = "0.6.10"
+version = "0.6.9"
 
 [[deps.Reexport]]
 git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
@@ -1050,8 +1040,7 @@ version = "1.4.1+0"
 # ╠═cd67d795-2fb4-49c3-91ee-dbd9058998a5
 # ╠═1ec421b6-4b61-4b08-9918-e61511c475d4
 # ╠═2e12de3d-ae19-4fe8-a8b0-842385ea79f8
-# ╠═485c51eb-81db-478f-b333-b45efaf1427f
-# ╟─cad9a175-bc00-4571-bf84-eb59ec10bbde
+# ╠═cad9a175-bc00-4571-bf84-eb59ec10bbde
 # ╠═7d3c5ab2-994b-494a-9dac-af4b196fe0e7
 # ╠═5ef73bde-02b9-4424-bd5f-ff6e8683ed19
 # ╠═af1e271c-76b0-4994-911e-94ce08584b7e
@@ -1060,6 +1049,5 @@ version = "1.4.1+0"
 # ╠═1df63975-6853-4081-9141-3e3d5002273f
 # ╠═d2d35ce2-dfba-42d4-b3d8-4e8e3f1b83a2
 # ╠═3f943488-fea3-4d1e-b5bb-da7a138dfb5e
-# ╠═e1f1c32a-f5f1-44a3-a515-ff99d7922149
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
