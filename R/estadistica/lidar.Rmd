@@ -1,0 +1,67 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+df = read.table("lidar.txt", header = T)
+```
+
+```{r}
+plot(df$int.conc)
+```
+
+Parece sigmoida al reves, ponele
+
+```{r}
+nadaryaWatson=ksmooth(df$range, df$int.conc, kernel = "normal", bandwidth = 5, x.points = df$range)
+```
+
+```{r}
+plot(nadaryaWatson$x, nadaryaWatson$y, type="l")
+```
+Parece overfittear con 5.
+Testeo separando y dividiendo dataset
+```{r}
+sample <- sample(c(TRUE, FALSE), nrow(df), replace=TRUE, prob=c(0.8,0.2))
+train  <- df[sample, ]
+test   <- df[!sample, ]
+```
+```{r}
+bw = 1:1:280
+```
+```{r}
+evaluarSistema = function(dfTest, prediccion){
+  suma = 0
+  for (i in c(1:length(dfTest))){
+    #indice = match(dfTest$range, prediccion$x)
+    suma = suma + (dfTest$int.conc[i] - prediccion$y[i])**2
+  }
+  return(mean((dfTest$int.conc - prediccion$y)^2))
+}
+```
+
+```{r}
+resultados = c()
+for (i in c(1:length(bw))){
+  res = c()
+  for (j in c(1:100)){
+  sample <- sample(c(TRUE, FALSE), nrow(df), replace=TRUE, prob=c(0.5,0.5))
+  train  <- df[sample, ]
+  test   <- df[!sample, ]
+  nadaryaWatson=ksmooth(train$range, train$int.conc, kernel = "normal", bandwidth = bw[i], x.points = test$range)
+  res[j] = evaluarSistema(test, nadaryaWatson)
+  }
+  resultados[i] =mean(res)
+}
+```
+```{r}
+plot(bw, resultados, log = "xy")
+```
+
+```{r}
+nadaryaWatson=ksmooth(train$range, train$int.conc, kernel = "normal")
+```
+```{r}
+which.min(resultados)
+```
+
