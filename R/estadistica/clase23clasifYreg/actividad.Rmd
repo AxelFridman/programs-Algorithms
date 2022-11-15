@@ -18,12 +18,7 @@ p <- ggplot(dfTrain, aes(y=as.factor(sexo), x=altura, fill=sexo)) +
   geom_violin()
 p
 ```
-```{r}
-library(GGally)
-p <- ggpairs(dfTrain, aes(colour = V2), columns = 1:2)
-ggplotly(p) #%>% 
-  #highlight("plotly_selected")
-```
+
 ```{r}
 alturasMenos165 = abs(dfTrain$altura - 165)
 alturasMenos175 = abs(dfTrain$altura - 175)
@@ -75,14 +70,21 @@ generarColumnaPredicciones = function(df, k){
   for (i in (1: length(df$altura))){
     sexoPredicho[i] = ClasificoVecinos(df$altura, df$sexo, (df$altura[i]), k)
   }
-  df2 = data.frame(df)
-  df2 = cbind(df2, sexoPredicho)
-  return(df2)
+  #df = cbind(df, sexoPredicho)
+  return(sexoPredicho)
 }
 ```
 ```{r}
-
-dfTrainConPred = generarColumnaPredicciones(dfTrain, 10)
+vals = c(1,2,3,5,10,15,20,30,50)
+res = c()
+for(i in 1:length(vals)){
+  aux = generarColumnaPredicciones(dfTrain, vals[i])
+  res[i] = sum(abs(dfTrain$sexo - aux))
+}
+#dfTrain2 = generarColumnaPredicciones(dfTrain2, 40)
+```
+```{r}
+plot(vals,res, log="")
 ```
 
 
