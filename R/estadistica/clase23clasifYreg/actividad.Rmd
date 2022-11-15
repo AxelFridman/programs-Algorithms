@@ -39,14 +39,19 @@ mean(dfT175$sexo[1:10])<1/2
 ```
 Entonces por voto de mayoria al de 165 sera clasificado mujer y al 175 como hombre
 ```{r}
-promediosMoviles = function(df, alturaAestimar, h){
-  df2 = df[df$altura > alturaAestimar-h & df$altura < alturaAestimar+h ,]
-  return(mean(df2$sexo))
+promediosMoviles = function(A, S, alturaAestimar, h){
+  df = data.frame(A,S)
+  df2 = df[df$A > alturaAestimar-h & df$A < alturaAestimar+h ,]
+  #print(df)
+  if(mean(df2$S)>1/2 ){
+    return(1)
+  }
+  return(0)
 }
 ```
 
 ```{r}
-promediosMoviles(dfTrain, 165.5, 1.5)
+promediosMoviles(dfTrain$altura, dfTrain$sexo, 170.5, 2.5)
 ```
 ```{r}
 ClasificoVecinos =function(A,S,a,k){
@@ -65,7 +70,7 @@ ClasificoVecinos =function(A,S,a,k){
 ClasificoVecinos(dfTrain$altura, dfTrain$sexo, 166, 10)
 ```
 ```{r}
-generarColumnaPredicciones = function(df, k){
+generarColumnaPrediccionesVecinos = function(df, k){
   sexoPredicho = c()
   for (i in (1: length(df$altura))){
     sexoPredicho[i] = ClasificoVecinos(df$altura, df$sexo, (df$altura[i]), k)
@@ -75,17 +80,47 @@ generarColumnaPredicciones = function(df, k){
 }
 ```
 ```{r}
+generarColumnaPrediccionesPromediosMoviles = function(df, h){
+  sexoPredicho = c()
+  for (i in (1: length(df$altura))){
+    sexoPredicho[i] = promediosMoviles(df$altura, df$sexo, (df$altura[i]), h)
+  }
+  return(sexoPredicho)
+}
+```
+
+```{r}
 vals = c(1,2,3,5,10,15,20,30,50)
 res = c()
 for(i in 1:length(vals)){
-  aux = generarColumnaPredicciones(dfTrain, vals[i])
+  aux = generarColumnaPrediccionesVecinos(dfTrain, vals[i])
   res[i] = sum(abs(dfTrain$sexo - aux))
 }
-#dfTrain2 = generarColumnaPredicciones(dfTrain2, 40)
 ```
 ```{r}
-plot(vals,res, log="")
+valsH = c(0.2, 0.5,1,1.5,2,3,5,10,15)
+resP = c()
+for(i in 1:length(valsH)){
+  aux = generarColumnaPrediccionesPromediosMoviles(dfTrain, valsH[i])
+  resP[i] = sum(abs(dfTrain$sexo - aux))
+}
+```
+```{r}
+#plot(vals,res, log="", col="red")
+plot(valsH, resP, col="blue")
+```
+```{r}
+resP
 ```
 
+```{r}
+des = density(dfTrain$altura, bw=2)
+```
 
+```{r}
+(des$x)
+```
+```{r}
+mean(dfTrain$sexo) #42% hombres, 58% mujeres
+```
 
