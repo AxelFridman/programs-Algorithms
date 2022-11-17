@@ -70,43 +70,47 @@ ClasificoVecinos =function(A,S,a,k){
 ClasificoVecinos(dfTrain$altura, dfTrain$sexo, 166, 10)
 ```
 ```{r}
-generarColumnaPrediccionesVecinos = function(df, k){
+generarColumnaPrediccionesVecinos = function(dfTrain, dfEval, k){
   sexoPredicho = c()
-  for (i in (1: length(df$altura))){
-    sexoPredicho[i] = ClasificoVecinos(df$altura, df$sexo, (df$altura[i]), k)
+  for (i in (1: length(dfEval$altura))){
+    sexoPredicho[i] = ClasificoVecinos(dfTrain$altura, dfTrain$sexo, (dfEval$altura[i]), k)
   }
   #df = cbind(df, sexoPredicho)
   return(sexoPredicho)
 }
 ```
 ```{r}
-generarColumnaPrediccionesPromediosMoviles = function(df, h){
+generarColumnaPrediccionesPromediosMoviles = function(dfTrain, dfEval , h){
   sexoPredicho = c()
-  for (i in (1: length(df$altura))){
-    sexoPredicho[i] = promediosMoviles(df$altura, df$sexo, (df$altura[i]), h)
+  for (i in (1: length(dfEval$altura))){
+    sexoPredicho[i] = promediosMoviles(dfTrain$altura, dfTrain$sexo, (dfEval$altura[i]), h)
   }
   return(sexoPredicho)
 }
 ```
 
 ```{r}
-vals = c(1,2,3,5,10,15,20,30,50)
+vals = c(1:50)
 res = c()
 for(i in 1:length(vals)){
-  aux = generarColumnaPrediccionesVecinos(dfTrain, vals[i])
-  res[i] = sum(abs(dfTrain$sexo - aux))
+  aux = generarColumnaPrediccionesVecinos(dfTrain, dfTrain, vals[i])
+  res[i] = sum(abs(dfTest$sexo - aux))
 }
 ```
 ```{r}
-valsH = c(0.2, 0.5,1,1.5,2,3,5,10,15)
+valsH = c(1:30)
 resP = c()
 for(i in 1:length(valsH)){
-  aux = generarColumnaPrediccionesPromediosMoviles(dfTrain, valsH[i])
-  resP[i] = sum(abs(dfTrain$sexo - aux))
+  aux = generarColumnaPrediccionesPromediosMoviles(dfTrain, dfTrain, valsH[i])
+  resP[i] = sum(abs(dfTest$sexo - aux))
 }
 ```
 ```{r}
-#plot(vals,res, log="", col="red")
+plot(vals,res, log="", col="red")
+```
+
+```{r}
+#
 plot(valsH, resP, col="blue")
 ```
 ```{r}
@@ -114,13 +118,14 @@ resP
 ```
 
 ```{r}
-des = density(dfTrain$altura, bw=2)
+bws = c(0.1,0.5,1,2,3,4,5,6,10,15,20,30,40,50,80)
+des = ksmooth(dfTrain$altura, dfTrain$sexo, bandwidth=2, x.points = dfTrain$altura)
 ```
 
 ```{r}
-(des$x)
+plot(des)
 ```
 ```{r}
-mean(dfTrain$sexo) #42% hombres, 58% mujeres
+density(x, )
 ```
 
