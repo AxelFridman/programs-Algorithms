@@ -1,0 +1,611 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+MODELO LINEAL CLASE 
+```{r}
+# ESTIMAR COPEFICIENTES
+#cargo los datos
+datos<-cars
+names(datos)
+
+#defino las variables
+x<-datos$speed #velocidad del auto
+y<-datos$dist #distancia requerida de frenado
+
+plot(x,y)
+
+# armamos a mano la matriz de diseño
+X<-cbind(rep(1,length(x)),x)
+
+#calculamos usando la formula
+beta_sombrero<-solve(t(X)%*%X)%*%t(X)%*%y
+
+beta_sombrero0<-beta_sombrero[1]
+beta_sombrero1<-beta_sombrero[2]
+
+#graficamos la recta
+plot(x,y,pch=20)
+abline(beta_sombrero,col="dodgerblue3", lwd=2)#, lty=2)
+
+#superponemos las estimaciones de nuestros puntos de diseño
+y_sombrero<-beta_sombrero0+beta_sombrero1*x
+points(x,y_sombrero,col="orange", pch=18)
+
+
+# estimamos sigma^2
+
+sum((y-y_sombrero)^2)/(length(x)-2)
+
+# para agregar mas covariables
+
+x2<-x^2
+reg2<-lm(y~x+x2)
+summary(reg2)
+
+#graficamos
+y2<-reg2$coefficients[1]+reg2$coefficients[2]*x+reg2$coefficients[3]*x2
+lines(x,y2, col="darkolivegreen", lwd=2)
+```
+```{r}
+# Una no lineal
+#######################################################
+rm(list=ls())
+
+
+## Simulacion
+
+
+sigma<-sqrt(1.3)
+beta.star0<- 0.1
+beta.star1<- 0.025
+
+
+equis<- seq(1,10, by=0.1)
+set.seed(123)
+
+z<- exp(beta.star0+beta.star1*equis*equis)
+y<- z+rnorm(length(equis),0,sigma)
+
+# con puntos
+plot(equis,y,pch=20,col="grey30",xlab="x",ylim=c(0,10))
+
+#grafico la verdadera
+lines(equis,z,lwd=2,col="magenta")
+
+
+###########################################################
+#
+#Ajusto un modelo lineal simple 
+#
+#E(Y)= beta_0+beta_1*equis
+#
+###########################################################
+
+salida.lineal<- lm(y~equis)
+lines(equis,salida.lineal$fit,col="orange",lwd=2)
+
+
+###########################################################
+#
+#Ajusto un modelo una cuadratica
+#
+#E(Y)= beta_0+beta_1*equis+beta_2*equis^2
+#
+###########################################################
+
+plot(equis,y,pch=20,col="grey30",xlab="x",ylim=c(0,10))
+lines(equis,z,lwd=2)
+
+salida<- lm(y~poly(equis,2,raw=TRUE))
+lines(equis,salida$fit,col="orange",lwd=2)
+
+###########################################################
+#
+#Ajusto un modelo un polinomio de grado 5
+#
+#E(Y)= beta_0+beta_1*equis+...+beta_5*equis^5
+#
+###########################################################
+
+plot(equis,y,pch=20,col="grey30",xlab="x",ylim=c(0,10))
+lines(equis,z,lwd=2)
+
+salida<- lm(y~poly(equis,5,raw=TRUE))
+lines(equis,salida$fit,col="orange",lwd=2)
+
+colores<-rainbow(9)
+
+###########################################################
+#
+# Ahora lo repito 9 veces y grafico las rectas ajustadas
+#
+###########################################################
+
+
+# sin puntos
+plot(equis,y,pch=20,col="grey30",xlab="x",type="n",ylim=c(0,10))
+lines(equis,z,lwd=2)
+
+set.seed(123)
+for(i in 1: 9){
+  z<- exp(beta.star0+beta.star1*equis*equis)
+  y<- z+rnorm(length(equis),0,sigma)
+  salida.lineal<- lm(y~equis)
+  lines(equis,salida.lineal$fit,col=colores[i],lwd=2)
+}
+lines(equis,z,lwd=2)
+#points(equis,y)
+###########################################################
+#
+# Repito 9 veces y grafico las cuadraticas ajustadas
+#
+###########################################################
+
+### Ahora ajusto cuadraticas
+set.seed(123)
+
+z<- exp(beta.star0+beta.star1*equis*equis)
+y<- z+rnorm(length(equis),0,sigma)
+
+plot(equis,y,pch=20,col="grey30",xlab="x",type="n",ylim=c(0,10))
+lines(equis,z,lwd=2)
+
+salida<- lm(y~poly(equis,2,raw=TRUE))
+lines(equis,salida$fit,col=15,lwd=2)
+
+
+for(i in 1:9){
+  z<- exp(beta.star0+beta.star1*equis*equis)
+  y<- z+rnorm(length(equis),0,sigma)
+  salida<- lm(y~poly(equis,2,raw=TRUE))
+  lines(equis,salida$fit,col=colores[i],lwd=2)
+}
+lines(equis,z,lwd=2)
+#points(equis,y)
+
+###########################################################
+#
+# 9 veces y grafico los polinomio de grado 5 ajustados
+#
+###########################################################
+
+set.seed(123)
+
+z<- exp(beta.star0+beta.star1*equis*equis)
+y<- z+rnorm(length(equis),0,sigma)
+
+plot(equis,y,pch=20,col="grey30",xlab="x",type="n",ylim=c(-1,10))
+lines(equis,z,lwd=2)
+
+salida<- lm(y~poly(equis,5,raw=TRUE))
+lines(equis,salida$fit,col="orange",lwd=2)
+
+for(i in 1: 9){
+  z<- exp(beta.star0+beta.star1*equis*equis)
+  y<- z+rnorm(length(equis),0,sigma)
+  salida<- lm(y~poly(equis,5,raw=TRUE))
+  lines(equis,salida$fit,col=colores[i],lwd=2)
+}
+
+lines(equis,z,lwd=2)
+
+
+###########################################################
+#
+# Vamos a predecir con los distintos ajustes en x_o=4
+# Repetimos Nrep=1000 veces
+#
+###########################################################
+Nrep<- 1000
+set.seed(123)
+
+pred1<-pred2<-pred5<-pred10<-pred15<-c()
+
+
+
+equis.new<- data.frame(equis=c(4))
+
+for(i in 1: Nrep){
+  z<- exp(beta.star0+beta.star1*equis*equis)
+  y<- z+rnorm(length(equis),0,sigma)
+  salida1<- lm(y~equis)
+  salida2<- lm(y~poly(equis,2,raw=TRUE))
+  salida5<- lm(y~poly(equis,5,raw=TRUE))
+  salida10<- lm(y~poly(equis,10,raw=TRUE))
+  salida15<- lm(y~poly(equis,15,raw=TRUE))
+  pred1<-c(pred1,predict(salida1,newdata=equis.new))
+  pred2<-c(pred2,predict(salida2,newdata=equis.new))
+  pred5<-c(pred5,predict(salida5,newdata=equis.new))
+  pred10<-c(pred10,predict(salida10,newdata=equis.new))
+  pred15<-c(pred15,predict(salida15,newdata=equis.new))
+}
+
+boxplot(pred1,pred2,pred5,pred10,pred15,names=c("1","2","5","10","15"),xlab="Grado del Polinomio")
+abline(h=exp(beta.star0+beta.star1*4*4),lwd=2,col="magenta")
+       
+       
+       
+       
+```
+
+```{r}
+nbp <- read.table("bajoPeso.txt",header=TRUE)
+names(nbp)
+m <- dim(nbp)
+attach(nbp)
+plot(apgar5,presSist)
+ajuste <- lm(presSist~edadG+apgar5)
+names(ajuste)
+summary(ajuste)
+names(summary(ajuste))
+summary(ajuste)$sigma
+sum(ajuste$coefficients*c(1,31,7))
+```
+
+REGULARIZACION
+```{r}
+install.packages("ISLR")
+install.packages("plotmo")     # para graficar
+install.packages("glmnet")
+install.packages("regclass")
+```
+
+```{r}
+rm(list=ls())
+
+
+#cargo librerias
+library(ISLR)
+library(plotmo)     # para graficar
+library(glmnet)
+
+#cargo datos
+
+#fix(Hitters)
+names(Hitters)
+dim(Hitters)
+
+
+#Chequeo missings
+sum(is.na(Hitters$Salary))
+
+Hitters<- na.omit(Hitters)
+sum(is.na(Hitters$Salary))
+dim(Hitters)
+
+# Ajustamos minimos cuadrados con todas las covariables
+summary(lm(Salary~.,Hitters))
+
+
+#Creamos la muestra de entrenamiento y de validacion
+set.seed(1)
+train <- sample(c(TRUE,FALSE), nrow(Hitters),rep=TRUE)
+test <- (!train )
+
+#Creo la matriz de dise�o y vector de respuestas 
+x <- model.matrix(Salary~.,Hitters)[,-1]
+y <- Hitters$Salary
+y.test=y[test]
+
+# Calculo LASSO
+grid<- 10^seq(10,-2,length=100)
+lasso.mod =glmnet (x[train ,],y[train],alpha =1, lambda =grid) #por default estandariza variables
+
+## Veo los coeficientes
+dim(coef(lasso.mod))
+
+lasso.mod$lambda
+
+#Inpeccionamos para distintos valores de lambda
+lasso.mod$lambda[90]
+coef(lasso.mod)[,90]
+
+lasso.mod$lambda[70]
+coef(lasso.mod)[,70]
+
+lasso.mod$lambda[30]
+coef(lasso.mod)[,30]
+
+## Grafico 
+plot(lasso.mod)
+
+plot(lasso.mod,label=T,xvar="lambda")
+
+#Creo la matriz de dise�o y vector de respuestas 
+x <- model.matrix(Salary~.,Hitters)[,-1]
+y <- Hitters$Salary
+y.test=y[test]
+
+#LASSO
+set.seed(1)
+cv.out <- cv.glmnet(x[train,],y[train],alpha =1)
+plot(cv.out)
+bestlam <- cv.out$lambda.min
+log(bestlam)
+
+#miro cuanto vale el MSE en la muestra de validacion
+coef(lasso.mod,s=cv.out$lambda.min)
+lasso.pred=predict(lasso.mod,s=bestlam,newx=x[test,])
+mean((lasso.pred-y.test)^2)
+
+#Tmb tenemos el log de la regla de 1 desvio standard
+log(cv.out$lambda.1se)
+coef(lasso.mod,s=cv.out$lambda.1se)
+
+lasso.pred=predict(lasso.mod,s=cv.out$lambda.1se,newx=x[test,])
+mean((lasso.pred-y.test)^2)
+
+###############################
+##Comparamos con Ridge
+# Calculo Ridge
+
+grid<- 10^seq(10,-2,length=100)
+ridge.mod =glmnet (x[train ,],y[train],alpha =0, lambda =grid) #por defalut estandariza variables
+plot(ridge.mod)
+
+plot(ridge.mod,label=T,xvar="lambda")
+
+#Ridge
+set.seed(1)
+cv.out <- cv.glmnet(x[train,],y[train],alpha =0)
+plot(cv.out)
+bestlam <- cv.out$lambda.min
+log(bestlam)
+
+#miro cuanto vale el MSE n la muestra de validacion
+coef(ridge.mod,s=cv.out$lambda.min)
+
+ridge.pred=predict(ridge.mod,s=bestlam,newx=x[test,])
+mean((ridge.pred-y.test)^2)
+
+```
+
+```{r}
+rdpercentGDP <- read.csv("rdpercentGDP.csv",sep = "")
+attach(rdpercentGDP)
+names(rdpercentGDP)
+head(rdpercentGDP)
+par(mfrow=c(1,1))
+
+plot(1996:2016,france,type="l",col="blue",ylim=c(0,3.8),xlab="years",ylab="R&D",
+     main="Research and development expenditure (% of GDP)",lwd=2)
+points(1996:2016,usa,type="l",lwd=2)
+points(1996:2016,argen,type="l",col="lightblue",lwd=2)
+points(1996:2016,ger,type="l",col="orange",lwd=2)
+points(1996:2016,china,type="l",col="red",lwd=2)
+points(1996:2016,japan,type="l",col="green",lwd=2)
+points(1996:2016,finl,type="l",col="magenta",lwd=2)
+points(1996:2016,uk,type="l",col="grey",lwd=2)
+
+text(2015.2,japan[21]+0.3,labels="Japan",col="green")
+text(2015.2,france[21]+0.15,labels="France",col="blue")
+text(2015,ger[21]+0.1,labels="Germany",col="orange")
+text(2015.8,usa[21]-0.1,labels="USA",col="black")
+text(2015.2,china[21]-0.2,labels="China",col="red")
+text(2014.8,argen[21]+0.2,labels="Argentina",col="lightblue")
+text(2015.5,uk[21]-0.2,labels="UK",col="grey")
+text(2012,finl[17]+0.4,labels="Finland",col="magenta")
+
+# Estudiemos un modelo de regresion
+set.seed(27)
+entrena <- sample(c(TRUE,FALSE),nrow(rdpercentGDP),rep=TRUE,prob=c(0.8,0.2)) 
+
+ajusteml<-lm(usa~.,data = rdpercentGDP[entrena,-1])
+summary(ajusteml) #no dan significativas todas...
+
+# Vemos que cambiando la semilla me da re diferente la estimacion
+# será que esta todo super correlacionad??
+
+XX <- model.matrix(ajusteml)[,-1] #sin el intercept
+
+cor(rdpercentGDP[2:9]) #vemos que hay covariables que estan muy correlacionadas :(
+
+# bonus track
+# ¿Estan correlacionadas las variables?
+#library(regclass)
+#VIF(ajusteml)#vif>10 alta correlacion
+
+#ahora con Ridge, que es la penalizaci�n que se recomienda para estos casos
+
+# poner alpha = 0 para que haga el ajuste ridge
+ajuste.ridge <- glmnet(XX,usa[entrena],alpha=0)    
+names(ajuste.ridge)
+summary(ajuste.ridge) ## no se entiende mucho
+plot(ajuste.ridge,label = T,xvar="lambda",lwd=2,main="Ridge Regression")
+abline(h=0,lty=2)
+ajuste.ridge$lambda
+coef.glmnet(ajuste.ridge) ## coeficientes para valores de lambda en ajuste.ridge$lambda
+grilla <- 10^seq(10,-2,length=100)
+### elijo lambda por validaci�n cruzada
+set.seed(21)
+vcR <- cv.glmnet(XX,usa[entrena],alpha=0,lambda=grilla,nfolds = 5)
+plot(vcR)
+names(vcR)
+vcR$lambda.min
+vcR$lambda.1se
+rid.1se<-glmnet(XX,usa[entrena],alpha=0,lambda = vcR$lambda.1se)
+rid.min<-glmnet(XX,usa[entrena],alpha=0,lambda = vcR$lambda.min)
+coef(rid.1se)
+coef(rid.min)
+ajusteml
+
+## poner alpha=1 si queremos hacer LASSO
+set.seed(87)
+vcL <- cv.glmnet(XX,usa[entrena],alpha=1,lambda=grilla,nfolds = 5)
+plot(vcL)
+vcL$lambda.min
+vcL$lambda.1se
+lasso.1se<-glmnet(XX,usa[entrena],alpha=1,lambda = vcL$lambda.1se)
+lasso.min<-glmnet(XX,usa[entrena],alpha=1,lambda = vcL$lambda.min)
+coef(lasso.1se) 
+coef(lasso.min) ## selecciona mas variables
+
+### medimos la capacidad de predicci�n
+prueba <-(!entrena)
+is.matrix(rdpercentGDP[prueba,-c(1,9)]) ## no consideramos a la primera y última columna
+## el as.matrix es un comando que "salva" cuando se necesita objeto matriz
+nuevo <- as.matrix(rdpercentGDP[prueba,-c(1,9)]) ## me quedo con la submatriz que contiene
+## a las filas de prueba de las covariables involucradas
+
+## Ridge
+ridge.pred <- predict(rid.1se,s=vcR$lambda.1se,newx=nuevo)
+ecmR <- mean((ridge.pred-usa[prueba])^2)
+## con todo el conjunto de datos, estimo los par�metros
+covariables <- as.matrix(rdpercentGDP[,-c(1,9)])
+salidaR <- glmnet(covariables,usa,alpha=0)
+predict(salidaR,type="coefficients",s=vcR$lambda.1se)[1:8,]
+## LASSO
+lasso.pred <- predict(lasso.1se,s=vcL$lambda.1se,newx=nuevo)
+ecmL <- mean((lasso.pred-usa[prueba])^2)
+## ahora con todo el conjunto de datos, estimo los par�metros
+salidaL <- glmnet(covariables,usa,alpha=1)
+predict(salidaL,type="coefficients",s=vcL$lambda.1se)[1:8,]
+
+c(ecmR,ecmL) ## da mejor error de predicci�n ridge
+
+```
+
+```{r}
+library(ggplot2)
+
+#cargo los datos
+autos<-cars
+
+#defino las variables
+x<-autos$speed #velocidad del auto
+y<-autos$dist #distancia requerida de frenado
+
+plot(x,y,pch=20)
+
+
+#grafico bonitos
+g2<-ggplot(data=autos,aes(x=speed, y=dist))+ 
+  geom_point()+
+  labs(title="",
+       x="Velocidad", 
+       y = "Distancia de frenado")+
+  theme_light()
+g2
+
+reg<-lm(dist~speed,data=autos)
+summary(reg)
+
+#ic para los coeficientes de la regresion
+
+LI<-summary(reg)$coef[2,1]-qt(0.975,32-2)*summary(reg)$coef[2,2]
+LS<-summary(reg)$coef[2,1]+qt(0.975,32-2)*summary(reg)$coef[2,2]
+
+c(LI,LS)
+
+confint(reg)
+
+#Una forma de graficarlo sin hacer las cuentas, con ggplot2
+g2+ geom_smooth(method="lm", col="firebrick",se=FALSE)+
+  labs(title="",
+       x="Velocidad", 
+       y = "Distancia de frenado")+
+  theme_light()
+
+
+# Calculamos los intervalos usando la fórmula
+
+# a) Intervalos de CONFIANZA
+n<-nrow(autos)
+X<-model.matrix(reg)
+p<-ncol(X) #cant de parametros a estimar
+
+res<-reg$residuals # los residuos son y - y^
+
+s2<-t(res)%*%res/(n-p)
+# s2<-summary(reg)$sigma^2 si no quiero hacer la cuenta
+
+A<-solve(t(X)%*%X)
+
+
+
+#Podemos hacer la cuenta a mano... yo^=beta0+beta1*x0
+
+IC<-matrix(0,nrow = n,ncol=2)
+for(i in 1:n)
+{
+  IC[i,]<-c(reg$fitted.values[i]-qt(0.975,n-p)*sqrt(s2[1,1]*t(X[i,])%*%A%*%X[i,]),
+            reg$fitted.values[i]+qt(0.975,n-p)*sqrt(s2[1,1]*t(X[i,])%*%A%*%X[i,])) 
+}
+
+
+# O dejamos que lo haga R
+
+int<-predict(reg ,interval = "confidence", level = 0.95)
+
+
+# b) Intervalos de PREDICCION
+
+ICP<-matrix(0,nrow = n,ncol=2)
+for(i in 1:n)
+{
+  ICP[i,]<-c(reg$fitted.values[i]-qt(0.975,n-p)*sqrt(s2[1,1]*(1+t(X[i,])%*%A%*%X[i,])),
+             reg$fitted.values[i]+qt(0.975,n-p)*sqrt(s2[1,1]*(1+t(X[i,])%*%A%*%X[i,]))) 
+}
+
+
+# o con R
+
+intP<-predict(reg,interval = "prediction", level = 0.95)
+
+
+# graficamos con plot
+
+plot(x,y,pch=20)
+abline(reg, col=col1, lwd=2)
+points(x,IC[,1],pch=20,col=col2)
+points(x,IC[,2],pch=20,col=col2)
+points(x,ICP[,1],pch=20,col=col3)
+points(x,ICP[,2],pch=20,col=col3)
+# o con ggplot2
+
+# Creamos un nuevo data frame con toda la información
+
+intervalos<-data.frame(cbind(autos,IC,ICP))
+
+g<-ggplot(intervalos)+
+  geom_point(aes(x=speed,y=dist))+
+  geom_line(aes(x=speed,y=X1), col="skyblue")+
+  geom_line(aes(x=speed,y=X2), col="skyblue")+
+  geom_line(aes(x=speed,y=X1.1), col="chocolate",lty=4)+
+  geom_line(aes(x=speed,y=X2.1), col="chocolate",lty=4)+
+  geom_smooth(aes(x=speed,y=dist),method="lm", col="firebrick",se=FALSE)+
+  theme_light()
+g
+
+
+
+# Bandas de confianza
+
+BC<-matrix(0,nrow = n,ncol=2)
+for(i in 1:n)
+{
+  BC[i,]<-c(reg$fitted.values[i]-sqrt(p*qf(0.95,p,n-p))*sqrt(s2[1,1]*(t(X[i,])%*%A%*%X[i,])),
+            reg$fitted.values[i]+sqrt(p*qf(0.95,p,n-p))*sqrt(s2[1,1]*(t(X[i,])%*%A%*%X[i,]))) 
+}
+
+intervalos<-data.frame(cbind(autos,IC,ICP,BC))
+g<-ggplot(intervalos)+
+  geom_point(aes(x=speed,y=dist))+
+  geom_line(aes(x=speed,y=X1), col="skyblue")+
+  geom_line(aes(x=speed,y=X2), col="skyblue")+
+  geom_line(aes(x=speed,y=X1.1), col="chocolate",lty=4)+
+  geom_line(aes(x=speed,y=X2.1), col="chocolate",lty=4)+
+  geom_line(aes(x=speed,y=X1.2), col="chartreuse4",lwd=1.5)+
+  geom_line(aes(x=speed,y=X2.2), col="chartreuse4",lwd=1.5)+
+  geom_smooth(aes(x=speed,y=dist),method="lm", col="firebrick",se=FALSE)+
+  theme_light()
+g
+
+confint(reg)
+```
+```{r}
+
+```
+
