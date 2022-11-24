@@ -4,37 +4,41 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ f90b4e2a-6b1b-4c94-9fa0-6f59dad9b6e5
+# ╔═╡ 78cb910c-6c0b-11ed-025b-9b32aaff0f02
 using Plots
 
-# ╔═╡ dfe8327a-668a-11ed-2611-bbdd27a8945a
-md"""
-Ejercicio 15 metodo UPWIND para ecuaciones de transporte
-"""
-
-# ╔═╡ 9ff027d5-f6b3-4427-ae6f-feecafc5ddbb
-f(x) = -x^2 + x 
-
-# ╔═╡ e50623b2-5067-40f2-970f-13d33418c77d
+# ╔═╡ f3e9eb5b-60f1-4533-8792-9e7080e8d981
 e = 2.7182
 
-# ╔═╡ 2d39b128-4c3b-4799-8ac9-543c85a60abc
-g(x) = e^(-10*(4*x-1)^2)
+# ╔═╡ 5e8b5541-9cda-400a-8bf7-947b678f6b65
+xsp = 0:0.01:3
 
-# ╔═╡ 336b899f-4046-4b6b-a054-4362f95790dd
-tsp = 0:0.0001:1
+# ╔═╡ 226a3ade-4a52-4f48-99d4-9895603d111e
+tsp = 0:0.001:15
 
-# ╔═╡ f0887ca4-89a5-4a8f-99e5-2aadca4d270e
-xsp = 0:0.001:3
+# ╔═╡ db41eaa6-923a-4fe7-a9c2-7ec5ef96e0de
+tsp2 = 0:0.01:30
 
-# ╔═╡ fb061bf6-1d7b-429f-b2a4-4ee17b65e7e4
-plot(xsp, g.(xsp))
+# ╔═╡ 2357889e-2dc9-4d81-be6d-50b1fa8f42c8
+xsp2 = -10:0.1:40
 
-# ╔═╡ 9ea00f3f-1f23-41ed-8c40-e6895a7a97ad
-valInicial = g.(xsp)
+# ╔═╡ 24acf6d6-8200-46e1-90b1-d61d89226199
+f1(x) = Int(x<1/2) + 0.2
 
-# ╔═╡ 3a569438-145f-4221-9949-9db42c9a957c
-function metodoUpwindExplicito(u1, xsp, tsp, a)
+# ╔═╡ 587badaf-aee2-41ae-9536-0f30ede032dc
+f2(x) = Int(x<1/2) 
+
+# ╔═╡ 21e02177-9551-41b8-943b-5d3b9c0dfb11
+f3(x) = (e^x /  (1+ e^x)  ) * Int(x<10)
+
+# ╔═╡ d03c44f8-035f-4b7a-aad1-cdfc78b24465
+f4(x) = (e^(-x) /  (1+ e^(-x))  ) * Int(x<10)
+
+# ╔═╡ 1ba628e7-b208-45c8-804b-19b2b7b21374
+valInicial = f1.(xsp)
+
+# ╔═╡ 806d7992-4685-42f3-a9bb-93054d0fc2a1
+function metodoUpwindConservativoBurgers(u1, xsp, tsp)
 	u0 = copy(u1)
 	deltaX = xsp[2]-xsp[1]
 	deltaT = tsp[2]-tsp[1]
@@ -44,7 +48,7 @@ function metodoUpwindExplicito(u1, xsp, tsp, a)
 	temperaturasTodas = [copy(vieja)]
 	for i in (1 : length(tsp))
 		for j in (2 : length(xsp))
-			nueva[j] = -a * (vieja[j] - vieja[j-1])/deltaX * deltaT + vieja[j]
+			nueva[j] = -1/2 * (vieja[j]^2 - vieja[j-1]^2)/deltaX * deltaT + vieja[j]
 		end
 		push!(temperaturasTodas, copy(nueva))
 		vieja = nueva
@@ -52,37 +56,81 @@ function metodoUpwindExplicito(u1, xsp, tsp, a)
 	return temperaturasTodas
 end
 
-# ╔═╡ d8031912-7ecd-4133-94be-6eb36e35e89b
-function metodoUpwindImplicito(u1, xsp, tsp, a)
+# ╔═╡ cb428a8c-97d4-40ed-b7cb-49411ebd7f82
+tempTodas = metodoUpwindConservativoBurgers(valInicial, xsp, tsp)
+
+# ╔═╡ ef558fd8-237f-4716-b50a-8016da042993
+@gif for i in (1: 20:length(tempTodas))
+	plot(xsp, tempTodas[i],ylim=[0,2])
+end
+
+# ╔═╡ cef880e3-da52-4ebb-b7e4-d5d8511c150c
+valInicial2 = f3.(xsp2)
+
+# ╔═╡ 3ae0649a-b698-43d6-b410-9952768b5db2
+tempTodas2 = metodoUpwindConservativoBurgers(valInicial2, xsp2, tsp2)
+
+# ╔═╡ e88aaf68-c3f6-4318-bd13-b01460a1291a
+@gif for i in (1: 20:length(tempTodas2))
+	plot(xsp2, tempTodas2[i],ylim=[0,1.1], xlim=[-10, 40])
+end
+
+# ╔═╡ f29cbd7d-3bd4-4684-bc77-7a18edeb1975
+valInicial3 = f4.(xsp2)
+
+# ╔═╡ cade9726-3b4e-4b79-86c9-f3819639eca4
+tempTodas3 = metodoUpwindConservativoBurgers(valInicial3, xsp2, tsp2)
+
+# ╔═╡ 612d698e-b033-4a9c-9178-81ec9296ab39
+@gif for i in (1: 20:length(tempTodas3))
+	plot(xsp2, tempTodas3[i],ylim=[0,1.1], xlim=[-10, 40])
+end
+
+# ╔═╡ 295278dc-b301-4f5e-bcec-9d3312ee0918
+function ecuacionesDeOnda(u1, xsp, tsp)
 	u0 = copy(u1)
 	deltaX = xsp[2]-xsp[1]
 	deltaT = tsp[2]-tsp[1]
-
-	matriz = diagm(0 => (1 + 2rₓ + 2ry)*ones(lado), 1=> (-rₓ)*ones(lado-1), -1=> (-rₓ)*ones(lado-1), I => (-ry)*ones(lado-I), -I => (-ry)*ones(lado-I))
-
-	
+	r = (deltaT/deltaX)^2
 	vieja = u0
+	MUYvieja = copy(vieja)
+	K = 9999/10000
 	nueva = u0
 
 	temperaturasTodas = [copy(vieja)]
 	for i in (1 : length(tsp))
-		for j in (2 : length(xsp))
-			nueva[j] = -a * (vieja[j] - vieja[j-1])/deltaX * deltaT + vieja[j]
+		for j in (2 : length(xsp)-1)
+			nueva[j] = K*(r * (vieja[j+1] - 2* vieja[j] + vieja[j-1]) + 2* vieja[j] - MUYvieja[j])
 		end
 		push!(temperaturasTodas, copy(nueva))
-		vieja = nueva
+		MUYvieja = copy(vieja)
+		vieja = copy(nueva)
 	end
 	return temperaturasTodas
 end
 
-# ╔═╡ 4ee28dae-b28d-4c81-88d3-c841d6cdba3f
-tempTodas = metodoUpwindExplicito(valInicial, xsp, tsp, 1)
+# ╔═╡ 8fe2b313-e603-43e9-af08-8664c5e8bb9a
+f5(x) = (10-abs(x)) + sin(2*x*pi/10)#(x + sin(x)) * Int(x<9) * Int(x>-9)
 
-# ╔═╡ a98b0e2b-2359-4953-87aa-26f1cffd4ef8
-@gif for i in (1: 10:1000)
-	#println(length(tempTodas[i]))
-	#println(length(xsp))
-	plot(xsp, tempTodas[i],ylim=[0,1])
+# ╔═╡ 3a97cb64-7a78-4fc1-8a08-b8851ccc5826
+xsp5 = -10:0.01:10
+
+# ╔═╡ 4286e3c6-60d2-471a-b245-9b0845a81954
+tsp5 = 0:0.001:40
+
+# ╔═╡ 57c1b905-ed4e-44d2-963c-66db0928b560
+valInicial5 = f5.(xsp5)
+
+# ╔═╡ 6f0d277a-223b-41d3-85fc-a36e90657f36
+ondass = ecuacionesDeOnda(valInicial5, xsp5, tsp5)
+
+# ╔═╡ ac0fd93b-3548-4615-85cd-9ebed8ff3122
+plot(xsp5, ondass[1], ylim=[-20, 20])
+
+
+# ╔═╡ 018bc50e-e600-489b-b0df-ba19f9237c7c
+@gif for i in (1: 23:length(ondass))
+	plot(xsp5, ondass[i], ylim=[-6, 6])
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -996,18 +1044,33 @@ version = "1.4.1+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─dfe8327a-668a-11ed-2611-bbdd27a8945a
-# ╠═f90b4e2a-6b1b-4c94-9fa0-6f59dad9b6e5
-# ╠═9ff027d5-f6b3-4427-ae6f-feecafc5ddbb
-# ╠═e50623b2-5067-40f2-970f-13d33418c77d
-# ╠═2d39b128-4c3b-4799-8ac9-543c85a60abc
-# ╠═336b899f-4046-4b6b-a054-4362f95790dd
-# ╠═f0887ca4-89a5-4a8f-99e5-2aadca4d270e
-# ╠═fb061bf6-1d7b-429f-b2a4-4ee17b65e7e4
-# ╠═9ea00f3f-1f23-41ed-8c40-e6895a7a97ad
-# ╠═3a569438-145f-4221-9949-9db42c9a957c
-# ╠═d8031912-7ecd-4133-94be-6eb36e35e89b
-# ╠═4ee28dae-b28d-4c81-88d3-c841d6cdba3f
-# ╠═a98b0e2b-2359-4953-87aa-26f1cffd4ef8
+# ╠═78cb910c-6c0b-11ed-025b-9b32aaff0f02
+# ╠═f3e9eb5b-60f1-4533-8792-9e7080e8d981
+# ╠═5e8b5541-9cda-400a-8bf7-947b678f6b65
+# ╠═226a3ade-4a52-4f48-99d4-9895603d111e
+# ╠═db41eaa6-923a-4fe7-a9c2-7ec5ef96e0de
+# ╠═2357889e-2dc9-4d81-be6d-50b1fa8f42c8
+# ╠═24acf6d6-8200-46e1-90b1-d61d89226199
+# ╠═587badaf-aee2-41ae-9536-0f30ede032dc
+# ╠═21e02177-9551-41b8-943b-5d3b9c0dfb11
+# ╠═d03c44f8-035f-4b7a-aad1-cdfc78b24465
+# ╠═1ba628e7-b208-45c8-804b-19b2b7b21374
+# ╠═806d7992-4685-42f3-a9bb-93054d0fc2a1
+# ╠═cb428a8c-97d4-40ed-b7cb-49411ebd7f82
+# ╠═ef558fd8-237f-4716-b50a-8016da042993
+# ╠═cef880e3-da52-4ebb-b7e4-d5d8511c150c
+# ╠═3ae0649a-b698-43d6-b410-9952768b5db2
+# ╠═e88aaf68-c3f6-4318-bd13-b01460a1291a
+# ╠═f29cbd7d-3bd4-4684-bc77-7a18edeb1975
+# ╠═cade9726-3b4e-4b79-86c9-f3819639eca4
+# ╠═612d698e-b033-4a9c-9178-81ec9296ab39
+# ╠═295278dc-b301-4f5e-bcec-9d3312ee0918
+# ╠═ac0fd93b-3548-4615-85cd-9ebed8ff3122
+# ╠═8fe2b313-e603-43e9-af08-8664c5e8bb9a
+# ╠═3a97cb64-7a78-4fc1-8a08-b8851ccc5826
+# ╠═4286e3c6-60d2-471a-b245-9b0845a81954
+# ╠═57c1b905-ed4e-44d2-963c-66db0928b560
+# ╠═6f0d277a-223b-41d3-85fc-a36e90657f36
+# ╠═018bc50e-e600-489b-b0df-ba19f9237c7c
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
