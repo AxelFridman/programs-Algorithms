@@ -3,6 +3,75 @@ title: "R Notebook"
 output: html_notebook
 ---
 
+¿Cúales son los coeficientes estimados para α y β usando m ́ınimos cuadrados?
+alpha = 12.34 y beta = 0.00065
+
+
+b) ¿Hay evidencia suficiente a nivel 0,01 para decir que β  = 0? 
+no, p valor es 5.22e-13
+
+¿Cúal es el esta ́ıstico del test correspondiente y cu ́al es su distribci ́on bajo H0 ? 
+
+(Beta estimado - 0)/( raiz(var(Beta estimado) * n ) ) tiene distribucion Tstudent n-1
+
+¿Cu ́anto vale este estad́ıstico para estos datos?
+12.27 / raiz(n) = 2.24 
+
+Hallar el p−valor. Interpretar la conclusíon de este test.
+0.02 ya que pt(2.24, 30) es 0.98
+
+c) Considerar las hip ́otesis H0 : α = 10 vs. H1 : α > 10. ¿Hay evidencia suficiente para
+rechazar H0 a nivel 0,05? 
+
+(alpha estimado - 10) / raiz(sd**2 * n) ~   Tstudent n-1
+
+luego en nuestro caso como alpha estimado es 12.34, 
+obtenemos 2.34 / (2.64 * raiz(n)) = 0.1617 
+luego como qt(0.95, 30) = 1.69 > 0.16 no rechazo h0
+
+Hallar el p−valor.
+
+p-valor seria 1-pt(0.1617, 30) = 0.43
+
+d ) Hallar un intervalo de confianza para α de nivel 0,95.
+[xbarra - tstudent(n-1, 1-alpha/2) ;  xbarra + tstudent(n-1, 1-alpha/2)]
+como qt(0.975, 30) = 2.04
+
+[12.34 - 2.04; 12.34 + 2.04]
+[10.3 ; 14.38]
+
+¿Cúanto vale el R2 en este caso y ćomo interpréıa este valor en t́erminos de las variables del enunciado?
+0.83 y me dice que la mayoria de la variabilidad del modelo me la esta pudiendo ajustar bien mi estimacion 
+
+
+e) Llega un nuevo cargamento con peso 1000. ¿C ́omo estimar ́ıa el tiempo medio que se
+tarda en descargarlo?
+12.34 + 0.00065*1000
+= 12.34 + 0.65 = 12.99
+
+```{r}
+df = read.csv("glakes.csv")
+```
+
+```{r}
+mod = lm(data=df, Time~Tonnage)
+summary(mod)
+y = predict(mod, df)
+```
+```{r}
+plot(df$Tonnage, df$Time)
+lines(df$Tonnage, y)
+```
+```{r}
+pt(2.24,30)
+```
+```{r}
+coef = mod$coefficients
+s = 2.6426
+xt = as.numeric(df$Tonnage)
+Test = (t(xt) * coef - t(xt)*10)/(sqrt(s**2 * t(xt) ) )
+```
+
 MODELO LINEAL CLASE 
 ```{r}
 # ESTIMAR COPEFICIENTES
