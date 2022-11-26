@@ -41,3 +41,7 @@ mod3 = lm(presSist ~. ,data = dfBebes[,-3])
 summary(mod3)
 ```
 
+```{r}
+qchisq(0.0783, 21)
+```
+
