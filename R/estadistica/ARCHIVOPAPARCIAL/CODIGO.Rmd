@@ -3,6 +3,15 @@ title: "R Notebook"
 output: html_notebook
 ---
 
+```{r}
+library(plyr)
+library(readr)
+library(dplyr)
+library(caret)
+library(ggplot2)
+library(repr)
+```
+
 ¿Cúales son los coeficientes estimados para α y β usando m ́ınimos cuadrados?
 alpha = 12.34 y beta = 0.00065
 
@@ -71,6 +80,69 @@ s = 2.6426
 xt = as.numeric(df$Tonnage)
 Test = (t(xt) * coef - t(xt)*10)/(sqrt(s**2 * t(xt) ) )
 ```
+```{r}
+errorCuadraticoMedio = function(y, yhat){
+  return(mean((y-yhat)**2))
+}
+```
+
+```{r}
+looLM = function(datos, evaluador){
+  errores = c()
+  datos$indice = 1:nrow(datos)
+  for (i in 1:nrow(datos)){
+    train = datos[datos$indice != i,]
+    test = datos[datos$indice == i,]
+    modelo = lm(data=train, Time ~ Tonnage) 
+    yhatTrain =  predict(modelo)
+    yhatTest =  predict(modelo, newdata = test )
+    errores[i] = evaluador(test$Time, yhatTest)
+  }
+  return(mean(errores))
+}
+```
+
+
+
+```{r}
+looLM(df, errorCuadraticoMedio)
+```
+```{r}
+
+cols_reg = c('Tonnage')
+
+dummies <- dummyVars(Time ~ ., data = df[,cols_reg])
+
+train_dummies = predict(dummies, newdata = train[,cols_reg])
+
+test_dummies = predict(dummies, newdata = test[,cols_reg])
+
+print(dim(train_dummies)); print(dim(test_dummies))
+```
+
+
+```{r}
+xTon <- model.matrix(df$Time~.,df$Tonnage)[,-1]
+y <- df$Time
+y.test=y[test]
+
+# Calculo LASSO
+grid<- 10^seq(10,-2,length=100)
+lasso.mod =glmnet (x[train ,],y[train],alpha =1, lambda =grid) #por default
+
+fitRidge =glmnet(df$Tonnage,df$Time)
+```                                                                 
+
+```{r}
+lasso.mod =glmnet (x[train ,],y[train],alpha =1, lambda =grid) #por default estandariza variables
+
+```
+
+```{r}
+te2$Tonnage
+```
+
+
 
 MODELO LINEAL CLASE 
 ```{r}
