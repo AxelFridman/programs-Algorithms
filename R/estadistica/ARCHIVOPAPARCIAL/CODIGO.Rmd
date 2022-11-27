@@ -10,48 +10,49 @@ library(dplyr)
 library(caret)
 library(ggplot2)
 library(repr)
+library(car)
 ```
 
 ¿Cúales son los coeficientes estimados para α y β usando m ́ınimos cuadrados?
-alpha = 12.34 y beta = 0.00065
+alpha Sombrero = 12.34 y beta Sombrero = 0.00065
 
 
 b) ¿Hay evidencia suficiente a nivel 0,01 para decir que β  = 0? 
-no, p valor es 5.22e-13
+no hay evidencia suficiente ya que p valor es 5.22e-13.
 
 ¿Cúal es el esta ́ıstico del test correspondiente y cu ́al es su distribci ́on bajo H0 ? 
 
-(Beta estimado - 0)/( raiz(var(Beta estimado) * n ) ) tiene distribucion Tstudent n-1
+(Beta estimado - 0)/( raiz(var(Beta estimado) ) ) tiene distribucion Tstudent n-2 (porque son 2 parametros los que estoy estimando)
 
-¿Cu ́anto vale este estad́ıstico para estos datos?
-12.27 / raiz(n) = 2.24 
+¿Cuanto vale este estad́ıstico para estos datos?
+12.27
 
 Hallar el p−valor. Interpretar la conclusíon de este test.
-0.02 ya que pt(2.24, 30) es 0.98
+5.22e-13 * 2 ya que es la probabilidad de que sea 0 y sea mayor o sea menor que -12.27
 
 c) Considerar las hip ́otesis H0 : α = 10 vs. H1 : α > 10. ¿Hay evidencia suficiente para
 rechazar H0 a nivel 0,05? 
 
-(alpha estimado - 10) / raiz(sd**2 * n) ~   Tstudent n-1
+(alpha estimado - 10) / sd ~   Tstudent n-2
 
 luego en nuestro caso como alpha estimado es 12.34, 
-obtenemos 2.34 / (2.64 * raiz(n)) = 0.1617 
-luego como qt(0.95, 30) = 1.69 > 0.16 no rechazo h0
+obtenemos 2.34 / (2.64) = 0.886
+luego como qt(0.95, 30) = 1.69 > 0.886 no rechazo h0
 
 Hallar el p−valor.
 
-p-valor seria 1-pt(0.1617, 30) = 0.43
+p-valor seria 1-pt(0.886, 30) 
 
 d ) Hallar un intervalo de confianza para α de nivel 0,95.
-[xbarra - tstudent(n-1, 1-alpha/2) ;  xbarra + tstudent(n-1, 1-alpha/2)]
+
+[xbarra - tstudent(n-2, 1-alpha/2) * sd;  xbarra + tstudent(n-2, 1-alpha/2) * sd]
 como qt(0.975, 30) = 2.04
 
-[12.34 - 2.04; 12.34 + 2.04]
-[10.3 ; 14.38]
+[12.34 - 2.04 * 2.64; 12.34 + 2.04 * 2.64]
 
 ¿Cúanto vale el R2 en este caso y ćomo interpréıa este valor en t́erminos de las variables del enunciado?
-0.83 y me dice que la mayoria de la variabilidad del modelo me la esta pudiendo ajustar bien mi estimacion 
 
+el 83% de la variabilidad de tu variable Y  (que mide el tiempo) es explicada por el modelo en función del peso 
 
 e) Llega un nuevo cargamento con peso 1000. ¿C ́omo estimar ́ıa el tiempo medio que se
 tarda en descargarlo?
@@ -107,39 +108,82 @@ looLM = function(datos, evaluador){
 ```{r}
 looLM(df, errorCuadraticoMedio)
 ```
+EJEMPLO MTCARS
+Ridge es alpha = 0,          lasso es alpha =1
 ```{r}
+y <- mtcars$hp
 
-cols_reg = c('Tonnage')
+#define matrix of predictor variables
+x <- data.matrix(mtcars[, c('mpg', 'wt', 'drat', 'qsec')])
+library(glmnet)
 
-dummies <- dummyVars(Time ~ ., data = df[,cols_reg])
+#fit ridge regression model
+model <- glmnet(x, y, alpha = 0)
 
-train_dummies = predict(dummies, newdata = train[,cols_reg])
-
-test_dummies = predict(dummies, newdata = test[,cols_reg])
-
-print(dim(train_dummies)); print(dim(test_dummies))
+#view summary of model
+summary(model)
 ```
-
-
 ```{r}
-xTon <- model.matrix(df$Time~.,df$Tonnage)[,-1]
+cv_model <- cv.glmnet(x, y, alpha = 0, lambda=seq(0,19,0.01))
+
+#find optimal lambda value that minimizes test MSE
+best_lambda <- cv_model$lambda.min
+best_lambda
+
+#produce plot of test MSE by lambda value
+plot(cv_model) 
+```
+```{r}
+best_model <- glmnet(x, y, alpha = 0, lambda = best_lambda)
+coef(best_model)
+```
+```{r}
+#produce Ridge trace plot
+plot(model, xvar = "lambda")
+
+```
+```{r}
+#use fitted best model to make predictions
+y_predicted <- predict(model, s = best_lambda, newx = x)
+
+#find SST and SSE
+sst <- sum((y - mean(y))^2)
+sse <- sum((y_predicted - y)^2)
+
+#find R-Squared
+rsq <- 1 - sse/sst
+rsq
+
+```
+Caso tonnage tiempo
+```{r}
 y <- df$Time
-y.test=y[test]
+df$unos = rep(1, nrow(df))
+#define matrix of predictor variables
+x <- data.matrix(df[, c('Tonnage', "unos")])
 
-# Calculo LASSO
-grid<- 10^seq(10,-2,length=100)
-lasso.mod =glmnet (x[train ,],y[train],alpha =1, lambda =grid) #por default
+#fit ridge regression model
+modelRidge <- glmnet(x, y, alpha = 0)
+#Lasso
+modelLasso <- glmnet(x, y, alpha = 1)
 
-fitRidge =glmnet(df$Tonnage,df$Time)
-```                                                                 
-
-```{r}
-lasso.mod =glmnet (x[train ,],y[train],alpha =1, lambda =grid) #por default estandariza variables
-
+#view summary of model
+summary(modelRidge)
+summary(modelLasso)
 ```
-
 ```{r}
-te2$Tonnage
+cv_modelRidge <- cv.glmnet(x, y, alpha = 0, lambda=seq(0.01,20,0.01))
+cv_modelLasso <- cv.glmnet(x, y, alpha = 0, lambda=seq(0.01,20,0.01))
+
+#find optimal lambda value that minimizes test MSE
+best_lambdaRidge <- cv_modelRidge$lambda.min
+best_lambdaLasso <- cv_modelLasso$lambda.min
+
+#produce plot of test MSE by lambda value
+plot(cv_modelRidge) 
+plot(cv_modelLasso)
+print(best_lambdaRidge)
+print(best_lambdaLasso)
 ```
 
 
@@ -748,5 +792,213 @@ confint(reg)
 ```
 ```{r}
 
+```
+
+
+
+```{r}
+dfTrain = read.table("alturasEntre.txt", header = F)
+dfTest = read.table("alturasPrueba.txt", header = F)
+colnames(dfTrain) = c("altura","sexo")
+colnames(dfTest) = c("altura","sexo")
+```
+```{r}
+library(ggplot2)
+```
+```{r}
+p <- ggplot(dfTrain, aes(y=as.factor(sexo), x=altura, fill=sexo)) + 
+  geom_violin()
+p
+```
+
+```{r}
+alturasMenos165 = abs(dfTrain$altura - 165)
+alturasMenos175 = abs(dfTrain$altura - 175)
+
+```
+```{r}
+dfTrain$alt165 = alturasMenos165
+dfTrain$alt175 = alturasMenos175
+```
+
+```{r}
+dfT165 = dfTrain[order(dfTrain$alt165),]
+dfT175 = dfTrain[order(dfTrain$alt175),]
+```
+```{r}
+mean(dfT165$sexo[1:10])<1/2
+mean(dfT175$sexo[1:10])<1/2
+```
+Entonces por voto de mayoria al de 165 sera clasificado mujer y al 175 como hombre
+```{r}
+promediosMoviles = function(A, S, alturaAestimar, h){
+  df = data.frame(A,S)
+  df2 = df[df$A > alturaAestimar-h & df$A < alturaAestimar+h ,]
+  #print(df)
+  if(mean(df2$S)>1/2 ){
+    return(1)
+  }
+  return(0)
+}
+```
+
+```{r}
+promediosMoviles(dfTrain$altura, dfTrain$sexo, 170.5, 2.5)
+```
+```{r}
+ClasificoVecinos =function(A,S,a,k){
+  alturasMenosA = abs(A - a)
+  dff = data.frame(S, alturasMenosA)
+  dff = dff[order(dff$alturasMenosA),]
+  if(mean(dff$S[1:k])<1/2){
+    return(0)
+  }
+  return(1)
+
+}
+```
+
+```{r}
+ClasificoVecinos(dfTrain$altura, dfTrain$sexo, 166, 10)
+```
+```{r}
+generarColumnaPrediccionesVecinos = function(dfTrain, dfEval, k){
+  sexoPredicho = c()
+  for (i in (1: length(dfEval$altura))){
+    sexoPredicho[i] = ClasificoVecinos(dfTrain$altura, dfTrain$sexo, (dfEval$altura[i]), k)
+  }
+  #df = cbind(df, sexoPredicho)
+  return(sexoPredicho)
+}
+```
+```{r}
+generarColumnaPrediccionesPromediosMoviles = function(dfTrain, dfEval , h){
+  sexoPredicho = c()
+  for (i in (1: length(dfEval$altura))){
+    sexoPredicho[i] = promediosMoviles(dfTrain$altura, dfTrain$sexo, (dfEval$altura[i]), h)
+  }
+  return(sexoPredicho)
+}
+```
+
+```{r}
+vals = c(1:50)
+res = c()
+for(i in 1:length(vals)){
+  aux = generarColumnaPrediccionesVecinos(dfTrain, dfTrain, vals[i])
+  res[i] = sum(abs(dfTest$sexo - aux))
+}
+```
+```{r}
+valsH = c(1:30)
+resP = c()
+for(i in 1:length(valsH)){
+  aux = generarColumnaPrediccionesPromediosMoviles(dfTrain, dfTrain, valsH[i])
+  resP[i] = sum(abs(dfTest$sexo - aux))
+}
+```
+```{r}
+plot(vals,res, log="", col="red")
+```
+
+```{r}
+#
+plot(valsH, resP, col="blue")
+```
+```{r}
+resP
+```
+
+```{r}
+bws = c(0.1,0.5,1,2,3,4,5,6,10,15,20,30,40,50,80)
+des = ksmooth(dfTrain$altura, dfTrain$sexo, bandwidth=2, x.points = dfTrain$altura)
+```
+
+```{r}
+plot(des)
+```
+```{r}
+density(x, )
+```
+
+
+```{r}
+generarMatriz = function(datosX, funciones){
+  matriz = matrix(0,  length(datosX), length(funciones))
+  res =lapply(funciones, do.call, list((datosX)))
+  for (i in 1:length(funciones)){
+    vec = unlist(res[i])
+    for (j in 1:length(datosX)){
+      matriz[j,i] = vec[j]   
+    }
+  }
+  return(matriz)
+}
+```
+
+```{r}
+modeloLinealizado = function(datosX, y, funciones){
+  X = generarMatriz(datosX, funciones)
+  transX = t(X)
+  theta = solve(transX%*%X) %*% (transX) %*% (y)
+  return(theta)
+} 
+```
+```{r}
+f0 = function(x) return(x**0)
+f1 = function(x) return(x)
+f2 = function(x) return(x**2)
+funcionesPack = c(f0,f1,f2)
+```
+
+```{r}
+#modeloLinealizado(datosX, y, funcionesPack)
+```
+
+```{r}
+generarMallaEvaluar = function(ini, fin, delta, funciones, theta){
+  malla = seq(ini, fin, delta)
+  res =lapply(funciones, do.call, list(malla))
+  ev = rep(0, length(malla))
+  for (j in 1:length(malla)){
+    for (i in 1:length(funciones)){
+      ev[j] = ev[j] + theta[i]*unlist(res[i])[j]
+    }
+  }
+  return(list(malla, ev))
+}
+
+```
+
+
+```{r}
+y = cars$dist
+x = cars$speed
+theta = modeloLinealizado(x, y, funcionesPack)
+resu  = generarMallaEvaluar(4, 26, 0.01, funcionesPack, theta)
+```
+```{r}
+#modR = lm(y ~ poly(x, 2))
+#modR.predict(unlist(resu[1]))
+#prediccion = predict(modR, data.frame( x = unlist(resu[1])))#$fit
+```
+
+```{r}
+plot(cars$speed, cars$dist)
+lines(unlist(resu[1]), unlist(resu[2]), col= "red")
+#lines(unlist(resu[1]), prediccion, col= "blue")
+
+```
+```{r}
+datosX = c(1,2,3,4,5,6,7,8,9,10,11,12)
+y2 = c(1,4.2,9.1,16, 25.0, 37,24,18,9,5,2,-1)
+theta2 = modeloLinealizado(datosX, y2, funcionesPack)
+```
+
+
+
+```{r}
+mod = lm(data = df, unos ~ Tonnage + X + Time -1)
+vif(mod)
 ```
 
