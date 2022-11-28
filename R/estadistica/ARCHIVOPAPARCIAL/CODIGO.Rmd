@@ -82,6 +82,12 @@ xt = as.numeric(df$Tonnage)
 Test = (t(xt) * coef - t(xt)*10)/(sqrt(s**2 * t(xt) ) )
 ```
 ```{r}
+var.test(A, B, alternative = "two.sided") # test para sigma A = sigma B
+t.test(A,B, var.equal = TRUE) # test para mu A = mu B
+shapiro.test() # test de normalidad
+```
+
+```{r}
 errorCuadraticoMedio = function(y, yhat){
   return(mean((y-yhat)**2))
 }
@@ -1000,5 +1006,8 @@ theta2 = modeloLinealizado(datosX, y2, funcionesPack)
 ```{r}
 mod = lm(data = df, unos ~ Tonnage + X + Time -1)
 vif(mod)
+```
+```{r}
+b = boxplot(rnorm(1000))
 ```
 
