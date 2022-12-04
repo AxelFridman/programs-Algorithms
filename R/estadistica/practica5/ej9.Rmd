@@ -74,6 +74,6 @@ plot(ps, resn10p0.76 ,type="l")
 
 
 ```{r}
-resn10p0.5 = tiraResultadosPotencia(Ngrande, 10, 0.5, ps, zalpha)
-plot(ps, resn10p0.5 ,type="l", xlim = c(0.4, 0.6))
+resn10p0.5 = tiraResultadosPotencia(Ngrande, 2000, 0.5, ps, zalpha)
+plot(ps, resn10p0.5 ,type="l")
 ```
