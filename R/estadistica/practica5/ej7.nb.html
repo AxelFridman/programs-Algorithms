@@ -217,61 +217,36 @@ pre code {
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2VuZXJhck1hdHJpeiA9IGZ1bmN0aW9uKGRhdG9zWCwgZnVuY2lvbmVzKXtcbiAgbWF0cml6ID0gbWF0cml4KDAsICBsZW5ndGgoZGF0b3NYKSwgbGVuZ3RoKGZ1bmNpb25lcykpXG4gIHJlcyA9bGFwcGx5KGZ1bmNpb25lcywgZG8uY2FsbCwgbGlzdCgoZGF0b3NYKSkpXG4gIGZvciAoaSBpbiAxOmxlbmd0aChmdW5jaW9uZXMpKXtcbiAgICB2ZWMgPSB1bmxpc3QocmVzW2ldKVxuICAgIGZvciAoaiBpbiAxOmxlbmd0aChkYXRvc1gpKXtcbiAgICAgIG1hdHJpeltqLGldID0gdmVjW2pdICAgXG4gICAgfVxuICB9XG4gIHJldHVybihtYXRyaXopXG59XG5gYGAifQ== -->
-<pre class="r"><code>generarMatriz = function(datosX, funciones){
-  matriz = matrix(0,  length(datosX), length(funciones))
-  res =lapply(funciones, do.call, list((datosX)))
-  for (i in 1:length(funciones)){
-    vec = unlist(res[i])
-    for (j in 1:length(datosX)){
-      matriz[j,i] = vec[j]   
-    }
-  }
-  return(matriz)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubiA9IDEwMFxuYyA9IDFcbmdhbWFzID0gMC4yMFxuY29uZmlhbnphID0gMC4wNVxuTmdyYW5kZSA9IDEwMDAwXG5gYGAifQ== -->
+<pre class="r"><code>n = 100
+c = 1
+gamas = 0.20
+confianza = 0.05
+Ngrande = 10000</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2VuZXJhckRhdG9zT3V0bGllcnMgPSBmdW5jdGlvbihuLCBjLCBnYW1hcyl7XG4gIHJlcyA9IHJub3JtKG4pXG4gIGluZCA9IHNhbXBsZSgxOm4sIG4qZ2FtYXMsIHJlcGxhY2UgPSBGKVxuICByZXNbaW5kXT1yZXNbaW5kXSArIGNcbiAgcmV0dXJuKHJlcylcbn1cbmBgYCJ9 -->
+<pre class="r"><code>generarDatosOutliers = function(n, c, gamas){
+  res = rnorm(n)
+  ind = sample(1:n, n*gamas, replace = F)
+  res[ind]=res[ind] + c
+  return(res)
 }</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubW9kZWxvTGluZWFsaXphZG8gPSBmdW5jdGlvbihkYXRvc1gsIHksIGZ1bmNpb25lcyl7XG4gIFggPSBnZW5lcmFyTWF0cml6KGRhdG9zWCwgZnVuY2lvbmVzKVxuICB0cmFuc1ggPSB0KFgpXG4gIHRoZXRhID0gc29sdmUodHJhbnNYJSolWCkgJSolICh0cmFuc1gpICUqJSAoeSlcbiAgcmV0dXJuKHRoZXRhKVxufSBcbmBgYCJ9 -->
-<pre class="r"><code>modeloLinealizado = function(datosX, y, funciones){
-  X = generarMatriz(datosX, funciones)
-  transX = t(X)
-  theta = solve(transX%*%X) %*% (transX) %*% (y)
-  return(theta)
-} </code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZjAgPSBmdW5jdGlvbih4KSByZXR1cm4oeCoqMClcbmYxID0gZnVuY3Rpb24oeCkgcmV0dXJuKHgpXG5mMiA9IGZ1bmN0aW9uKHgpIHJldHVybih4KioyKVxuZnVuY2lvbmVzUGFjayA9IGMoZjAsZjEsZjIpXG5gYGAifQ== -->
-<pre class="r"><code>f0 = function(x) return(x**0)
-f1 = function(x) return(x)
-f2 = function(x) return(x**2)
-funcionesPack = c(f0,f1,f2)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI21vZGVsb0xpbmVhbGl6YWRvKGRhdG9zWCwgeSwgZnVuY2lvbmVzUGFjaylcbmBgYCJ9 -->
-<pre class="r"><code>#modeloLinealizado(datosX, y, funcionesPack)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2VuZXJhck1hbGxhRXZhbHVhciA9IGZ1bmN0aW9uKGluaSwgZmluLCBkZWx0YSwgZnVuY2lvbmVzLCB0aGV0YSl7XG4gIG1hbGxhID0gc2VxKGluaSwgZmluLCBkZWx0YSlcbiAgcmVzID1sYXBwbHkoZnVuY2lvbmVzLCBkby5jYWxsLCBsaXN0KG1hbGxhKSlcbiAgZXYgPSByZXAoMCwgbGVuZ3RoKG1hbGxhKSlcbiAgZm9yIChqIGluIDE6bGVuZ3RoKG1hbGxhKSl7XG4gICAgZm9yIChpIGluIDE6bGVuZ3RoKGZ1bmNpb25lcykpe1xuICAgICAgZXZbal0gPSBldltqXSArIHRoZXRhW2ldKnVubGlzdChyZXNbaV0pW2pdXG4gICAgfVxuICB9XG4gIHJldHVybihsaXN0KG1hbGxhLCBldikpXG59XG5cbmBgYCJ9 -->
-<pre class="r"><code>generarMallaEvaluar = function(ini, fin, delta, funciones, theta){
-  malla = seq(ini, fin, delta)
-  res =lapply(funciones, do.call, list(malla))
-  ev = rep(0, length(malla))
-  for (j in 1:length(malla)){
-    for (i in 1:length(funciones)){
-      ev[j] = ev[j] + theta[i]*unlist(res[i])[j]
-    }
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGFyUHJvcG9yY2lvblRlc3RzID0gZnVuY3Rpb24oTmdyYW5kZSwgbiwgYywgZ2FtYXMsIGNvbmZpYW56YSl7XG4gIHBhc2Fyb25UZXN0ID0gYygpXG4gIGZvciAoaSBpbiAoMTpOZ3JhbmRlKSl7XG4gICAgcmVzID0gZ2VuZXJhckRhdG9zT3V0bGllcnMobixjLCBnYW1hcylcbiAgICB0ZXN0ZW8gPSB0LnRlc3QocmVzKVxuICAgIHBhc2Fyb25UZXN0W2ldID0gdGVzdGVvJHAudmFsdWU8Y29uZmlhbnphXG4gIH1cbiAgcmV0dXJuKG1lYW4ocGFzYXJvblRlc3QpKVxufVxuXG5gYGAifQ== -->
+<pre class="r"><code>darProporcionTests = function(Ngrande, n, c, gamas, confianza){
+  pasaronTest = c()
+  for (i in (1:Ngrande)){
+    res = generarDatosOutliers(n,c, gamas)
+    testeo = t.test(res)
+    pasaronTest[i] = testeo$p.value&lt;confianza
   }
-  return(list(malla, ev))
+  return(mean(pasaronTest))
 }
 </code></pre>
 <!-- rnb-source-end -->
@@ -279,113 +254,41 @@ funcionesPack = c(f0,f1,f2)</code></pre>
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxueSA9IGNhcnMkZGlzdFxueCA9IGNhcnMkc3BlZWRcbnRoZXRhID0gbW9kZWxvTGluZWFsaXphZG8oeCwgeSwgZnVuY2lvbmVzUGFjaylcbnJlc3UgID0gZ2VuZXJhck1hbGxhRXZhbHVhcig0LCAyNiwgMC4wMSwgZnVuY2lvbmVzUGFjaywgdGhldGEpXG5gYGAifQ== -->
-<pre class="r"><code>y = cars$dist
-x = cars$speed
-theta = modeloLinealizado(x, y, funcionesPack)
-resu  = generarMallaEvaluar(4, 26, 0.01, funcionesPack, theta)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI21vZFIgPSBsbSh5IH4gcG9seSh4LCAyKSlcbiNtb2RSLnByZWRpY3QodW5saXN0KHJlc3VbMV0pKVxuI3ByZWRpY2Npb24gPSBwcmVkaWN0KG1vZFIsIGRhdGEuZnJhbWUoIHggPSB1bmxpc3QocmVzdVsxXSkpKSMkZml0XG5gYGAifQ== -->
-<pre class="r"><code>#modR = lm(y ~ poly(x, 2))
-#modR.predict(unlist(resu[1]))
-#prediccion = predict(modR, data.frame( x = unlist(resu[1])))#$fit</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucmVzID0gZ2VuZXJhckRhdG9zT3V0bGllcnMoMTAwLDUwMCwgMC41KVxudGVzdGVvID0gdC50ZXN0KHJlcylcbmBgYCJ9 -->
+<pre class="r"><code>res = generarDatosOutliers(100,500, 0.5)
+testeo = t.test(res)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGxvdChjYXJzJHNwZWVkLCBjYXJzJGRpc3QpXG5saW5lcyh1bmxpc3QocmVzdVsxXSksIHVubGlzdChyZXN1WzJdKSwgY29sPSBcInJlZFwiKVxuI2xpbmVzKHVubGlzdChyZXN1WzFdKSwgcHJlZGljY2lvbiwgY29sPSBcImJsdWVcIilcblxuYGBgIn0= -->
-<pre class="r"><code>plot(cars$speed, cars$dist)
-lines(unlist(resu[1]), unlist(resu[2]), col= &quot;red&quot;)
-#lines(unlist(resu[1]), prediccion, col= &quot;blue&quot;)
-</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGFyUHJvcG9yY2lvblRlc3RzKE5ncmFuZGUsIG4sIGMsIGdhbWFzLCBjb25maWFuemEpXG5gYGAifQ== -->
+<pre class="r"><code>darProporcionTests(Ngrande, n, c, gamas, confianza)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0b3NYID0gYygxLDIsMyw0LDUsNiw3LDgsOSwxMCwxMSwxMilcbnkyID0gYygxLDQuMiw5LjEsMTYsIDI1LjAsIDM3LDI0LDE4LDksNSwyLC0xKVxudGhldGEyID0gbW9kZWxvTGluZWFsaXphZG8oZGF0b3NYLCB5MiwgZnVuY2lvbmVzUGFjaylcbmBgYCJ9 -->
-<pre class="r"><code>datosX = c(1,2,3,4,5,6,7,8,9,10,11,12)
-y2 = c(1,4.2,9.1,16, 25.0, 37,24,18,9,5,2,-1)
-theta2 = modeloLinealizado(datosX, y2, funcionesPack)</code></pre>
-<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDAuNDUwM1xuIn0= -->
+<pre><code>[1] 0.4503</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucmVzdTIgID0gZ2VuZXJhck1hbGxhRXZhbHVhcigwLjUsIDEzLCAwLjEsIGZ1bmNpb25lc1BhY2ssIHRoZXRhMilcbmBgYCJ9 -->
-<pre class="r"><code>resu2  = generarMallaEvaluar(0.5, 13, 0.1, funcionesPack, theta2)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI21vZFIyID0gbG0oeTIgfiBwb2x5KGRhdG9zWCwgMikpXG4jbW9kUi5wcmVkaWN0KHVubGlzdChyZXN1WzFdKSlcbiNwcmVkaWNjaW9uMiA9IHByZWRpY3QobW9kUjIsIGRhdGEuZnJhbWUoIGRhdG9zWCA9IHVubGlzdChyZXN1MlsxXSkpKSMkZml0XG5gYGAifQ== -->
-<pre class="r"><code>#modR2 = lm(y2 ~ poly(datosX, 2))
-#modR.predict(unlist(resu[1]))
-#prediccion2 = predict(modR2, data.frame( datosX = unlist(resu2[1])))#$fit</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGxvdChkYXRvc1gsIHkyKVxubGluZXModW5saXN0KHJlc3UyWzFdKSwgdW5saXN0KHJlc3UyWzJdKSwgY29sPSBcInJlZFwiKVxuI2xpbmVzKHVubGlzdChyZXN1MlsxXSksIHByZWRpY2Npb24yLCBjb2w9IFwiYmx1ZVwiKVxuYGBgIn0= -->
-<pre class="r"><code>plot(datosX, y2)
-lines(unlist(resu2[1]), unlist(resu2[2]), col= &quot;red&quot;)
-#lines(unlist(resu2[1]), prediccion2, col= &quot;blue&quot;)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZSA9IDIuNzE4MlxuZjAwID0gZnVuY3Rpb24oeCkgcmV0dXJuKHgqKjApXG5mMTAgPSBmdW5jdGlvbih4KSByZXR1cm4oeClcbmYyMCA9IGZ1bmN0aW9uKHgpIHJldHVybihlKip4KVxuZjMwID0gZnVuY3Rpb24oeCkgcmV0dXJuKHgqKjIpXG5mNDAgPSBmdW5jdGlvbih4KSByZXR1cm4oc2luKHgpKVxuZjUwID0gZnVuY3Rpb24oeCkgcmV0dXJuKHgqKjMpXG4jZjQwID0gZnVuY3Rpb24oeCkgcmV0dXJuKDEqZSoqKC14KSlcbmZ1bmNpb25lc1BhY2syMCA9IGMoZjAwLGYxMCxmMjAsZjMwLGY0MCxmNTApXG5gYGAifQ== -->
-<pre class="r"><code>e = 2.7182
-f00 = function(x) return(x**0)
-f10 = function(x) return(x)
-f20 = function(x) return(e**x)
-f30 = function(x) return(x**2)
-f40 = function(x) return(sin(x))
-f50 = function(x) return(x**3)
-#f40 = function(x) return(1*e**(-x))
-funcionesPack20 = c(f00,f10,f20,f30,f40,f50)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubj04MFxuaz0xMFxuZXJyb3IgPSA0MzAwXG5kYXRvc1gyID0gc2VxKDE6KGsqbikpL2sgLSA2NFxueTMgPSAoLTUwIC0gNTAwMCAqIGRhdG9zWDIgLSA1ICogZGF0b3NYMioqMiArIDAuMDUgKiBlKipkYXRvc1gyICsgMTUwMDAqc2luKGRhdG9zWDIpICsgZGF0b3NYMioqMyArIHJub3JtKGsqbiwwLGVycm9yKSkvNDAwMDAjXG50aGV0YTMgPSBtb2RlbG9MaW5lYWxpemFkbyhkYXRvc1gyLCB5MywgZnVuY2lvbmVzUGFjazIwKVxuYGBgIn0= -->
-<pre class="r"><code>n=80
-k=10
-error = 4300
-datosX2 = seq(1:(k*n))/k - 64
-y3 = (-50 - 5000 * datosX2 - 5 * datosX2**2 + 0.05 * e**datosX2 + 15000*sin(datosX2) + datosX2**3 + rnorm(k*n,0,error))/40000#
-theta3 = modeloLinealizado(datosX2, y3, funcionesPack20)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucmVzdTMgID0gZ2VuZXJhck1hbGxhRXZhbHVhcihtaW4oZGF0b3NYMiktMSwgbWF4KGRhdG9zWDIpKzEsIDAuMSwgZnVuY2lvbmVzUGFjazIwLCB0aGV0YTMpXG5gYGAifQ== -->
-<pre class="r"><code>resu3  = generarMallaEvaluar(min(datosX2)-1, max(datosX2)+1, 0.1, funcionesPack20, theta3)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGxvdChkYXRvc1gyLCB5MylcbmxpbmVzKHVubGlzdChyZXN1M1sxXSksIHVubGlzdChyZXN1M1syXSksIGNvbD0gXCJyZWRcIilcbiNsaW5lcyh1bmxpc3QocmVzdTJbMV0pLCBwcmVkaWNjaW9uMiwgY29sPSBcImJsdWVcIilcbmBgYCJ9 -->
-<pre class="r"><code>plot(datosX2, y3)
-lines(unlist(resu3[1]), unlist(resu3[2]), col= &quot;red&quot;)
-#lines(unlist(resu2[1]), prediccion2, col= &quot;blue&quot;)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucHJpbnQodGhldGEzKVxuYGBgIn0= -->
-<pre class="r"><code>print(theta3)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZnVuY2lvbmVzUGFjazIwXG5gYGAifQ== -->
-<pre class="r"><code>funcionesPack20</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY3MgPSBjKDEsMyw2LDEwLDE1LDIwKVxuZ2FtYXNzID0gYygwLDAuMDEsMC4wNSwwLjEpXG5tID0gbWF0cml4KG5yb3cgPSBsZW5ndGgoZ2FtYXNzKSwgbmNvbD1sZW5ndGgoY3MpKVxuXG5mb3IgKGkgaW4gMTpsZW5ndGgoY3MpKXtcbiAgZm9yIChqIGluIDE6bGVuZ3RoKGdhbWFzcykpe1xuICAgIG1baiwgaV0gPSBkYXJQcm9wb3JjaW9uVGVzdHMoTmdyYW5kZSwgbiwgY3NbaV0sIGdhbWFzc1tqXSwgY29uZmlhbnphKVxuICB9XG59XG4gIFxuYGBgIn0= -->
+<pre class="r"><code>cs = c(1,3,6,10,15,20)
+gamass = c(0,0.01,0.05,0.1)
+m = matrix(nrow = length(gamass), ncol=length(cs))
+
+for (i in 1:length(cs)){
+  for (j in 1:length(gamass)){
+    m[j, i] = darProporcionTests(Ngrande, n, cs[i], gamass[j], confianza)
+  }
+}
+  </code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiUiBOb3RlYm9vayIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQpgYGB7cn0KZ2VuZXJhck1hdHJpeiA9IGZ1bmN0aW9uKGRhdG9zWCwgZnVuY2lvbmVzKXsKICBtYXRyaXogPSBtYXRyaXgoMCwgIGxlbmd0aChkYXRvc1gpLCBsZW5ndGgoZnVuY2lvbmVzKSkKICByZXMgPWxhcHBseShmdW5jaW9uZXMsIGRvLmNhbGwsIGxpc3QoKGRhdG9zWCkpKQogIGZvciAoaSBpbiAxOmxlbmd0aChmdW5jaW9uZXMpKXsKICAgIHZlYyA9IHVubGlzdChyZXNbaV0pCiAgICBmb3IgKGogaW4gMTpsZW5ndGgoZGF0b3NYKSl7CiAgICAgIG1hdHJpeltqLGldID0gdmVjW2pdICAgCiAgICB9CiAgfQogIHJldHVybihtYXRyaXopCn0KYGBgCgpgYGB7cn0KbW9kZWxvTGluZWFsaXphZG8gPSBmdW5jdGlvbihkYXRvc1gsIHksIGZ1bmNpb25lcyl7CiAgWCA9IGdlbmVyYXJNYXRyaXooZGF0b3NYLCBmdW5jaW9uZXMpCiAgdHJhbnNYID0gdChYKQogIHRoZXRhID0gc29sdmUodHJhbnNYJSolWCkgJSolICh0cmFuc1gpICUqJSAoeSkKICByZXR1cm4odGhldGEpCn0gCmBgYApgYGB7cn0KZjAgPSBmdW5jdGlvbih4KSByZXR1cm4oeCoqMCkKZjEgPSBmdW5jdGlvbih4KSByZXR1cm4oeCkKZjIgPSBmdW5jdGlvbih4KSByZXR1cm4oeCoqMikKZnVuY2lvbmVzUGFjayA9IGMoZjAsZjEsZjIpCmBgYAoKYGBge3J9CiNtb2RlbG9MaW5lYWxpemFkbyhkYXRvc1gsIHksIGZ1bmNpb25lc1BhY2spCmBgYAoKYGBge3J9CmdlbmVyYXJNYWxsYUV2YWx1YXIgPSBmdW5jdGlvbihpbmksIGZpbiwgZGVsdGEsIGZ1bmNpb25lcywgdGhldGEpewogIG1hbGxhID0gc2VxKGluaSwgZmluLCBkZWx0YSkKICByZXMgPWxhcHBseShmdW5jaW9uZXMsIGRvLmNhbGwsIGxpc3QobWFsbGEpKQogIGV2ID0gcmVwKDAsIGxlbmd0aChtYWxsYSkpCiAgZm9yIChqIGluIDE6bGVuZ3RoKG1hbGxhKSl7CiAgICBmb3IgKGkgaW4gMTpsZW5ndGgoZnVuY2lvbmVzKSl7CiAgICAgIGV2W2pdID0gZXZbal0gKyB0aGV0YVtpXSp1bmxpc3QocmVzW2ldKVtqXQogICAgfQogIH0KICByZXR1cm4obGlzdChtYWxsYSwgZXYpKQp9CgpgYGAKCgpgYGB7cn0KeSA9IGNhcnMkZGlzdAp4ID0gY2FycyRzcGVlZAp0aGV0YSA9IG1vZGVsb0xpbmVhbGl6YWRvKHgsIHksIGZ1bmNpb25lc1BhY2spCnJlc3UgID0gZ2VuZXJhck1hbGxhRXZhbHVhcig0LCAyNiwgMC4wMSwgZnVuY2lvbmVzUGFjaywgdGhldGEpCmBgYApgYGB7cn0KI21vZFIgPSBsbSh5IH4gcG9seSh4LCAyKSkKI21vZFIucHJlZGljdCh1bmxpc3QocmVzdVsxXSkpCiNwcmVkaWNjaW9uID0gcHJlZGljdChtb2RSLCBkYXRhLmZyYW1lKCB4ID0gdW5saXN0KHJlc3VbMV0pKSkjJGZpdApgYGAKCmBgYHtyfQpwbG90KGNhcnMkc3BlZWQsIGNhcnMkZGlzdCkKbGluZXModW5saXN0KHJlc3VbMV0pLCB1bmxpc3QocmVzdVsyXSksIGNvbD0gInJlZCIpCiNsaW5lcyh1bmxpc3QocmVzdVsxXSksIHByZWRpY2Npb24sIGNvbD0gImJsdWUiKQoKYGBgCmBgYHtyfQpkYXRvc1ggPSBjKDEsMiwzLDQsNSw2LDcsOCw5LDEwLDExLDEyKQp5MiA9IGMoMSw0LjIsOS4xLDE2LCAyNS4wLCAzNywyNCwxOCw5LDUsMiwtMSkKdGhldGEyID0gbW9kZWxvTGluZWFsaXphZG8oZGF0b3NYLCB5MiwgZnVuY2lvbmVzUGFjaykKYGBgCgpgYGB7cn0KcmVzdTIgID0gZ2VuZXJhck1hbGxhRXZhbHVhcigwLjUsIDEzLCAwLjEsIGZ1bmNpb25lc1BhY2ssIHRoZXRhMikKYGBgCmBgYHtyfQojbW9kUjIgPSBsbSh5MiB+IHBvbHkoZGF0b3NYLCAyKSkKI21vZFIucHJlZGljdCh1bmxpc3QocmVzdVsxXSkpCiNwcmVkaWNjaW9uMiA9IHByZWRpY3QobW9kUjIsIGRhdGEuZnJhbWUoIGRhdG9zWCA9IHVubGlzdChyZXN1MlsxXSkpKSMkZml0CmBgYAoKYGBge3J9CnBsb3QoZGF0b3NYLCB5MikKbGluZXModW5saXN0KHJlc3UyWzFdKSwgdW5saXN0KHJlc3UyWzJdKSwgY29sPSAicmVkIikKI2xpbmVzKHVubGlzdChyZXN1MlsxXSksIHByZWRpY2Npb24yLCBjb2w9ICJibHVlIikKYGBgCmBgYHtyfQplID0gMi43MTgyCmYwMCA9IGZ1bmN0aW9uKHgpIHJldHVybih4KiowKQpmMTAgPSBmdW5jdGlvbih4KSByZXR1cm4oeCkKZjIwID0gZnVuY3Rpb24oeCkgcmV0dXJuKGUqKngpCmYzMCA9IGZ1bmN0aW9uKHgpIHJldHVybih4KioyKQpmNDAgPSBmdW5jdGlvbih4KSByZXR1cm4oc2luKHgpKQpmNTAgPSBmdW5jdGlvbih4KSByZXR1cm4oeCoqMykKI2Y0MCA9IGZ1bmN0aW9uKHgpIHJldHVybigxKmUqKigteCkpCmZ1bmNpb25lc1BhY2syMCA9IGMoZjAwLGYxMCxmMjAsZjMwLGY0MCxmNTApCmBgYApgYGB7cn0Kbj04MAprPTEwCmVycm9yID0gNDMwMApkYXRvc1gyID0gc2VxKDE6KGsqbikpL2sgLSA2NAp5MyA9ICgtNTAgLSA1MDAwICogZGF0b3NYMiAtIDUgKiBkYXRvc1gyKioyICsgMC4wNSAqIGUqKmRhdG9zWDIgKyAxNTAwMCpzaW4oZGF0b3NYMikgKyBkYXRvc1gyKiozICsgcm5vcm0oaypuLDAsZXJyb3IpKS80MDAwMCMKdGhldGEzID0gbW9kZWxvTGluZWFsaXphZG8oZGF0b3NYMiwgeTMsIGZ1bmNpb25lc1BhY2syMCkKYGBgCgpgYGB7cn0KcmVzdTMgID0gZ2VuZXJhck1hbGxhRXZhbHVhcihtaW4oZGF0b3NYMiktMSwgbWF4KGRhdG9zWDIpKzEsIDAuMSwgZnVuY2lvbmVzUGFjazIwLCB0aGV0YTMpCmBgYAoKYGBge3J9CnBsb3QoZGF0b3NYMiwgeTMpCmxpbmVzKHVubGlzdChyZXN1M1sxXSksIHVubGlzdChyZXN1M1syXSksIGNvbD0gInJlZCIpCiNsaW5lcyh1bmxpc3QocmVzdTJbMV0pLCBwcmVkaWNjaW9uMiwgY29sPSAiYmx1ZSIpCmBgYApgYGB7cn0KcHJpbnQodGhldGEzKQpgYGAKYGBge3J9CmZ1bmNpb25lc1BhY2syMApgYGAKCg==</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiUiBOb3RlYm9vayIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKYGBge3J9Cm4gPSAxMDAKYyA9IDEKZ2FtYXMgPSAwLjIwCmNvbmZpYW56YSA9IDAuMDUKTmdyYW5kZSA9IDEwMDAwCmBgYAoKYGBge3J9CmdlbmVyYXJEYXRvc091dGxpZXJzID0gZnVuY3Rpb24obiwgYywgZ2FtYXMpewogIHJlcyA9IHJub3JtKG4pCiAgaW5kID0gc2FtcGxlKDE6biwgbipnYW1hcywgcmVwbGFjZSA9IEYpCiAgcmVzW2luZF09cmVzW2luZF0gKyBjCiAgcmV0dXJuKHJlcykKfQpgYGAKYGBge3J9CmRhclByb3BvcmNpb25UZXN0cyA9IGZ1bmN0aW9uKE5ncmFuZGUsIG4sIGMsIGdhbWFzLCBjb25maWFuemEpewogIHBhc2Fyb25UZXN0ID0gYygpCiAgZm9yIChpIGluICgxOk5ncmFuZGUpKXsKICAgIHJlcyA9IGdlbmVyYXJEYXRvc091dGxpZXJzKG4sYywgZ2FtYXMpCiAgICB0ZXN0ZW8gPSB0LnRlc3QocmVzKQogICAgcGFzYXJvblRlc3RbaV0gPSB0ZXN0ZW8kcC52YWx1ZTxjb25maWFuemEKICB9CiAgcmV0dXJuKG1lYW4ocGFzYXJvblRlc3QpKQp9CgpgYGAKCgpgYGB7cn0KcmVzID0gZ2VuZXJhckRhdG9zT3V0bGllcnMoMTAwLDUwMCwgMC41KQp0ZXN0ZW8gPSB0LnRlc3QocmVzKQpgYGAKCmBgYHtyfQpkYXJQcm9wb3JjaW9uVGVzdHMoTmdyYW5kZSwgbiwgYywgZ2FtYXMsIGNvbmZpYW56YSkKYGBgCgpgYGB7cn0KY3MgPSBjKDEsMyw2LDEwLDE1LDIwKQpnYW1hc3MgPSBjKDAsMC4wMSwwLjA1LDAuMSkKbSA9IG1hdHJpeChucm93ID0gbGVuZ3RoKGdhbWFzcyksIG5jb2w9bGVuZ3RoKGNzKSkKCmZvciAoaSBpbiAxOmxlbmd0aChjcykpewogIGZvciAoaiBpbiAxOmxlbmd0aChnYW1hc3MpKXsKICAgIG1baiwgaV0gPSBkYXJQcm9wb3JjaW9uVGVzdHMoTmdyYW5kZSwgbiwgY3NbaV0sIGdhbWFzc1tqXSwgY29uZmlhbnphKQogIH0KfQogIApgYGAKCg==</div>
 
 
 
@@ -432,7 +335,7 @@ $(document).ready(function () {
 <!-- code folding -->
 <script>
 $(document).ready(function () {
-  window.initializeSourceEmbed("regresionLineal.Rmd");
+  window.initializeSourceEmbed("ej7.Rmd");
   window.initializeCodeFolding("show" === "show");
 });
 </script>
