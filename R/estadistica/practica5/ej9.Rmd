@@ -1,0 +1,22 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+simulacionBinomial = function(n, p){
+  xbarra = rbinom(1, n, p)/n
+  return(xbarra)
+}
+```
+
+```{r}
+estadisticoBinomial = function(n, p0, xbarra){
+  return(sqrt(n)*(xbarra-p0)/sqrt(p0*(1/p0)))
+}
+```
+```{r}
+
+```
+
+
+
