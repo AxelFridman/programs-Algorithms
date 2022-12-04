@@ -2,6 +2,7 @@
 title: "R Notebook"
 output: html_notebook
 ---
+
 ```{r}
 simulacionBinomial = function(n, p){
   xbarra = rbinom(1, n, p)/n
@@ -14,9 +15,65 @@ estadisticoBinomial = function(n, p0, xbarra){
   return(sqrt(n)*(xbarra-p0)/sqrt(p0*(1/p0)))
 }
 ```
+
 ```{r}
+hacerMuchasSimulaciones = function(Ngrande, n, p0, p, zalpha){
+  res = c()
+  for (j in 1:Ngrande){
+    xbarra = simulacionBinomial(n, p)
+    w = estadisticoBinomial(n, p0, xbarra)
+    res[j] = (w > zalpha) | (w< -zalpha) # 1 o true si se rechaza. 
+  }
+  return(mean(res))
+}
+```
+
+```{r}
+alpha = 0.1
+ps = seq(0, 1, 0.01)#c(0, 0.03, 0.1, 0.2, 0.3, 0.4, 0.45 , 0.49, 0.5, 0.51, 0.55, 0.6, 0.7, 0.8, 0.9, 0.97)
+p0s = c(0.5, 0.8, 0.97)
+ns = c(10, 70, 200)
+Ngrande = 1000
+zalpha = qnorm(1-alpha/2)
+```
+
+```{r}
+hacerMuchasSimulaciones(Ngrande, 1000, 0.5, 0.4, zalpha)
+```
+```{r}
+tiraResultadosPotencia = function(Ngrande, n, p0, ps, zalpha){
+  res = c()
+  for (j in 1:length(ps)){
+    res[j] = hacerMuchasSimulaciones(Ngrande, n, p0, ps[j], zalpha)
+  }
+  return(res)
+}
+```
+
+```{r}
+resn200p0.5 = tiraResultadosPotencia(Ngrande, 200, 0.5, ps, zalpha)
+plot(ps, resn200p0.5 ,type="l", xlab = "Parametro p en titon", ylab = "estimacion de potencia, cantidad de rechazos sobre total tests")
+```
+```{r}
+resn100p0.5 = tiraResultadosPotencia(Ngrande, 100, 0.5, ps, zalpha)
+plot(ps, resn100p0.5 ,type="l")
+```
+```{r}
+resn70p0.5 = tiraResultadosPotencia(Ngrande, 70, 0.5, ps, zalpha)
+plot(ps, resn70p0.5 ,type="l")
+```
+```{r}
+resn10p0.5 = tiraResultadosPotencia(Ngrande, 100, 0.5, ps, zalpha)
+plot(ps, resn10p0.5 ,type="l")
+```
+```{r}
+resn10p0.76 = tiraResultadosPotencia(Ngrande, 50, 0.767, ps, zalpha)
+plot(ps, resn10p0.76 ,type="l")
 
 ```
 
 
-
+```{r}
+resn10p0.5 = tiraResultadosPotencia(Ngrande, 10, 0.5, ps, zalpha)
+plot(ps, resn10p0.5 ,type="l", xlim = c(0.4, 0.6))
+```
