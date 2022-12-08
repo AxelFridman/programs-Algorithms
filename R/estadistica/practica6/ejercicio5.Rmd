@@ -1,0 +1,49 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+df = read.csv("glakes.csv")
+```
+
+```{r}
+df$X = NULL
+```
+
+```{r}
+mod = lm(data = df, Time ~. )
+summary(mod)
+```
+Alpha hat es 12.34 y beta hat 0.006518
+Si, si hay, ya que p valor es 5.22e-13, mucho menor que 0.01
+El estadistico del T-test es 
+(BetaHat - betaReal)/S tiene distribucion t student grados de libertad n-p.
+Bajo H0. cuando vale 0, asumimos que:
+(BetaHat)/S tiene dist t n-p.
+El estadistico para estos datos es 12.27, p valor es 5.22e-13
+
+c)
+como 
+(alphaHat - 10)/S tien dist t n-p bajo H0
+yo rechazo si
+(alphaHat - 10)/S > qt(1-0.05, 29)
+(12.34 - 10)/2.64 > 1.699127
+0.8863636 No es > 1.69 asi que como no tengo suficiente evidencia, NO rechazo h0.
+Si a nivel 1 - pt(0.886363, 29) = 0.1913567 p valor
+
+d)
+Un intervalo de confianza para alpha 0.95 es
+12.344707 +- qt(0.975, 31-2)*sdTon
+12.344707 +- qt(0.975, 29)* 2.642633
+12.344707 +- 2.04* 2.642633
+12.344707 +- 5.390971
+[6.953736 , 17.73568]
+```{r}
+confint(mod,level = 0.95)
+```
+
+0.8386 es lo que vale el r cuadrado que tiene que ver con cuanta de la variabilidad de los datos es explicada por mi modelo.
+
+e)
+12.34 + 1000*0.006518 = 18.858

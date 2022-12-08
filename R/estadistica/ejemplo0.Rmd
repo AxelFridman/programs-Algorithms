@@ -362,4 +362,23 @@ shapiro.test(dfdif$var1)
 ```
 
 
+```{r}
+generarColumnaPrediccionesPromediosMoviles = function(datosX, datosY , h){
+  sexoPredicho = c()
+  for (i in (1: length(datosX))){
+    sexoPredicho[i] = promediosMoviles(datosX, datosY, (datosX[i]), h)
+  }
+  return(sexoPredicho)
+}
+```
+```{r}
+(generarColumnaPrediccionesPromediosMoviles(df$Sunshine, df$RainTomorrow, 1))
+```
+```{r}
+dat = c(4.377,2.74,4.22,5.864,3.526,2.861,1.887,3.533,2.328,3.365)
+suma = sum(dat**3)
+```
+```{r}
+plot(density(rgamma(10000,10,1/24)))
+```
 
