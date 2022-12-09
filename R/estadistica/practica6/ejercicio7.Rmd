@@ -4,6 +4,51 @@ output: html_notebook
 ---
 
 ```{r}
+df = read.csv("glakes.csv")
+```
+
+```{r}
+df$X = NULL
+```
+
+```{r}
+mod = lm(data = df, Time ~. )
+predicho = predict(mod, df)
+```
+
+```{r}
+plot(df$Tonnage, df$Time)
+lines(df$Tonnage, predicho)
+```
+
+```{r}
+plot(predicho, mod$residuals)
+lines(c(0, 120), c(0,0))
+```
+El modelo no parece ser muy válido pues los puntos no se agrupan en torno a la recta y = 0
+```{r}
+tonT = (df$Tonnage)**0.25
+timT = log(df$Time)
+dfT = data.frame(tonT, timT)
+```
+
+```{r}
+mod2 = lm(data = dfT, timT~tonT)
+pred2 = predict(mod2, dfT)
+```
+```{r}
+plot(dfT$tonT, dfT$timT)
+lines(dfT$tonT, pred2)
+```
+Parece que hay menos datos extremos ya que esta escalado.
+
+```{r}
+plot(mod2$residuals)
+```
+```{r}
+plot(df$Tonnage, df$Time)
+points(dfT$tonT**4, 2.7182**pred2, col="red")
+points(df$Tonnage, predicho, col = "blue")
 
 ```
 
