@@ -1752,91 +1752,11 @@ display: none;
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYgPSByZWFkLmNzdihcImNyZWRpdC50eHRcIilcbmRmJFggPSBOVUxMXG5gYGAifQ== -->
-<pre class="r"><code>df = read.csv(&quot;credit.txt&quot;)
-df$X = NULL</code></pre>
-<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYkR2VuZGVyID0gYXMuZmFjdG9yKGRmJEdlbmRlcilcbmRmJFN0dWRlbnQgPSBhcy5mYWN0b3IoZGYkU3R1ZGVudClcbmRmJE1hcnJpZWQgPSBhcy5mYWN0b3IoZGYkTWFycmllZClcbmRmJEV0aG5pY2l0eSA9IGFzLmZhY3RvcihkZiRFdGhuaWNpdHkpIFxuYGBgIn0= -->
-<pre class="r"><code>df$Gender = as.factor(df$Gender)
-df$Student = as.factor(df$Student)
-df$Married = as.factor(df$Married)
-df$Ethnicity = as.factor(df$Ethnicity) </code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubW9kID0gbG0oZGF0YSA9IGRmLCBCYWxhbmNlIH4uKVxuc3VtbWFyeShtb2QpXG5gYGAifQ== -->
-<pre class="r"><code>mod = lm(data = df, Balance ~.)
-summary(mod)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiXG5DYWxsOlxubG0oZm9ybXVsYSA9IEJhbGFuY2UgfiAuLCBkYXRhID0gZGYpXG5cblJlc2lkdWFsczpcbiAgICBNaW4gICAgICAxUSAgTWVkaWFuICAgICAgM1EgICAgIE1heCBcbi0xNjEuNjQgIC03Ny43MCAgLTEzLjQ5ICAgNTMuOTggIDMxOC4yMCBcblxuQ29lZmZpY2llbnRzOlxuICAgICAgICAgICAgICAgICAgICAgRXN0aW1hdGUgU3RkLiBFcnJvciB0IHZhbHVlIFByKD58dHwpICAgIFxuKEludGVyY2VwdCkgICAgICAgIC00NzkuMjA3ODcgICAzNS43NzM5NCAtMTMuMzk1ICA8IDJlLTE2ICoqKlxuSW5jb21lICAgICAgICAgICAgICAgLTcuODAzMTAgICAgMC4yMzQyMyAtMzMuMzE0ICA8IDJlLTE2ICoqKlxuTGltaXQgICAgICAgICAgICAgICAgIDAuMTkwOTEgICAgMC4wMzI3OCAgIDUuODI0IDEuMjFlLTA4ICoqKlxuUmF0aW5nICAgICAgICAgICAgICAgIDEuMTM2NTMgICAgMC40OTA4OSAgIDIuMzE1ICAgMC4wMjExICogIFxuQ2FyZHMgICAgICAgICAgICAgICAgMTcuNzI0NDggICAgNC4zNDEwMyAgIDQuMDgzIDUuNDBlLTA1ICoqKlxuQWdlICAgICAgICAgICAgICAgICAgLTAuNjEzOTEgICAgMC4yOTM5OSAgLTIuMDg4ICAgMC4wMzc0ICogIFxuRWR1Y2F0aW9uICAgICAgICAgICAgLTEuMDk4ODYgICAgMS41OTc5NSAgLTAuNjg4ICAgMC40OTIxICAgIFxuR2VuZGVyRmVtYWxlICAgICAgICAtMTAuNjUzMjUgICAgOS45MTQwMCAgLTEuMDc1ICAgMC4yODMyICAgIFxuU3R1ZGVudFllcyAgICAgICAgICA0MjUuNzQ3MzYgICAxNi43MjI1OCAgMjUuNDU5ICA8IDJlLTE2ICoqKlxuTWFycmllZFllcyAgICAgICAgICAgLTguNTMzOTAgICAxMC4zNjI4NyAgLTAuODI0ICAgMC40MTA3ICAgIFxuRXRobmljaXR5QXNpYW4gICAgICAgMTYuODA0MTggICAxNC4xMTkwNiAgIDEuMTkwICAgMC4yMzQ3ICAgIFxuRXRobmljaXR5Q2F1Y2FzaWFuICAgMTAuMTA3MDMgICAxMi4yMDk5MiAgIDAuODI4ICAgMC40MDgzICAgIFxuLS0tXG5TaWduaWYuIGNvZGVzOiAgMCDigJgqKirigJkgMC4wMDEg4oCYKirigJkgMC4wMSDigJgq4oCZIDAuMDUg4oCYLuKAmSAwLjEg4oCYIOKAmSAxXG5cblJlc2lkdWFsIHN0YW5kYXJkIGVycm9yOiA5OC43OSBvbiAzODggZGVncmVlcyBvZiBmcmVlZG9tXG5NdWx0aXBsZSBSLXNxdWFyZWQ6ICAwLjk1NTEsXHRBZGp1c3RlZCBSLXNxdWFyZWQ6ICAwLjk1MzggXG5GLXN0YXRpc3RpYzogNzUwLjMgb24gMTEgYW5kIDM4OCBERiwgIHAtdmFsdWU6IDwgMi4yZS0xNlxuIn0= -->
-<pre><code>
-Call:
-lm(formula = Balance ~ ., data = df)
 
-Residuals:
-    Min      1Q  Median      3Q     Max 
--161.64  -77.70  -13.49   53.98  318.20 
-
-Coefficients:
-                     Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)        -479.20787   35.77394 -13.395  &lt; 2e-16 ***
-Income               -7.80310    0.23423 -33.314  &lt; 2e-16 ***
-Limit                 0.19091    0.03278   5.824 1.21e-08 ***
-Rating                1.13653    0.49089   2.315   0.0211 *  
-Cards                17.72448    4.34103   4.083 5.40e-05 ***
-Age                  -0.61391    0.29399  -2.088   0.0374 *  
-Education            -1.09886    1.59795  -0.688   0.4921    
-GenderFemale        -10.65325    9.91400  -1.075   0.2832    
-StudentYes          425.74736   16.72258  25.459  &lt; 2e-16 ***
-MarriedYes           -8.53390   10.36287  -0.824   0.4107    
-EthnicityAsian       16.80418   14.11906   1.190   0.2347    
-EthnicityCaucasian   10.10703   12.20992   0.828   0.4083    
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-Residual standard error: 98.79 on 388 degrees of freedom
-Multiple R-squared:  0.9551,    Adjusted R-squared:  0.9538 
-F-statistic: 750.3 on 11 and 388 DF,  p-value: &lt; 2.2e-16</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>Las variables mas significativas son income, limit, cartds y si es
-estudiante. La edad y el rating son relevantes pero menos.</p>
-<ol start="2" style="list-style-type: lower-alpha">
-<li>para la hipotesis h1 bAge distinto de 0, el p valor es tal que a 2
-colas coincide con -2.088. Es decir pt(-2.088, 388)*2 ya que es a 2
-colas. Asi p valor es 0.03744946.</li>
-</ol>
-<p>Mientras para la hipotesis alternativa Bage menor que 0 es es solo
-pt(-2.088, 388) = 0.01872473.</p>
-<p>Si quisieramos para bAge mayor que 0 es 1-pt(-2.088, 388) =
-0.9812753</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudmFyKG1vZCRyZXNpZHVhbHMpXG5gYGAifQ== -->
-<pre class="r"><code>var(mod$residuals)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDk0OTAuNTUyXG4ifQ== -->
-<pre><code>[1] 9490.552</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<ol start="3" style="list-style-type: lower-alpha">
-<li><p>9490.552 es la estimacion de la varianza de los errores.</p></li>
-<li><p>como BageHat es -0.61391, si tiene 3 anios mas es -1.84173, Luego
-Bj - Bv = x - (x-1.84) = 1.84</p></li>
-<li><p>un intervalo de confianza 0.9 para Beducation es tal que:
-[beduHat +- qt(0.1 / 2, 388)* sdEducation] [-1.09886 +- qt(0.05, 388)*
-1.59795] [-1.09886 +- -1.64879* 1.59795] [-1.09886 +- -2.634684]
-[-3.733544, 1.535824]</p></li>
-</ol>
-<!-- rnb-text-end -->
-
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiUiBOb3RlYm9vayIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKYGBge3J9CmRmID0gcmVhZC5jc3YoImNyZWRpdC50eHQiKQpkZiRYID0gTlVMTApgYGAKCmBgYHtyfQpkZiRHZW5kZXIgPSBhcy5mYWN0b3IoZGYkR2VuZGVyKQpkZiRTdHVkZW50ID0gYXMuZmFjdG9yKGRmJFN0dWRlbnQpCmRmJE1hcnJpZWQgPSBhcy5mYWN0b3IoZGYkTWFycmllZCkKZGYkRXRobmljaXR5ID0gYXMuZmFjdG9yKGRmJEV0aG5pY2l0eSkgCmBgYApgYGB7cn0KbW9kID0gbG0oZGF0YSA9IGRmLCBCYWxhbmNlIH4uKQpzdW1tYXJ5KG1vZCkKYGBgCkxhcyB2YXJpYWJsZXMgbWFzIHNpZ25pZmljYXRpdmFzIHNvbiBpbmNvbWUsIGxpbWl0LCBjYXJ0ZHMgeSBzaSBlcyBlc3R1ZGlhbnRlLiBMYSBlZGFkIHkgZWwgcmF0aW5nIHNvbiByZWxldmFudGVzIHBlcm8gbWVub3MuIAoKYikgcGFyYSBsYSBoaXBvdGVzaXMgaDEgYkFnZSBkaXN0aW50byBkZSAwLCBlbCBwIHZhbG9yIGVzIHRhbCBxdWUgYSAyIGNvbGFzIGNvaW5jaWRlIGNvbiAtMi4wODguIEVzIGRlY2lyIHB0KC0yLjA4OCwgMzg4KSoyIHlhIHF1ZSBlcyBhIDIgY29sYXMuIEFzaSBwIHZhbG9yIGVzIDAuMDM3NDQ5NDYuCgpNaWVudHJhcyBwYXJhIGxhIGhpcG90ZXNpcyBhbHRlcm5hdGl2YSBCYWdlIG1lbm9yIHF1ZSAwIGVzIGVzIHNvbG8gcHQoLTIuMDg4LCAzODgpID0gMC4wMTg3MjQ3My4KClNpIHF1aXNpZXJhbW9zIHBhcmEgYkFnZSBtYXlvciBxdWUgMCBlcyAxLXB0KC0yLjA4OCwgMzg4KSA9IDAuOTgxMjc1MwpgYGB7cn0KdmFyKG1vZCRyZXNpZHVhbHMpCmBgYAoKYykgOTQ5MC41NTIgZXMgbGEgZXN0aW1hY2lvbiBkZSBsYSB2YXJpYW56YSBkZSBsb3MgZXJyb3Jlcy4gCgpkKSBjb21vIEJhZ2VIYXQgZXMgLTAuNjEzOTEsIHNpIHRpZW5lIDMgYW5pb3MgbWFzIGVzIC0xLjg0MTczLCBMdWVnbyBCaiAtIEJ2ID0geCAtICh4LTEuODQpID0gMS44NAoKZSkgdW4gaW50ZXJ2YWxvIGRlIGNvbmZpYW56YSAwLjkgcGFyYSBCZWR1Y2F0aW9uIGVzIHRhbCBxdWU6CltiZWR1SGF0ICstIHF0KDAuMSAvIDIsIDM4OCkqIHNkRWR1Y2F0aW9uXQpbLTEuMDk4ODYgKy0gcXQoMC4wNSwgMzg4KSogMS41OTc5NV0KWy0xLjA5ODg2ICstIC0xLjY0ODc5KiAxLjU5Nzk1XQpbLTEuMDk4ODYgKy0gLTIuNjM0Njg0XQpbLTMuNzMzNTQ0LCAxLjUzNTgyNF0=</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiUiBOb3RlYm9vayIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKYGBge3J9CgpgYGAKCg==</div>
 
 
 
@@ -1883,7 +1803,7 @@ $(document).ready(function () {
 <!-- code folding -->
 <script>
 $(document).ready(function () {
-  window.initializeSourceEmbed("ejercicio6.Rmd");
+  window.initializeSourceEmbed("ejercicio7.Rmd");
   window.initializeCodeFolding("show" === "show");
 });
 </script>

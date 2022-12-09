@@ -20,5 +20,22 @@ summary(mod)
 ```
 Las variables mas significativas son income, limit, cartds y si es estudiante. La edad y el rating son relevantes pero menos. 
 
+b) para la hipotesis h1 bAge distinto de 0, el p valor es tal que a 2 colas coincide con -2.088. Es decir pt(-2.088, 388)*2 ya que es a 2 colas. Asi p valor es 0.03744946.
 
+Mientras para la hipotesis alternativa Bage menor que 0 es es solo pt(-2.088, 388) = 0.01872473.
 
+Si quisieramos para bAge mayor que 0 es 1-pt(-2.088, 388) = 0.9812753
+```{r}
+var(mod$residuals)
+```
+
+c) 9490.552 es la estimacion de la varianza de los errores. 
+
+d) como BageHat es -0.61391, si tiene 3 anios mas es -1.84173, Luego Bj - Bv = x - (x-1.84) = 1.84
+
+e) un intervalo de confianza 0.9 para Beducation es tal que:
+[beduHat +- qt(0.1 / 2, 388)* sdEducation]
+[-1.09886 +- qt(0.05, 388)* 1.59795]
+[-1.09886 +- -1.64879* 1.59795]
+[-1.09886 +- -2.634684]
+[-3.733544, 1.535824]
