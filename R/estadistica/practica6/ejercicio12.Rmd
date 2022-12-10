@@ -1,0 +1,79 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+df = read.table("cemento.txt", header = T)
+```
+
+```{r}
+cor(df)
+```
+x4 y x3 estan altamente correlacionadas asi que 1 de ellas la sacaria. Al mismo tiempo x3 con "y" nuestra variable target.
+Y en menor medida x1 con x2. Y dado que x2 se correlaciona con "y" mejor que x1:
+En un principio dejaria x2, x3 y x5. Ya que x5 es bastante independiente y podria sumarle informacion al modelo.
+```{r}
+mod = lm(data = df, y~.)
+sumario = summary(mod)
+sumario
+```
+La hipotesis de que cada uno de ellos sea distinto de 0 en todos es baja. Ninguna es sinificativamente distinta de 0. La regresion en si es significativa ya que el estadistico f nos marca exactamente eso con un p valor muy chico, osea ALGUNO DE ELLOS muy probablmente no sea 0. No es una contradiccion, no esta seguro de cada una de las covariables pero sabe que entre todos hay algo de linealidad y no solo ruido.
+Vale la pena hacer un nuevo intento.
+```{r}
+suma = (df$x1 + df$x2 + df$x3 + df$x4 + df$x5)
+df$s = suma
+```
+
+```{r}
+mod2 = lm(data = df, y~ x1 + x2 + x3 + x4 + x5 -1)
+sumario2 = summary(mod2)
+sumario2
+```
+ahora son significativamente distinto de 0 son el x2, x3 y x4. 
+
+```{r}
+mod3= lm(data = df, y~ x2 + x3 + x4  -1)
+sumario3 = summary(mod3)
+sumario3
+```
+```{r}
+errorCuadraticoMedio = function(y, yhat){
+  return(((y-yhat)**2))
+}
+```
+
+```{r}
+looLM = function(datos, evaluador){
+  erroresA = c()
+  erroresB = c()
+  erroresC = c()
+
+  for (i in 1:nrow(datos)){
+    train = datos[datos$indice != i,]
+    test = datos[datos$indice == i,]
+    
+    modeloA = lm(data=train, y ~ x1 + x2 + x3 + x4 + x5)
+    modeloB = lm(data=train, y~ x1 + x2 + x3 + x4 + x5 -1)
+    modeloC = lm(data=train, y~ x2 + x3 + x4  -1)
+
+    yhatTestA =  predict(modeloA, newdata = test )
+    erroresA[i] = evaluador(test$y, yhatTestA)
+    yhatTestB =  predict(modeloB, newdata = test )
+    erroresB[i] = evaluador(test$y, yhatTestB)
+    yhatTestC =  predict(modeloC, newdata = test )
+    erroresC[i] = evaluador(test$y, yhatTestC)
+
+  }
+  res = c(mean(erroresA),mean(erroresB),mean(erroresC))
+  return(res)
+}
+```
+
+```{r}
+df$indice = 1:14
+looLM(df, errorCuadraticoMedio)
+```
+
+El tercer modelo es el mejor con leave one out
+modeloC = lm(data=train, y~ x2 + x3 + x4  -1)
