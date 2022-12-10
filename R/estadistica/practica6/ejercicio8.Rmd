@@ -4,6 +4,56 @@ output: html_notebook
 ---
 
 ```{r}
+df = read.csv("credit.txt")
+df$X = NULL
+```
 
+```{r}
+df$Gender = as.factor(df$Gender)
+df$Student = as.factor(df$Student)
+df$Married = as.factor(df$Married)
+df$Ethnicity = as.factor(df$Ethnicity) 
+```
+```{r}
+train <- sample(c(TRUE,FALSE), nrow(df), prob = c(2/3, 1/3) ,rep=TRUE)
+test <- (!train )
+dfTrain = df[train,]
+dfTest = df[test,]
+```
+
+```{r}
+DamePrediccionesTest = function(dfTest, mod){
+  predicciones = predict(mod, newdata= dfTest)
+  W = sum((dfTest$Balance - predicciones)**2)
+  return((W)) # Podria Tomar escala logaritmica para que sea legible
+} #Asumo modelo
+```
+
+```{r}
+mod1 = lm(data = dfTrain, Balance ~ Income + Cards + Age)
+mod2 = lm(data = dfTrain, Balance ~ Income + Cards)
+mod3 = lm(data = dfTrain, Balance ~ Income + Age)
+mod4 = lm(data = dfTrain, Balance ~ Cards + Age)
+mod5 = lm(data = dfTrain, Balance ~ Income)
+mod6 = lm(data = dfTrain, Balance ~ Cards)
+mod7 = lm(data = dfTrain, Balance ~ Age)
+mod8 = lm(data = dfTrain, Balance ~1)
+modelos = list(mod1, mod2, mod3, mod4, mod5, mod6, mod7, mod8 )
+```
+
+```{r}
+resModelos = c() #En escala log
+i = 1
+for (m in modelos){
+  resModelos[i] = DamePrediccionesTest(dfTest, m)
+  i= i+1
+}
+```
+```{r}
+which.min(resModelos)
+```
+
+```{r}
+mod2
 ```
 

@@ -1752,46 +1752,87 @@ display: none;
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYgPSByZWFkLmNzdihcImdsYWtlcy5jc3ZcIilcbmBgYCJ9 -->
+<pre class="r"><code>df = read.csv(&quot;glakes.csv&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYkWCA9IE5VTExcbmBgYCJ9 -->
 <pre class="r"><code>df$X = NULL</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>Alpha hat es 12.34 y beta hat 0.006518 Si, si hay, ya que p valor es
-5.22e-13, mucho menor que 0.01 El estadistico del T-test es (BetaHat -
-betaReal)/S tiene distribucion t student grados de libertad n-p. Bajo
-H0. cuando vale 0, asumimos que: (BetaHat)/S tiene dist t n-p. El
-estadistico para estos datos es 12.27, p valor es 5.22e-13</p>
-<ol start="3" style="list-style-type: lower-alpha">
-<li><p>como (alphaHat - 10)/S tien dist t n-p bajo H0 yo rechazo si
-(alphaHat - 10)/S &gt; qt(1-0.05, 29) (12.34 - 10)/2.64 &gt; 1.699127
-0.8863636 No es &gt; 1.69 asi que como no tengo suficiente evidencia, NO
-rechazo h0. Si a nivel 1 - pt(0.886363, 29) = 0.1913567 p valor</p></li>
-<li><p>Un intervalo de confianza para alpha 0.95 es 12.344707 +-
-qt(0.975, 31-2)<em>sdTon 12.344707 +- qt(0.975, 29)</em> 2.642633
-12.344707 +- 2.04* 2.642633 12.344707 +- 5.390971 [6.953736 ,
-17.73568]</p></li>
-</ol>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29uZmludChtb2QsbGV2ZWwgPSAwLjk1KVxuYGBgIn0= -->
-<pre class="r"><code>confint(mod,level = 0.95)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZXJyb3JDdWFkcmF0aWNvTWVkaW8gPSBmdW5jdGlvbih5LCB5aGF0KXtcbiAgcmV0dXJuKG1lYW4oKHkteWhhdCkqKjIpKVxufVxuYGBgIn0= -->
+<pre class="r"><code>errorCuadraticoMedio = function(y, yhat){
+  return(mean((y-yhat)**2))
+}</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiICAgICAgICAgICAgICAgICAgMi41ICUgICAgICAgOTcuNSAlXG4oSW50ZXJjZXB0KSA2LjkzOTkxNjE5MiAxNy43NDk0OTgyMzlcblRvbm5hZ2UgICAgIDAuMDA1NDMxODUyICAwLjAwNzYwMzg4N1xuIn0= -->
-<pre><code>                  2.5 %       97.5 %
-(Intercept) 6.939916192 17.749498239
-Tonnage     0.005431852  0.007603887</code></pre>
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZXJyb3JBYnNvbHV0b01lZGlvID0gZnVuY3Rpb24oeSwgeWhhdCl7XG4gIHJldHVybihtZWFuKGFicyh5LXloYXQpKSlcbn1cbmBgYCJ9 -->
+<pre class="r"><code>errorAbsolutoMedio = function(y, yhat){
+  return(mean(abs(y-yhat)))
+}</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubG9vTE0gPSBmdW5jdGlvbihkYXRvcywgZXZhbHVhZG9yKXtcbiAgZXJyb3Jlc0EgPSBjKClcbiAgZXJyb3Jlc0IgPSBjKClcbiAgZXJyb3Jlc0MgPSBjKClcbiAgZXJyb3Jlc0QgPSBjKClcbiAgICBcbiAgZm9yIChpIGluIDE6bnJvdyhkYXRvcykpe1xuICAgIHRyYWluID0gZGF0b3NbZGF0b3MkaW5kaWNlICE9IGksXVxuICAgIHRlc3QgPSBkYXRvc1tkYXRvcyRpbmRpY2UgPT0gaSxdXG4gICAgXG4gICAgbW9kZWxvQSA9IGxtKGRhdGE9dHJhaW4sIFRpbWUgfiBUb25uYWdlIC0gMSlcbiAgICBtb2RlbG9CID0gbG0oZGF0YT10cmFpbiwgVGltZSB+IFRvbm5hZ2UpXG4gICAgbW9kZWxvQyA9IGxtKGRhdGE9dHJhaW4sIFRpbWVMb2cgfiBUb25uYWdlMjUpXG4gICAgbW9kZWxvRCA9IGxtKGRhdGE9dHJhaW4sIFRpbWVMb2cgfiBUb25uYWdlMjUgKyBUb25uYWdlMDUpXG5cbiAgICB5aGF0VGVzdEEgPSAgcHJlZGljdChtb2RlbG9BLCBuZXdkYXRhID0gdGVzdCApXG4gICAgZXJyb3Jlc0FbaV0gPSBldmFsdWFkb3IodGVzdCRUaW1lLCB5aGF0VGVzdEEpXG4gICAgeWhhdFRlc3RCID0gIHByZWRpY3QobW9kZWxvQiwgbmV3ZGF0YSA9IHRlc3QgKVxuICAgIGVycm9yZXNCW2ldID0gZXZhbHVhZG9yKHRlc3QkVGltZSwgeWhhdFRlc3RCKVxuICAgIHloYXRUZXN0QyA9ICBwcmVkaWN0KG1vZGVsb0MsIG5ld2RhdGEgPSB0ZXN0IClcbiAgICBlcnJvcmVzQ1tpXSA9IGV2YWx1YWRvcih0ZXN0JFRpbWUsIGV4cCh5aGF0VGVzdEMpKVxuICAgIHloYXRUZXN0RCA9ICBwcmVkaWN0KG1vZGVsb0QsIG5ld2RhdGEgPSB0ZXN0IClcbiAgICBlcnJvcmVzRFtpXSA9IGV2YWx1YWRvcih0ZXN0JFRpbWUsIGV4cCh5aGF0VGVzdEQpKVxuICB9XG4gIHJlcyA9IGMobWVhbihlcnJvcmVzQSksbWVhbihlcnJvcmVzQiksbWVhbihlcnJvcmVzQyksbWVhbihlcnJvcmVzRCkpXG4gIHJldHVybihyZXMpXG59XG5gYGAifQ== -->
+<pre class="r"><code>looLM = function(datos, evaluador){
+  erroresA = c()
+  erroresB = c()
+  erroresC = c()
+  erroresD = c()
+    
+  for (i in 1:nrow(datos)){
+    train = datos[datos$indice != i,]
+    test = datos[datos$indice == i,]
+    
+    modeloA = lm(data=train, Time ~ Tonnage - 1)
+    modeloB = lm(data=train, Time ~ Tonnage)
+    modeloC = lm(data=train, TimeLog ~ Tonnage25)
+    modeloD = lm(data=train, TimeLog ~ Tonnage25 + Tonnage05)
+
+    yhatTestA =  predict(modeloA, newdata = test )
+    erroresA[i] = evaluador(test$Time, yhatTestA)
+    yhatTestB =  predict(modeloB, newdata = test )
+    erroresB[i] = evaluador(test$Time, yhatTestB)
+    yhatTestC =  predict(modeloC, newdata = test )
+    erroresC[i] = evaluador(test$Time, exp(yhatTestC))
+    yhatTestD =  predict(modeloD, newdata = test )
+    erroresD[i] = evaluador(test$Time, exp(yhatTestD))
+  }
+  res = c(mean(erroresA),mean(erroresB),mean(erroresC),mean(erroresD))
+  return(res)
+}</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYkaW5kaWNlID0gMTpucm93KGRmKVxuZGYkVGltZUxvZyA9IGxvZyhkZiRUaW1lKVxuZGYkVG9ubmFnZTI1ID0gKGRmJFRvbm5hZ2UpKiowLjI1XG5kZiRUb25uYWdlMDUgPSAoZGYkVG9ubmFnZSkqKjAuNTBcbmxvb0xNKGRmLCBlcnJvckN1YWRyYXRpY29NZWRpbylcbmBgYCJ9 -->
+<pre class="r"><code>df$indice = 1:nrow(df)
+df$TimeLog = log(df$Time)
+df$Tonnage25 = (df$Tonnage)**0.25
+df$Tonnage05 = (df$Tonnage)**0.50
+looLM(df, errorCuadraticoMedio)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDIxMi4zNTk2IDE0MS4xMzQ5IDEzMi40MzY2IDE0Ny4wNjk1XG4ifQ== -->
+<pre><code>[1] 212.3596 141.1349 132.4366 147.0695</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>0.8386 es lo que vale el r cuadrado que tiene que ver con cuanta de
-la variabilidad de los datos es explicada por mi modelo.</p>
-<ol start="5" style="list-style-type: lower-alpha">
-<li>12.34 + 1000*0.006518 = 18.858</li>
-</ol>
+<p>El mejor modelo es el c</p>
 <!-- rnb-text-end -->
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiUiBOb3RlYm9vayIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKCgpgYGB7cn0KbW9kID0gbG0oZGF0YSA9IGRmLCBUaW1lIH4uICkKc3VtbWFyeShtb2QpCmBgYApBbHBoYSBoYXQgZXMgMTIuMzQgeSBiZXRhIGhhdCAwLjAwNjUxOApTaSwgc2kgaGF5LCB5YSBxdWUgcCB2YWxvciBlcyA1LjIyZS0xMywgbXVjaG8gbWVub3IgcXVlIDAuMDEKRWwgZXN0YWRpc3RpY28gZGVsIFQtdGVzdCBlcyAKKEJldGFIYXQgLSBiZXRhUmVhbCkvUyB0aWVuZSBkaXN0cmlidWNpb24gdCBzdHVkZW50IGdyYWRvcyBkZSBsaWJlcnRhZCBuLXAuCkJham8gSDAuIGN1YW5kbyB2YWxlIDAsIGFzdW1pbW9zIHF1ZToKKEJldGFIYXQpL1MgdGllbmUgZGlzdCB0IG4tcC4KRWwgZXN0YWRpc3RpY28gcGFyYSBlc3RvcyBkYXRvcyBlcyAxMi4yNywgcCB2YWxvciBlcyA1LjIyZS0xMwoKYykKY29tbyAKKGFscGhhSGF0IC0gMTApL1MgdGllbiBkaXN0IHQgbi1wIGJham8gSDAKeW8gcmVjaGF6byBzaQooYWxwaGFIYXQgLSAxMCkvUyA+IHF0KDEtMC4wNSwgMjkpCigxMi4zNCAtIDEwKS8yLjY0ID4gMS42OTkxMjcKMC44ODYzNjM2IE5vIGVzID4gMS42OSBhc2kgcXVlIGNvbW8gbm8gdGVuZ28gc3VmaWNpZW50ZSBldmlkZW5jaWEsIE5PIHJlY2hhem8gaDAuClNpIGEgbml2ZWwgMSAtIHB0KDAuODg2MzYzLCAyOSkgPSAwLjE5MTM1NjcgcCB2YWxvcgoKZCkKVW4gaW50ZXJ2YWxvIGRlIGNvbmZpYW56YSBwYXJhIGFscGhhIDAuOTUgZXMKMTIuMzQ0NzA3ICstIHF0KDAuOTc1LCAzMS0yKSpzZFRvbgoxMi4zNDQ3MDcgKy0gcXQoMC45NzUsIDI5KSogMi42NDI2MzMKMTIuMzQ0NzA3ICstIDIuMDQqIDIuNjQyNjMzCjEyLjM0NDcwNyArLSA1LjM5MDk3MQpbNi45NTM3MzYgLCAxNy43MzU2OF0KYGBge3J9CmNvbmZpbnQobW9kLGxldmVsID0gMC45NSkKYGBgCgowLjgzODYgZXMgbG8gcXVlIHZhbGUgZWwgciBjdWFkcmFkbyBxdWUgdGllbmUgcXVlIHZlciBjb24gY3VhbnRhIGRlIGxhIHZhcmlhYmlsaWRhZCBkZSBsb3MgZGF0b3MgZXMgZXhwbGljYWRhIHBvciBtaSBtb2RlbG8uCgplKQoxMi4zNCArIDEwMDAqMC4wMDY1MTggPSAxOC44NTgK</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiUiBOb3RlYm9vayIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKYGBge3J9CmRmID0gcmVhZC5jc3YoImdsYWtlcy5jc3YiKQpgYGAKCmBgYHtyfQpkZiRYID0gTlVMTApgYGAKCmBgYHtyfQplcnJvckN1YWRyYXRpY29NZWRpbyA9IGZ1bmN0aW9uKHksIHloYXQpewogIHJldHVybihtZWFuKCh5LXloYXQpKioyKSkKfQpgYGAKCmBgYHtyfQplcnJvckFic29sdXRvTWVkaW8gPSBmdW5jdGlvbih5LCB5aGF0KXsKICByZXR1cm4obWVhbihhYnMoeS15aGF0KSkpCn0KYGBgCgoKYGBge3J9Cmxvb0xNID0gZnVuY3Rpb24oZGF0b3MsIGV2YWx1YWRvcil7CiAgZXJyb3Jlc0EgPSBjKCkKICBlcnJvcmVzQiA9IGMoKQogIGVycm9yZXNDID0gYygpCiAgZXJyb3Jlc0QgPSBjKCkKICAgIAogIGZvciAoaSBpbiAxOm5yb3coZGF0b3MpKXsKICAgIHRyYWluID0gZGF0b3NbZGF0b3MkaW5kaWNlICE9IGksXQogICAgdGVzdCA9IGRhdG9zW2RhdG9zJGluZGljZSA9PSBpLF0KICAgIAogICAgbW9kZWxvQSA9IGxtKGRhdGE9dHJhaW4sIFRpbWUgfiBUb25uYWdlIC0gMSkKICAgIG1vZGVsb0IgPSBsbShkYXRhPXRyYWluLCBUaW1lIH4gVG9ubmFnZSkKICAgIG1vZGVsb0MgPSBsbShkYXRhPXRyYWluLCBUaW1lTG9nIH4gVG9ubmFnZTI1KQogICAgbW9kZWxvRCA9IGxtKGRhdGE9dHJhaW4sIFRpbWVMb2cgfiBUb25uYWdlMjUgKyBUb25uYWdlMDUpCgogICAgeWhhdFRlc3RBID0gIHByZWRpY3QobW9kZWxvQSwgbmV3ZGF0YSA9IHRlc3QgKQogICAgZXJyb3Jlc0FbaV0gPSBldmFsdWFkb3IodGVzdCRUaW1lLCB5aGF0VGVzdEEpCiAgICB5aGF0VGVzdEIgPSAgcHJlZGljdChtb2RlbG9CLCBuZXdkYXRhID0gdGVzdCApCiAgICBlcnJvcmVzQltpXSA9IGV2YWx1YWRvcih0ZXN0JFRpbWUsIHloYXRUZXN0QikKICAgIHloYXRUZXN0QyA9ICBwcmVkaWN0KG1vZGVsb0MsIG5ld2RhdGEgPSB0ZXN0ICkKICAgIGVycm9yZXNDW2ldID0gZXZhbHVhZG9yKHRlc3QkVGltZSwgZXhwKHloYXRUZXN0QykpCiAgICB5aGF0VGVzdEQgPSAgcHJlZGljdChtb2RlbG9ELCBuZXdkYXRhID0gdGVzdCApCiAgICBlcnJvcmVzRFtpXSA9IGV2YWx1YWRvcih0ZXN0JFRpbWUsIGV4cCh5aGF0VGVzdEQpKQogIH0KICByZXMgPSBjKG1lYW4oZXJyb3Jlc0EpLG1lYW4oZXJyb3Jlc0IpLG1lYW4oZXJyb3Jlc0MpLG1lYW4oZXJyb3Jlc0QpKQogIHJldHVybihyZXMpCn0KYGBgCgpgYGB7cn0KZGYkaW5kaWNlID0gMTpucm93KGRmKQpkZiRUaW1lTG9nID0gbG9nKGRmJFRpbWUpCmRmJFRvbm5hZ2UyNSA9IChkZiRUb25uYWdlKSoqMC4yNQpkZiRUb25uYWdlMDUgPSAoZGYkVG9ubmFnZSkqKjAuNTAKbG9vTE0oZGYsIGVycm9yQ3VhZHJhdGljb01lZGlvKQpgYGAKRWwgbWVqb3IgbW9kZWxvIGVzIGVsIGMK</div>
 
 
 
@@ -1838,7 +1879,7 @@ $(document).ready(function () {
 <!-- code folding -->
 <script>
 $(document).ready(function () {
-  window.initializeSourceEmbed("ejercicio5.Rmd");
+  window.initializeSourceEmbed("ejercicio9.Rmd");
   window.initializeCodeFolding("show" === "show");
 });
 </script>

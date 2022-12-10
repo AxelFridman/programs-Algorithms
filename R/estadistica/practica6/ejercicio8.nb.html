@@ -1752,11 +1752,95 @@ display: none;
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYgPSByZWFkLmNzdihcImNyZWRpdC50eHRcIilcbmRmJFggPSBOVUxMXG5gYGAifQ== -->
+<pre class="r"><code>df = read.csv(&quot;credit.txt&quot;)
+df$X = NULL</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYkR2VuZGVyID0gYXMuZmFjdG9yKGRmJEdlbmRlcilcbmRmJFN0dWRlbnQgPSBhcy5mYWN0b3IoZGYkU3R1ZGVudClcbmRmJE1hcnJpZWQgPSBhcy5mYWN0b3IoZGYkTWFycmllZClcbmRmJEV0aG5pY2l0eSA9IGFzLmZhY3RvcihkZiRFdGhuaWNpdHkpIFxuYGBgIn0= -->
+<pre class="r"><code>df$Gender = as.factor(df$Gender)
+df$Student = as.factor(df$Student)
+df$Married = as.factor(df$Married)
+df$Ethnicity = as.factor(df$Ethnicity) </code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudHJhaW4gPC0gc2FtcGxlKGMoVFJVRSxGQUxTRSksIG5yb3coZGYpLCBwcm9iID0gYygyLzMsIDEvMykgLHJlcD1UUlVFKVxudGVzdCA8LSAoIXRyYWluIClcbmRmVHJhaW4gPSBkZlt0cmFpbixdXG5kZlRlc3QgPSBkZlt0ZXN0LF1cbmBgYCJ9 -->
+<pre class="r"><code>train &lt;- sample(c(TRUE,FALSE), nrow(df), prob = c(2/3, 1/3) ,rep=TRUE)
+test &lt;- (!train )
+dfTrain = df[train,]
+dfTest = df[test,]</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuRGFtZVByZWRpY2Npb25lc1Rlc3QgPSBmdW5jdGlvbihkZlRlc3QsIG1vZCl7XG4gIHByZWRpY2Npb25lcyA9IHByZWRpY3QobW9kLCBuZXdkYXRhPSBkZlRlc3QpXG4gIFcgPSBzdW0oKGRmVGVzdCRCYWxhbmNlIC0gcHJlZGljY2lvbmVzKSoqMilcbiAgcmV0dXJuKChXKSkgIyBQb2RyaWEgVG9tYXIgZXNjYWxhIGxvZ2FyaXRtaWNhIHBhcmEgcXVlIHNlYSBsZWdpYmxlXG59ICNBc3VtbyBtb2RlbG9cbmBgYCJ9 -->
+<pre class="r"><code>DamePrediccionesTest = function(dfTest, mod){
+  predicciones = predict(mod, newdata= dfTest)
+  W = sum((dfTest$Balance - predicciones)**2)
+  return((W)) # Podria Tomar escala logaritmica para que sea legible
+} #Asumo modelo</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubW9kMSA9IGxtKGRhdGEgPSBkZlRyYWluLCBCYWxhbmNlIH4gSW5jb21lICsgQ2FyZHMgKyBBZ2UpXG5tb2QyID0gbG0oZGF0YSA9IGRmVHJhaW4sIEJhbGFuY2UgfiBJbmNvbWUgKyBDYXJkcylcbm1vZDMgPSBsbShkYXRhID0gZGZUcmFpbiwgQmFsYW5jZSB+IEluY29tZSArIEFnZSlcbm1vZDQgPSBsbShkYXRhID0gZGZUcmFpbiwgQmFsYW5jZSB+IENhcmRzICsgQWdlKVxubW9kNSA9IGxtKGRhdGEgPSBkZlRyYWluLCBCYWxhbmNlIH4gSW5jb21lKVxubW9kNiA9IGxtKGRhdGEgPSBkZlRyYWluLCBCYWxhbmNlIH4gQ2FyZHMpXG5tb2Q3ID0gbG0oZGF0YSA9IGRmVHJhaW4sIEJhbGFuY2UgfiBBZ2UpXG5tb2Q4ID0gbG0oZGF0YSA9IGRmVHJhaW4sIEJhbGFuY2UgfjEpXG5tb2RlbG9zID0gbGlzdChtb2QxLCBtb2QyLCBtb2QzLCBtb2Q0LCBtb2Q1LCBtb2Q2LCBtb2Q3LCBtb2Q4IClcbmBgYCJ9 -->
+<pre class="r"><code>mod1 = lm(data = dfTrain, Balance ~ Income + Cards + Age)
+mod2 = lm(data = dfTrain, Balance ~ Income + Cards)
+mod3 = lm(data = dfTrain, Balance ~ Income + Age)
+mod4 = lm(data = dfTrain, Balance ~ Cards + Age)
+mod5 = lm(data = dfTrain, Balance ~ Income)
+mod6 = lm(data = dfTrain, Balance ~ Cards)
+mod7 = lm(data = dfTrain, Balance ~ Age)
+mod8 = lm(data = dfTrain, Balance ~1)
+modelos = list(mod1, mod2, mod3, mod4, mod5, mod6, mod7, mod8 )</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucmVzTW9kZWxvcyA9IGMoKSAjRW4gZXNjYWxhIGxvZ1xuaSA9IDFcbmZvciAobSBpbiBtb2RlbG9zKXtcbiAgcmVzTW9kZWxvc1tpXSA9IERhbWVQcmVkaWNjaW9uZXNUZXN0KGRmVGVzdCwgbSlcbiAgaT0gaSsxXG59XG5gYGAifQ== -->
+<pre class="r"><code>resModelos = c() #En escala log
+i = 1
+for (m in modelos){
+  resModelos[i] = DamePrediccionesTest(dfTest, m)
+  i= i+1
+}</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxud2hpY2gubWluKHJlc01vZGVsb3MpXG5gYGAifQ== -->
+<pre class="r"><code>which.min(resModelos)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDJcbiJ9 -->
+<pre><code>[1] 2</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubW9kMlxuYGBgIn0= -->
+<pre class="r"><code>mod2</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiXG5DYWxsOlxubG0oZm9ybXVsYSA9IEJhbGFuY2UgfiBJbmNvbWUgKyBDYXJkcywgZGF0YSA9IGRmVHJhaW4pXG5cbkNvZWZmaWNpZW50czpcbihJbnRlcmNlcHQpICAgICAgIEluY29tZSAgICAgICAgQ2FyZHMgIFxuICAgIDE0OS45OTEgICAgICAgIDYuMDIyICAgICAgIDMxLjkwMyAgXG4ifQ== -->
+<pre><code>
+Call:
+lm(formula = Balance ~ Income + Cards, data = dfTrain)
+
+Coefficients:
+(Intercept)       Income        Cards  
+    149.991        6.022       31.903  </code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiUiBOb3RlYm9vayIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKYGBge3J9CgpgYGAKCg==</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiUiBOb3RlYm9vayIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKYGBge3J9CmRmID0gcmVhZC5jc3YoImNyZWRpdC50eHQiKQpkZiRYID0gTlVMTApgYGAKCmBgYHtyfQpkZiRHZW5kZXIgPSBhcy5mYWN0b3IoZGYkR2VuZGVyKQpkZiRTdHVkZW50ID0gYXMuZmFjdG9yKGRmJFN0dWRlbnQpCmRmJE1hcnJpZWQgPSBhcy5mYWN0b3IoZGYkTWFycmllZCkKZGYkRXRobmljaXR5ID0gYXMuZmFjdG9yKGRmJEV0aG5pY2l0eSkgCmBgYApgYGB7cn0KdHJhaW4gPC0gc2FtcGxlKGMoVFJVRSxGQUxTRSksIG5yb3coZGYpLCBwcm9iID0gYygyLzMsIDEvMykgLHJlcD1UUlVFKQp0ZXN0IDwtICghdHJhaW4gKQpkZlRyYWluID0gZGZbdHJhaW4sXQpkZlRlc3QgPSBkZlt0ZXN0LF0KYGBgCgpgYGB7cn0KRGFtZVByZWRpY2Npb25lc1Rlc3QgPSBmdW5jdGlvbihkZlRlc3QsIG1vZCl7CiAgcHJlZGljY2lvbmVzID0gcHJlZGljdChtb2QsIG5ld2RhdGE9IGRmVGVzdCkKICBXID0gc3VtKChkZlRlc3QkQmFsYW5jZSAtIHByZWRpY2Npb25lcykqKjIpCiAgcmV0dXJuKChXKSkgIyBQb2RyaWEgVG9tYXIgZXNjYWxhIGxvZ2FyaXRtaWNhIHBhcmEgcXVlIHNlYSBsZWdpYmxlCn0gI0FzdW1vIG1vZGVsbwpgYGAKCmBgYHtyfQptb2QxID0gbG0oZGF0YSA9IGRmVHJhaW4sIEJhbGFuY2UgfiBJbmNvbWUgKyBDYXJkcyArIEFnZSkKbW9kMiA9IGxtKGRhdGEgPSBkZlRyYWluLCBCYWxhbmNlIH4gSW5jb21lICsgQ2FyZHMpCm1vZDMgPSBsbShkYXRhID0gZGZUcmFpbiwgQmFsYW5jZSB+IEluY29tZSArIEFnZSkKbW9kNCA9IGxtKGRhdGEgPSBkZlRyYWluLCBCYWxhbmNlIH4gQ2FyZHMgKyBBZ2UpCm1vZDUgPSBsbShkYXRhID0gZGZUcmFpbiwgQmFsYW5jZSB+IEluY29tZSkKbW9kNiA9IGxtKGRhdGEgPSBkZlRyYWluLCBCYWxhbmNlIH4gQ2FyZHMpCm1vZDcgPSBsbShkYXRhID0gZGZUcmFpbiwgQmFsYW5jZSB+IEFnZSkKbW9kOCA9IGxtKGRhdGEgPSBkZlRyYWluLCBCYWxhbmNlIH4xKQptb2RlbG9zID0gbGlzdChtb2QxLCBtb2QyLCBtb2QzLCBtb2Q0LCBtb2Q1LCBtb2Q2LCBtb2Q3LCBtb2Q4ICkKYGBgCgpgYGB7cn0KcmVzTW9kZWxvcyA9IGMoKSAjRW4gZXNjYWxhIGxvZwppID0gMQpmb3IgKG0gaW4gbW9kZWxvcyl7CiAgcmVzTW9kZWxvc1tpXSA9IERhbWVQcmVkaWNjaW9uZXNUZXN0KGRmVGVzdCwgbSkKICBpPSBpKzEKfQpgYGAKYGBge3J9CndoaWNoLm1pbihyZXNNb2RlbG9zKQpgYGAKCmBgYHtyfQptb2QyCmBgYAoK</div>
 
 
 

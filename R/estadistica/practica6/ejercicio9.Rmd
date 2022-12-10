@@ -1,0 +1,64 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+df = read.csv("glakes.csv")
+```
+
+```{r}
+df$X = NULL
+```
+
+```{r}
+errorCuadraticoMedio = function(y, yhat){
+  return(mean((y-yhat)**2))
+}
+```
+
+```{r}
+errorAbsolutoMedio = function(y, yhat){
+  return(mean(abs(y-yhat)))
+}
+```
+
+
+```{r}
+looLM = function(datos, evaluador){
+  erroresA = c()
+  erroresB = c()
+  erroresC = c()
+  erroresD = c()
+    
+  for (i in 1:nrow(datos)){
+    train = datos[datos$indice != i,]
+    test = datos[datos$indice == i,]
+    
+    modeloA = lm(data=train, Time ~ Tonnage - 1)
+    modeloB = lm(data=train, Time ~ Tonnage)
+    modeloC = lm(data=train, TimeLog ~ Tonnage25)
+    modeloD = lm(data=train, TimeLog ~ Tonnage25 + Tonnage05)
+
+    yhatTestA =  predict(modeloA, newdata = test )
+    erroresA[i] = evaluador(test$Time, yhatTestA)
+    yhatTestB =  predict(modeloB, newdata = test )
+    erroresB[i] = evaluador(test$Time, yhatTestB)
+    yhatTestC =  predict(modeloC, newdata = test )
+    erroresC[i] = evaluador(test$Time, exp(yhatTestC))
+    yhatTestD =  predict(modeloD, newdata = test )
+    erroresD[i] = evaluador(test$Time, exp(yhatTestD))
+  }
+  res = c(mean(erroresA),mean(erroresB),mean(erroresC),mean(erroresD))
+  return(res)
+}
+```
+
+```{r}
+df$indice = 1:nrow(df)
+df$TimeLog = log(df$Time)
+df$Tonnage25 = (df$Tonnage)**0.25
+df$Tonnage05 = (df$Tonnage)**0.50
+looLM(df, errorCuadraticoMedio)
+```
+El mejor modelo es el c

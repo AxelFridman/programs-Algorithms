@@ -3,13 +3,7 @@ title: "R Notebook"
 output: html_notebook
 ---
 
-```{r}
-df = read.csv("glakes.csv")
-```
 
-```{r}
-df$X = NULL
-```
 
 ```{r}
 mod = lm(data = df, Time ~. )

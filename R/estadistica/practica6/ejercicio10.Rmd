@@ -1,0 +1,55 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+x = rnorm(100)
+epsilon = rnorm(100, 0, 0.025**0.5)
+y = -1 + 0.5*x + epsilon
+```
+la longitud de y es 100, b0 es -1 y b1 es 0.5
+
+```{r}
+plot(x,y)
+```
+```{r}
+df = data.frame(x, y)
+mod = lm(data = df, y ~ x)
+summary(mod)
+```
+Las estimaciones de los coeficiente estan muy cercanas a las reales. 
+
+```{r}
+plot(df$x, predict(mod, df), type = "l", col = "red")
+lines(c(-10,10),c(-6,4), col = "blue")
+points(x,y)
+```
+En azul la verdadera, en rojo la estimada.
+
+```{r}
+x2 = x**2
+df2 = data.frame(y, x, x2)
+mod2 = lm(data = df2, y ~ x + x2)
+summary(mod2)
+```
+```{r}
+plot(sort(df2$x), sort(predict(mod2, df2)), col = "red", type = "l")
+lines(c(-10,10),c(-6,4), col = "blue")
+points(x,y)
+```
+El termino cuadratico no sirve para nada, es practicamente nulo.
+
+
+```{r}
+sumario = summary(mod)
+sumario$sigma
+```
+es la estimacion de la varianza
+
+
+
+```{r}
+sd(mod$residuals)
+```
+
