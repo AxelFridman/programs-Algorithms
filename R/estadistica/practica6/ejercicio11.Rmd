@@ -1,0 +1,49 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+x1 = runif(100, 0, 1)
+x2 = runif(100, 0, 1)
+eps = rnorm(100, 0, 1)
+y = 2 + 2*x1 + 0.3 * x2 + eps
+df = data.frame(x1, x2, y)
+```
+```{r}
+mod = lm(data = df, y~ x1+x2)
+sumario = summary(mod)
+sumario
+```
+los coeficientes son b0 = 2, b1 = 2, b3= 0.3
+```{r}
+mod$coefficients # son la estimacion de los coeficientes
+```
+
+```{r}
+cor(x1, x2) # la correlacion es baja, como deberia ser, ya que son independientes x1 y x2
+```
+```{r}
+plot(x1, x2)
+```
+No se aprecia ningun tipo de relacion.
+
+```{r}
+x11 = runif(100, 0, 1)
+x22 = x11 / 2 + rnorm(100)/10
+eps2 = rnorm(100, 0, 1)
+y2 = 2 + 2*x1 + 0.3 * x2 + eps2
+df2 = data.frame(x11, x22, y2)
+```
+```{r}
+cor(x11, x22) # mucho mas alto indice de correlacion
+```
+
+```{r}
+plot(x11, x22)
+```
+
+```{r}
+mod2 = lm(data = df2, y2~x11 + x22)
+summary(mod2)
+```
+La colinearidad hace que los coeficientes sean una porqueria. Mucho mas alejados de los reales
