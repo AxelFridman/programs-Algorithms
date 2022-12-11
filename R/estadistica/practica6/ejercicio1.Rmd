@@ -1,0 +1,82 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(glmnet)
+
+```
+
+```{r}
+generarDatos = function(n=100){
+  x1 = runif(n, 0,5 )
+  x2 = runif(n, 0,5 )
+  x3 = 2*x1 + runif(n, -0.1, 0.1 )
+  x4 = -1*x1 + runif(n, -0.1, 0.1 )
+  y = 5 + 8*x1 - 5*x2 + x3 + 4*x4 + rnorm(n, 0, 1)
+  df = data.frame(x1, x2, x3, x4, y)
+  return(df)
+}
+
+```
+
+
+```{r}
+obtenerCoefsySd = function(df){
+  mod = lm(data = df, y ~.)
+  sumario = summary(mod)
+  infoCoef = sumario$coefficients
+  coeficientes = infoCoef[,4]
+  sds = infoCoef[,2]
+  return(list(coeficientes, sds))
+}
+```
+
+```{r}
+realizarExperimentosCoeficientesSignificativos = function(alpha=0.05, B=1000){
+  df = generarDatos()
+  l = obtenerCoefsySd(df)
+  desvios = unlist(l[2])
+  significativos =  (unlist(l[1]) < alpha)
+  for (i in (2:B)){
+    df = generarDatos()
+    l = obtenerCoefsySd(df)
+    desvios = desvios + unlist(l[2])
+    significativos = significativos + (unlist(l[1]) < alpha)
+  }
+  return(list(significativos/B, desvios/B))
+}
+```
+
+
+```{r}
+realizarExperimentosCoeficientesSignificativos() #Primera fila es proporcion de veces que fue significativo el modelo. 
+# Segunda fila es el desvio estandar de esa variable en promedio. 
+```
+
+```{r}
+df = generarDatos()
+y = df$y
+x <- data.matrix(df[, c('x1', 'x2', 'x3', 'x4')])
+model <- glmnet(x, y, alpha = 0)
+
+#view summary of model
+sumario = summary(model)
+```
+
+```{r}
+cv_model <- cv.glmnet(x, y, alpha = 0, lambda=seq(0,10,0.01))
+
+#find optimal lambda value that minimizes test MSE
+best_lambda <- cv_model$lambda.min
+best_lambda
+
+#produce plot of test MSE by lambda value
+plot(cv_model) 
+```
+```{r}
+best_model <- glmnet(x, y, alpha = 0, lambda = best_lambda)
+coefs = coef(best_model)
+coefs[,1]
+```
+

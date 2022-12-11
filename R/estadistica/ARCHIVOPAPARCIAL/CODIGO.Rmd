@@ -179,7 +179,7 @@ summary(modelLasso)
 ```
 ```{r}
 cv_modelRidge <- cv.glmnet(x, y, alpha = 0, lambda=seq(0.01,20,0.01))
-cv_modelLasso <- cv.glmnet(x, y, alpha = 0, lambda=seq(0.01,20,0.01))
+cv_modelLasso <- cv.glmnet(x, y, alpha = 1, lambda=seq(0.01,20,0.01))
 
 #find optimal lambda value that minimizes test MSE
 best_lambdaRidge <- cv_modelRidge$lambda.min
