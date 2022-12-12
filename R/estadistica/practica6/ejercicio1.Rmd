@@ -62,21 +62,31 @@ model <- glmnet(x, y, alpha = 0)
 
 #view summary of model
 sumario = summary(model)
-```
 
-```{r}
-cv_model <- cv.glmnet(x, y, alpha = 0, lambda=seq(0,10,0.01))
+cv_model <- cv.glmnet(x, y, alpha = 0, lambda=seq(0,1,0.001))
 
 #find optimal lambda value that minimizes test MSE
 best_lambda <- cv_model$lambda.min
 best_lambda
 
-#produce plot of test MSE by lambda value
-plot(cv_model) 
-```
-```{r}
 best_model <- glmnet(x, y, alpha = 0, lambda = best_lambda)
 coefs = coef(best_model)
 coefs[,1]
+```
+```{r}
+mod = lm(data=df, y~.)
+mod$coefficients
+```
+
+```{r}
+cv_model2 <- cv.glmnet(x, y, alpha = 1, lambda=seq(0,1,0.001))
+
+#find optimal lambda value that minimizes test MSE
+best_lambda2 <- cv_model2$lambda.min
+best_lambda2
+
+best_model2 <- glmnet(x, y, alpha = 1, lambda = best_lambda2)
+coefs2 = coef(best_model2)
+coefs2[,1]
 ```
 

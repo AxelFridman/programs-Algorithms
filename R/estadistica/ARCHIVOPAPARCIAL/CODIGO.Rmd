@@ -82,9 +82,11 @@ xt = as.numeric(df$Tonnage)
 Test = (t(xt) * coef - t(xt)*10)/(sqrt(s**2 * t(xt) ) )
 ```
 ```{r}
+A = rnorm(100, 0, 1)
+B = rnorm(100, 0.1, 1)
 var.test(A, B, alternative = "two.sided") # test para sigma A = sigma B
 t.test(A,B, var.equal = TRUE) # test para mu A = mu B
-shapiro.test() # test de normalidad
+shapiro.test(A) # test de normalidad
 ```
 
 ```{r}
