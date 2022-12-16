@@ -1,0 +1,37 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+xini = runif(5, 9999999, 99999999)
+```
+```{r}
+substrRight <- function(x, n){
+  substr(x, nchar(x)-n+1, nchar(x))
+}
+```
+
+```{r}
+for (i in (6:1000000)){
+  grandeS = as.character(xini[i-1]*xini[i-2])
+  chicoS = substrRight(grandeS, 8)
+  xini[i] = as.numeric(chicoS)
+}
+```
+```{r}
+xini = xini * 10**-8
+max(xini)
+```
+
+```{r}
+plot(density(xini))
+```
+
+```{r}
+norms = qnorm(xini,0,1)
+```
+```{r}
+plot(density(norms), col="red")
+plot(density(rnorm(1000000)), col="blue")
+
+```
