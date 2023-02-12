@@ -128,4 +128,3 @@ plot(des)
 ```{r}
 density(x, )
 ```
-
